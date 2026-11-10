@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 760" width="980" height="760" font-family="system-ui, Segoe UI, Arial, sans-serif">
+  <defs>
+    <!-- +5 V: Strich nach oben, Querbalken, Beschriftung -->
+    <g id="vcc-new"><line x1="0" y1="0" x2="0" y2="-14" stroke="#e8590c" stroke-width="3"/><line x1="-12" y1="-14" x2="12" y2="-14" stroke="#d62828" stroke-width="3"/><text x="0" y="-21" text-anchor="middle" font-size="13" font-weight="700" fill="#d62828">+5 V</text></g>
+    <g id="vcc-old"><line x1="0" y1="0" x2="0" y2="-14" stroke="#8a94a6" stroke-width="3"/><line x1="-12" y1="-14" x2="12" y2="-14" stroke="#d62828" stroke-width="3"/><text x="0" y="-21" text-anchor="middle" font-size="13" font-weight="700" fill="#d62828">+5 V</text></g>
+    <!-- GND: Strich nach unten, drei kuerzer werdende Balken -->
+    <g id="gnd-new"><line x1="0" y1="0" x2="0" y2="12" stroke="#e8590c" stroke-width="3"/><line x1="-12" y1="12" x2="12" y2="12" stroke="#1d2433" stroke-width="3"/><line x1="-7" y1="17" x2="7" y2="17" stroke="#1d2433" stroke-width="3"/><line x1="-3" y1="22" x2="3" y2="22" stroke="#1d2433" stroke-width="3"/></g>
+    <g id="gnd-old"><line x1="0" y1="0" x2="0" y2="12" stroke="#8a94a6" stroke-width="3"/><line x1="-12" y1="12" x2="12" y2="12" stroke="#1d2433" stroke-width="3"/><line x1="-7" y1="17" x2="7" y2="17" stroke="#1d2433" stroke-width="3"/><line x1="-3" y1="22" x2="3" y2="22" stroke="#1d2433" stroke-width="3"/></g>
+    <g id="open"><line x1="-7" y1="-7" x2="7" y2="7" stroke="#1d2433" stroke-width="2.5"/><line x1="-7" y1="7" x2="7" y2="-7" stroke="#1d2433" stroke-width="2.5"/></g>
+  </defs>
+
+  <rect x="0" y="0" width="980" height="760" rx="18" fill="#eef2f8"/>
+  <text x="490" y="44" text-anchor="middle" font-size="26" font-weight="700" fill="#1d2433">74AHCT125 – unbenutzte Gatter beschalten</text>
+  <text x="490" y="70" text-anchor="middle" font-size="14" fill="#4a5468">Draufsicht (Kerbe oben) · Gatter 1 treibt die LEDs, Gatter 2, 3 und 4 werden stillgelegt</text>
+
+  <!-- Chip -->
+  <rect x="390" y="110" width="200" height="380" rx="10" fill="#232a36"/>
+  <path d="M470 110 a20 20 0 0 0 40 0 z" fill="#eef2f8"/>
+  <text x="490" y="290" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">74AHCT125</text>
+  <text x="490" y="312" text-anchor="middle" font-size="13" fill="#b8c0cf">Draufsicht</text>
+
+  <!-- Pins links 1..7 (y = 160 + 50*(n-1)) -->
+  <g font-size="14" fill="#fff">
+    <rect x="374" y="152" width="16" height="16" fill="#8a94a6"/><text x="400" y="165">1 <tspan font-weight="700">1OE</tspan></text>
+    <rect x="374" y="202" width="16" height="16" fill="#8a94a6"/><text x="400" y="215">2 <tspan font-weight="700">1A</tspan></text>
+    <rect x="374" y="252" width="16" height="16" fill="#8a94a6"/><text x="400" y="265">3 <tspan font-weight="700">1Y</tspan></text>
+    <rect x="374" y="302" width="16" height="16" fill="#e8590c"/><text x="400" y="315">4 <tspan font-weight="700">2OE</tspan></text>
+    <rect x="374" y="352" width="16" height="16" fill="#e8590c"/><text x="400" y="365">5 <tspan font-weight="700">2A</tspan></text>
+    <rect x="374" y="402" width="16" height="16" fill="#8a94a6"/><text x="400" y="415">6 <tspan font-weight="700">2Y</tspan></text>
+    <rect x="374" y="452" width="16" height="16" fill="#8a94a6"/><text x="400" y="465">7 <tspan font-weight="700">GND</tspan></text>
+  </g>
+  <!-- Pins rechts 14..8 -->
+  <g font-size="14" fill="#fff" text-anchor="end">
+    <rect x="590" y="152" width="16" height="16" fill="#8a94a6"/><text x="580" y="165"><tspan font-weight="700">VCC</tspan> 14</text>
+    <rect x="590" y="202" width="16" height="16" fill="#e8590c"/><text x="580" y="215"><tspan font-weight="700">4OE</tspan> 13</text>
+    <rect x="590" y="252" width="16" height="16" fill="#e8590c"/><text x="580" y="265"><tspan font-weight="700">4A</tspan> 12</text>
+    <rect x="590" y="302" width="16" height="16" fill="#8a94a6"/><text x="580" y="315"><tspan font-weight="700">4Y</tspan> 11</text>
+    <rect x="590" y="352" width="16" height="16" fill="#e8590c"/><text x="580" y="365"><tspan font-weight="700">3OE</tspan> 10</text>
+    <rect x="590" y="402" width="16" height="16" fill="#e8590c"/><text x="580" y="415"><tspan font-weight="700">3A</tspan> 9</text>
+    <rect x="590" y="452" width="16" height="16" fill="#8a94a6"/><text x="580" y="465"><tspan font-weight="700">3Y</tspan> 8</text>
+  </g>
+
+  <!-- Links: bestehend (grau) -->
+  <line x1="374" y1="160" x2="300" y2="160" stroke="#8a94a6" stroke-width="3"/><use href="#gnd-old" x="300" y="160"/>
+  <text x="285" y="165" text-anchor="end" font-size="13" fill="#4a5468">GND (bleibt)</text>
+  <line x1="374" y1="210" x2="230" y2="210" stroke="#8a94a6" stroke-width="3"/>
+  <text x="222" y="215" text-anchor="end" font-size="13" fill="#4a5468">ESP32 GPIO18 (bleibt)</text>
+  <line x1="374" y1="260" x2="230" y2="260" stroke="#8a94a6" stroke-width="3"/>
+  <text x="222" y="265" text-anchor="end" font-size="13" fill="#4a5468">330 Ω → LED DIN (bleibt)</text>
+  <line x1="374" y1="460" x2="300" y2="460" stroke="#8a94a6" stroke-width="3"/><use href="#gnd-old" x="300" y="460"/>
+  <text x="285" y="465" text-anchor="end" font-size="13" fill="#4a5468">GND (bleibt)</text>
+
+  <!-- Links: neu (orange) -->
+  <line x1="374" y1="310" x2="300" y2="310" stroke="#e8590c" stroke-width="4"/><use href="#vcc-new" x="300" y="310"/>
+  <text x="280" y="315" text-anchor="end" font-size="14" font-weight="700" fill="#e8590c">NEU: an +5 V</text>
+  <line x1="374" y1="360" x2="300" y2="360" stroke="#e8590c" stroke-width="4"/><use href="#gnd-new" x="300" y="360"/>
+  <text x="280" y="365" text-anchor="end" font-size="14" font-weight="700" fill="#e8590c">NEU: an GND</text>
+  <line x1="374" y1="410" x2="340" y2="410" stroke="#1d2433" stroke-width="2" stroke-dasharray="3 3"/><use href="#open" x="340" y="410"/>
+  <text x="322" y="415" text-anchor="end" font-size="13" fill="#1d2433">frei lassen</text>
+
+  <!-- Rechts: bestehend -->
+  <line x1="606" y1="160" x2="680" y2="160" stroke="#8a94a6" stroke-width="3"/><use href="#vcc-old" x="680" y="160"/>
+  <text x="700" y="165" font-size="13" fill="#4a5468">+5 V (bleibt), 100 nF nach Pin 7</text>
+  <line x1="606" y1="460" x2="640" y2="460" stroke="#1d2433" stroke-width="2" stroke-dasharray="3 3"/><use href="#open" x="640" y="460"/>
+  <text x="658" y="465" font-size="13" fill="#1d2433">frei lassen (wie bisher nicht verbunden)</text>
+
+  <!-- Rechts: neu -->
+  <line x1="606" y1="210" x2="680" y2="210" stroke="#e8590c" stroke-width="4"/><use href="#vcc-new" x="680" y="210"/>
+  <text x="700" y="215" font-size="14" font-weight="700" fill="#e8590c">NEU: an +5 V</text>
+  <line x1="606" y1="260" x2="680" y2="260" stroke="#e8590c" stroke-width="4"/><use href="#gnd-new" x="680" y="260"/>
+  <text x="700" y="265" font-size="14" font-weight="700" fill="#e8590c">NEU: an GND</text>
+  <line x1="606" y1="310" x2="640" y2="310" stroke="#1d2433" stroke-width="2" stroke-dasharray="3 3"/><use href="#open" x="640" y="310"/>
+  <text x="658" y="315" font-size="13" fill="#1d2433">frei lassen</text>
+  <line x1="606" y1="360" x2="680" y2="360" stroke="#e8590c" stroke-width="4"/><use href="#vcc-new" x="680" y="360"/>
+  <text x="700" y="365" font-size="14" font-weight="700" fill="#e8590c">NEU: an +5 V</text>
+  <line x1="606" y1="410" x2="680" y2="410" stroke="#e8590c" stroke-width="4"/><use href="#gnd-new" x="680" y="410"/>
+  <text x="700" y="415" font-size="14" font-weight="700" fill="#e8590c">NEU: an GND</text>
+
+  <!-- Zusammenfassung -->
+  <rect x="40" y="520" width="440" height="210" rx="12" fill="#fff" stroke="#c9d1de"/>
+  <text x="60" y="550" font-size="16" font-weight="700" fill="#1d2433">Was neu gelötet wird</text>
+  <g font-size="14" fill="#1d2433">
+    <text x="60" y="580"><tspan font-weight="700" fill="#d62828">+5 V:</tspan> Pin 4, 10, 13 (die OE-Pins)</text>
+    <text x="60" y="606"><tspan font-weight="700">GND:</tspan> Pin 5, 9, 12 (die Eingänge A)</text>
+    <text x="60" y="632"><tspan font-weight="700">Frei lassen:</tspan> Pin 6, 8, 11 (die Ausgänge Y)</text>
+    <text x="60" y="666" fill="#4a5468">OE auf High schaltet das Gatter ab, der Ausgang wird</text>
+    <text x="60" y="686" fill="#4a5468">hochohmig. Eingang auf GND: kein offener CMOS-Eingang,</text>
+    <text x="60" y="706" fill="#4a5468">der schwingen oder Strom ziehen könnte.</text>
+  </g>
+
+  <rect x="500" y="520" width="440" height="210" rx="12" fill="#fff4e6" stroke="#f0b37a"/>
+  <text x="520" y="550" font-size="16" font-weight="700" fill="#9c3d00">Löttipps</text>
+  <g font-size="14" fill="#1d2433">
+    <text x="520" y="580">• Pin 13 liegt neben 14 (+5 V): kurze Brücke 13–14 ok.</text>
+    <text x="520" y="606">• Pin 5, 9, 12 mit Draht an Pin 7 (GND) führen.</text>
+    <text x="520" y="632">• Pin 4 und 10 mit Draht an +5 V (z. B. an Pin 14).</text>
+    <text x="520" y="658" font-weight="700" fill="#9c3d00">• Achtung, Nachbarn mit verschiedenem Potenzial:</text>
+    <text x="536" y="680" fill="#9c3d00">4|5, 9|10 und 12|13 nicht überbrücken!</text>
+    <text x="520" y="706">• Nach dem Löten: 14 gegen 7 auf Kurzschluss messen.</text>
+  </g>
+
+  <!-- Legende -->
+  <g font-size="12" fill="#4a5468">
+    <line x1="40" y1="96" x2="70" y2="96" stroke="#8a94a6" stroke-width="3"/><text x="78" y="100">bestehend</text>
+    <line x1="160" y1="96" x2="190" y2="96" stroke="#e8590c" stroke-width="4"/><text x="198" y="100">neu</text>
+  </g>
+</svg>

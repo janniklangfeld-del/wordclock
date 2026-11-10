@@ -15,6 +15,18 @@
 | LED +5 V (rot) / GND (weiß) | Netzteil 5 V / 20 A |
 | Pin 8 | **nicht verbunden** (gestrichelte Linie im Plan ist nicht verlötet) |
 
+## Unbenutzte Gatter des 74AHCT125 (noch nachzurüsten)
+
+![74AHCT125 unbenutzte Pins](74AHCT125_unbenutzte_pins.svg)
+
+| Pins | Funktion | Anschluss |
+|---|---|---|
+| 4, 10, 13 | OE der Gatter 2–4 | +5 V (Gatter aus, Ausgang hochohmig) |
+| 5, 9, 12 | Eingänge A der Gatter 2–4 | GND |
+| 6, 8, 11 | Ausgänge Y der Gatter 2–4 | frei lassen |
+
+Pin 13 darf direkt mit Pin 14 gebrückt werden. Die Nachbarpaare 4/5, 9/10 und 12/13 führen verschiedene Potenziale und dürfen **nicht** überbrückt werden. Nach dem Löten Pin 14 gegen Pin 7 auf Kurzschluss messen.
+
 ## Offene Punkte / Empfehlungen
 
 - [ ] Unbenutzte Gatter: Pins 4, 10, 13 (OE) an +5 V, Pins 5, 9, 12 (Eingänge) an GND. Offene CMOS-Eingänge können schwingen und Strom ziehen. Für den Test unkritisch, vor dem Einbau nachrüsten.
