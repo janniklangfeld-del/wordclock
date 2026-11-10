@@ -1,0 +1,7 @@
+.pio/
+.vscode/*
+!.vscode/extensions.json
+*.bak
+.DS_Store
+Thumbs.db
+secrets.h

@@ -1,0 +1,80 @@
+name: Firmware
+
+# Jeder Push/PR: beide Firmwares bauen + OTA-Zertifikate pruefen.
+# Tag "vX.Y.Z": zusaetzlich GitHub Release mit firmware.bin -> die Uhr
+# installiert es automatisch (Internet-OTA, siehe docs/OTA.md).
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * 1"   # woechentlich: warnt, falls GitHub die Zertifikatskette wechselt
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: OTA-Root-Zertifikate noch gueltig fuer GitHub?
+        run: |
+          set -e
+          for host in github.com release-assets.githubusercontent.com objects.githubusercontent.com; do
+            echo "== $host"
+            echo | openssl s_client -connect "$host:443" -servername "$host" \
+              -CAfile certs/github_roots.pem -no-CApath -no-CAstore -verify_return_error 2>&1 \
+              | grep -E "Verify return code" | tee /tmp/v.txt
+            grep -q "Verify return code: 0" /tmp/v.txt || { echo "::error::Kette fuer $host nicht durch certs/github_roots.pem abgedeckt"; exit 1; }
+          done
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ hashFiles('platformio.ini') }}
+
+      - name: PlatformIO installieren
+        run: pip install platformio
+
+      - name: Version bestimmen
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "FW_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else
+            echo "FW_VERSION=0.0.0-ci.${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Bauen
+        run: pio run -e ledtest -e wordclock
+
+      - name: Artefakte sammeln
+        run: |
+          mkdir -p out
+          cp .pio/build/wordclock/firmware.bin out/firmware.bin
+          cp .pio/build/ledtest/firmware.bin out/ledtest.bin
+          ls -l out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ env.FW_VERSION }}
+          path: out/
+
+      - name: Release veroeffentlichen
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/firmware.bin
+          generate_release_notes: true
