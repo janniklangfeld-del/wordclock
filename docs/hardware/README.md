@@ -17,7 +17,13 @@
 
 ## Unbenutzte Gatter des 74AHCT125 (noch nachzurüsten)
 
-![74AHCT125 unbenutzte Pins](74AHCT125_unbenutzte_pins.svg)
+Draufsicht (Bauteilseite):
+
+![74AHCT125 unbenutzte Pins, Draufsicht](74AHCT125_unbenutzte_pins.svg)
+
+Ansicht von unten (Lötseite, gespiegelt – Pin 1 oben rechts), zum Löten bei umgedrehter Platine:
+
+![74AHCT125 unbenutzte Pins, Lötseite](74AHCT125_unbenutzte_pins_unten.svg)
 
 | Pins | Funktion | Anschluss |
 |---|---|---|
