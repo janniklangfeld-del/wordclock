@@ -31,6 +31,8 @@ Ansicht von unten (Lötseite, gespiegelt – Pin 1 oben rechts), zum Löten bei 
 | 5, 9, 12 | Eingänge A der Gatter 2–4 | GND |
 | 6, 8, 11 | Ausgänge Y der Gatter 2–4 | frei lassen |
 
+**Tatsächlicher Aufbau:** Pin 6 (2Y) liegt zusätzlich auf GND (versehentlich, aber unkritisch: Gatter 2 ist über Pin 4 = +5 V abgeschaltet, und mit Pin 5 = GND könnte der Ausgang ohnehin nur Low treiben). Voraussetzung: Pin 4 und Pin 5 müssen sicher verlötet sein.
+
 Pin 13 darf direkt mit Pin 14 gebrückt werden. Die Nachbarpaare 4/5, 9/10 und 12/13 führen verschiedene Potenziale und dürfen **nicht** überbrückt werden. Nach dem Löten Pin 14 gegen Pin 7 auf Kurzschluss messen.
 
 ## Offene Punkte / Empfehlungen
