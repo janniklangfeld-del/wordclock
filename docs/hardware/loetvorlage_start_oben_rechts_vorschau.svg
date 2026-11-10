@@ -1,0 +1,767 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 278 258" width="278mm" height="258mm" font-family="Helvetica, Arial, sans-serif">
+<rect width="100%" height="100%" fill="#fff"/>
+<rect x="14.00" y="4.00" width="250.00" height="250.00" fill="none" stroke="rgb(115,128,148)" stroke-width="0.40"/>
+<polyline points="29.00,219.00 29.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="49.00,219.00 49.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="69.00,219.00 69.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="89.00,219.00 89.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="109.00,219.00 109.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="129.00,219.00 129.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="149.00,219.00 149.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="169.00,219.00 169.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="189.00,219.00 189.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="209.00,219.00 209.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="229.00,219.00 229.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="249.00,219.00 249.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,219.00 249.00,219.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,199.00 249.00,199.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,179.00 249.00,179.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,159.00 249.00,159.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,139.00 249.00,139.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,119.00 249.00,119.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,99.00 249.00,99.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,79.00 249.00,79.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,59.00 249.00,59.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,39.00 249.00,39.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<polyline points="29.00,19.00 249.00,19.00" fill="none" stroke="rgb(199,207,219)" stroke-width="0.20"/>
+<rect x="29.00" y="24.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,35.50 29.00,22.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,35.50 249.00,22.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="31.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">21</text>
+<rect x="41.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">20</text>
+<text x="59.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">S</text>
+<rect x="51.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">19</text>
+<rect x="61.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">18</text>
+<polygon points="47.90,29.00 50.10,27.90 50.10,30.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">K</text>
+<rect x="71.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">17</text>
+<rect x="81.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">16</text>
+<polygon points="67.90,29.00 70.10,27.90 70.10,30.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="91.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">15</text>
+<rect x="101.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">14</text>
+<polygon points="87.90,29.00 90.10,27.90 90.10,30.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">S</text>
+<rect x="111.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">13</text>
+<rect x="121.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">12</text>
+<polygon points="107.90,29.00 110.10,27.90 110.10,30.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">T</text>
+<rect x="131.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">11</text>
+<rect x="141.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">10</text>
+<polygon points="127.90,29.00 130.10,27.90 130.10,30.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">L</text>
+<rect x="151.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">9</text>
+<rect x="161.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">8</text>
+<polygon points="147.90,29.00 150.10,27.90 150.10,30.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">F</text>
+<rect x="171.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">7</text>
+<rect x="181.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">6</text>
+<polygon points="167.90,29.00 170.10,27.90 170.10,30.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Ü</text>
+<rect x="191.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">5</text>
+<rect x="201.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">4</text>
+<polygon points="187.90,29.00 190.10,27.90 190.10,30.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="211.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">3</text>
+<rect x="221.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">2</text>
+<polygon points="207.90,29.00 210.10,27.90 210.10,30.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="22.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">F</text>
+<rect x="231.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="37.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">1</text>
+<rect x="241.50" y="26.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="37.60" font-size="1.70" fill="rgb(214,41,41)" text-anchor="middle" font-weight="700">0</text>
+<polygon points="227.90,29.00 230.10,27.90 230.10,30.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="29.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 1</text>
+<text x="265.50" y="29.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 1</text>
+<rect x="29.00" y="44.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,55.50 29.00,42.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,55.50 249.00,42.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Z</text>
+<rect x="31.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">22</text>
+<rect x="41.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">23</text>
+<text x="59.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="51.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">24</text>
+<rect x="61.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">25</text>
+<polygon points="50.10,49.00 47.90,47.90 47.90,50.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">H</text>
+<rect x="71.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">26</text>
+<rect x="81.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">27</text>
+<polygon points="70.10,49.00 67.90,47.90 67.90,50.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="91.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">28</text>
+<rect x="101.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">29</text>
+<polygon points="90.10,49.00 87.90,47.90 87.90,50.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Z</text>
+<rect x="111.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">30</text>
+<rect x="121.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">31</text>
+<polygon points="110.10,49.00 107.90,47.90 107.90,50.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">W</text>
+<rect x="131.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">32</text>
+<rect x="141.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">33</text>
+<polygon points="130.10,49.00 127.90,47.90 127.90,50.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">A</text>
+<rect x="151.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">34</text>
+<rect x="161.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">35</text>
+<polygon points="150.10,49.00 147.90,47.90 147.90,50.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="171.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">36</text>
+<rect x="181.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">37</text>
+<polygon points="170.10,49.00 167.90,47.90 167.90,50.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Z</text>
+<rect x="191.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">38</text>
+<rect x="201.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">39</text>
+<polygon points="190.10,49.00 187.90,47.90 187.90,50.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="211.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">40</text>
+<rect x="221.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">41</text>
+<polygon points="210.10,49.00 207.90,47.90 207.90,50.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="42.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">G</text>
+<rect x="231.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">42</text>
+<rect x="241.50" y="46.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="57.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">43</text>
+<polygon points="230.10,49.00 227.90,47.90 227.90,50.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="49.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 2</text>
+<text x="265.50" y="49.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 2</text>
+<rect x="29.00" y="64.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,75.50 29.00,62.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,75.50 249.00,62.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">D</text>
+<rect x="31.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">65</text>
+<rect x="41.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">64</text>
+<text x="59.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">R</text>
+<rect x="51.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">63</text>
+<rect x="61.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">62</text>
+<polygon points="47.90,69.00 50.10,67.90 50.10,70.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="71.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">61</text>
+<rect x="81.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">60</text>
+<polygon points="67.90,69.00 70.10,67.90 70.10,70.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="91.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">59</text>
+<rect x="101.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">58</text>
+<polygon points="87.90,69.00 90.10,67.90 90.10,70.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">V</text>
+<rect x="111.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">57</text>
+<rect x="121.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">56</text>
+<polygon points="107.90,69.00 110.10,67.90 110.10,70.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="131.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">55</text>
+<rect x="141.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">54</text>
+<polygon points="127.90,69.00 130.10,67.90 130.10,70.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="151.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">53</text>
+<rect x="161.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">52</text>
+<polygon points="147.90,69.00 150.10,67.90 150.10,70.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">R</text>
+<rect x="171.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">51</text>
+<rect x="181.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">50</text>
+<polygon points="167.90,69.00 170.10,67.90 170.10,70.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">T</text>
+<rect x="191.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">49</text>
+<rect x="201.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">48</text>
+<polygon points="187.90,69.00 190.10,67.90 190.10,70.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="211.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">47</text>
+<rect x="221.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">46</text>
+<polygon points="207.90,69.00 210.10,67.90 210.10,70.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="62.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">L</text>
+<rect x="231.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">45</text>
+<rect x="241.50" y="66.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="77.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">44</text>
+<polygon points="227.90,69.00 230.10,67.90 230.10,70.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="69.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 3</text>
+<text x="265.50" y="69.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 3</text>
+<rect x="29.00" y="84.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,95.50 29.00,82.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,95.50 249.00,82.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">V</text>
+<rect x="31.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">66</text>
+<rect x="41.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">67</text>
+<text x="59.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">O</text>
+<rect x="51.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">68</text>
+<rect x="61.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">69</text>
+<polygon points="50.10,89.00 47.90,87.90 47.90,90.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">R</text>
+<rect x="71.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">70</text>
+<rect x="81.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">71</text>
+<polygon points="70.10,89.00 67.90,87.90 67.90,90.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">F</text>
+<rect x="91.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">72</text>
+<rect x="101.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">73</text>
+<polygon points="90.10,89.00 87.90,87.90 87.90,90.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">U</text>
+<rect x="111.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">74</text>
+<rect x="121.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">75</text>
+<polygon points="110.10,89.00 107.90,87.90 107.90,90.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="131.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">76</text>
+<rect x="141.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">77</text>
+<polygon points="130.10,89.00 127.90,87.90 127.90,90.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">K</text>
+<rect x="151.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">78</text>
+<rect x="161.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">79</text>
+<polygon points="150.10,89.00 147.90,87.90 147.90,90.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="171.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">80</text>
+<rect x="181.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">81</text>
+<polygon points="170.10,89.00 167.90,87.90 167.90,90.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">A</text>
+<rect x="191.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">82</text>
+<rect x="201.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">83</text>
+<polygon points="190.10,89.00 187.90,87.90 187.90,90.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">C</text>
+<rect x="211.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">84</text>
+<rect x="221.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">85</text>
+<polygon points="210.10,89.00 207.90,87.90 207.90,90.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="82.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">H</text>
+<rect x="231.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">86</text>
+<rect x="241.50" y="86.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="97.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">87</text>
+<polygon points="230.10,89.00 227.90,87.90 227.90,90.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="89.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 4</text>
+<text x="265.50" y="89.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 4</text>
+<rect x="29.00" y="104.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,115.50 29.00,102.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,115.50 249.00,102.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">H</text>
+<rect x="31.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">109</text>
+<rect x="41.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">108</text>
+<text x="59.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">A</text>
+<rect x="51.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">107</text>
+<rect x="61.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">106</text>
+<polygon points="47.90,109.00 50.10,107.90 50.10,110.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">L</text>
+<rect x="71.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">105</text>
+<rect x="81.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">104</text>
+<polygon points="67.90,109.00 70.10,107.90 70.10,110.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">B</text>
+<rect x="91.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">103</text>
+<rect x="101.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">102</text>
+<polygon points="87.90,109.00 90.10,107.90 90.10,110.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">A</text>
+<rect x="111.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">101</text>
+<rect x="121.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">100</text>
+<polygon points="107.90,109.00 110.10,107.90 110.10,110.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="131.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">99</text>
+<rect x="141.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">98</text>
+<polygon points="127.90,109.00 130.10,107.90 130.10,110.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">L</text>
+<rect x="151.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">97</text>
+<rect x="161.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">96</text>
+<polygon points="147.90,109.00 150.10,107.90 150.10,110.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">F</text>
+<rect x="171.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">95</text>
+<rect x="181.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">94</text>
+<polygon points="167.90,109.00 170.10,107.90 170.10,110.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Ü</text>
+<rect x="191.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">93</text>
+<rect x="201.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">92</text>
+<polygon points="187.90,109.00 190.10,107.90 190.10,110.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="211.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">91</text>
+<rect x="221.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">90</text>
+<polygon points="207.90,109.00 210.10,107.90 210.10,110.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="102.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">F</text>
+<rect x="231.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">89</text>
+<rect x="241.50" y="106.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="117.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">88</text>
+<polygon points="227.90,109.00 230.10,107.90 230.10,110.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="109.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 5</text>
+<text x="265.50" y="109.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 5</text>
+<rect x="29.00" y="124.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,135.50 29.00,122.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,135.50 249.00,122.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="31.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">110</text>
+<rect x="41.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">111</text>
+<text x="59.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="51.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">112</text>
+<rect x="61.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">113</text>
+<polygon points="50.10,129.00 47.90,127.90 47.90,130.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="71.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">114</text>
+<rect x="81.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">115</text>
+<polygon points="70.10,129.00 67.90,127.90 67.90,130.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">S</text>
+<rect x="91.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">116</text>
+<rect x="101.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">117</text>
+<polygon points="90.10,129.00 87.90,127.90 87.90,130.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">X</text>
+<rect x="111.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">118</text>
+<rect x="121.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">119</text>
+<polygon points="110.10,129.00 107.90,127.90 107.90,130.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">A</text>
+<rect x="131.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">120</text>
+<rect x="141.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">121</text>
+<polygon points="130.10,129.00 127.90,127.90 127.90,130.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">M</text>
+<rect x="151.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">122</text>
+<rect x="161.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">123</text>
+<polygon points="150.10,129.00 147.90,127.90 147.90,130.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Z</text>
+<rect x="171.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">124</text>
+<rect x="181.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">125</text>
+<polygon points="170.10,129.00 167.90,127.90 167.90,130.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">W</text>
+<rect x="191.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">126</text>
+<rect x="201.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">127</text>
+<polygon points="190.10,129.00 187.90,127.90 187.90,130.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="211.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">128</text>
+<rect x="221.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">129</text>
+<polygon points="210.10,129.00 207.90,127.90 207.90,130.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="122.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="231.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">130</text>
+<rect x="241.50" y="126.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="137.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">131</text>
+<polygon points="230.10,129.00 227.90,127.90 227.90,130.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="129.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 6</text>
+<text x="265.50" y="129.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 6</text>
+<rect x="29.00" y="144.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,155.50 29.00,142.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,155.50 249.00,142.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">D</text>
+<rect x="31.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">153</text>
+<rect x="41.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">152</text>
+<text x="59.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">R</text>
+<rect x="51.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">151</text>
+<rect x="61.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">150</text>
+<polygon points="47.90,149.00 50.10,147.90 50.10,150.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="71.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">149</text>
+<rect x="81.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">148</text>
+<polygon points="67.90,149.00 70.10,147.90 70.10,150.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="91.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">147</text>
+<rect x="101.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">146</text>
+<polygon points="87.90,149.00 90.10,147.90 90.10,150.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">P</text>
+<rect x="111.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">145</text>
+<rect x="121.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">144</text>
+<polygon points="107.90,149.00 110.10,147.90 110.10,150.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">M</text>
+<rect x="131.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">143</text>
+<rect x="141.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">142</text>
+<polygon points="127.90,149.00 130.10,147.90 130.10,150.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">J</text>
+<rect x="151.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">141</text>
+<rect x="161.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">140</text>
+<polygon points="147.90,149.00 150.10,147.90 150.10,150.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">V</text>
+<rect x="171.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">139</text>
+<rect x="181.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">138</text>
+<polygon points="167.90,149.00 170.10,147.90 170.10,150.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="191.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">137</text>
+<rect x="201.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">136</text>
+<polygon points="187.90,149.00 190.10,147.90 190.10,150.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="211.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">135</text>
+<rect x="221.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">134</text>
+<polygon points="207.90,149.00 210.10,147.90 210.10,150.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="142.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">R</text>
+<rect x="231.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">133</text>
+<rect x="241.50" y="146.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="157.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">132</text>
+<polygon points="227.90,149.00 230.10,147.90 230.10,150.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="149.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 7</text>
+<text x="265.50" y="149.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 7</text>
+<rect x="29.00" y="164.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,175.50 29.00,162.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,175.50 249.00,162.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">S</text>
+<rect x="31.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">154</text>
+<rect x="41.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">155</text>
+<text x="59.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="51.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">156</text>
+<rect x="61.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">157</text>
+<polygon points="50.10,169.00 47.90,167.90 47.90,170.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">C</text>
+<rect x="71.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">158</text>
+<rect x="81.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">159</text>
+<polygon points="70.10,169.00 67.90,167.90 67.90,170.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">H</text>
+<rect x="91.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">160</text>
+<rect x="101.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">161</text>
+<polygon points="90.10,169.00 87.90,167.90 87.90,170.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">S</text>
+<rect x="111.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">162</text>
+<rect x="121.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">163</text>
+<polygon points="110.10,169.00 107.90,167.90 107.90,170.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="131.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">164</text>
+<rect x="141.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">165</text>
+<polygon points="130.10,169.00 127.90,167.90 127.90,170.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">L</text>
+<rect x="151.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">166</text>
+<rect x="161.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">167</text>
+<polygon points="150.10,169.00 147.90,167.90 147.90,170.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">A</text>
+<rect x="171.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">168</text>
+<rect x="181.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">169</text>
+<polygon points="170.10,169.00 167.90,167.90 167.90,170.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">C</text>
+<rect x="191.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">170</text>
+<rect x="201.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">171</text>
+<polygon points="190.10,169.00 187.90,167.90 187.90,170.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">H</text>
+<rect x="211.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">172</text>
+<rect x="221.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">173</text>
+<polygon points="210.10,169.00 207.90,167.90 207.90,170.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="162.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">T</text>
+<rect x="231.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">174</text>
+<rect x="241.50" y="166.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="177.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">175</text>
+<polygon points="230.10,169.00 227.90,167.90 227.90,170.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="169.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 8</text>
+<text x="265.50" y="169.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 8</text>
+<rect x="29.00" y="184.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,195.50 29.00,182.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,195.50 249.00,182.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">S</text>
+<rect x="31.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">197</text>
+<rect x="41.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">196</text>
+<text x="59.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">I</text>
+<rect x="51.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">195</text>
+<rect x="61.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">194</text>
+<polygon points="47.90,189.00 50.10,187.90 50.10,190.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="71.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">193</text>
+<rect x="81.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">192</text>
+<polygon points="67.90,189.00 70.10,187.90 70.10,190.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">B</text>
+<rect x="91.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">191</text>
+<rect x="101.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">190</text>
+<polygon points="87.90,189.00 90.10,187.90 90.10,190.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="111.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">189</text>
+<rect x="121.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">188</text>
+<polygon points="107.90,189.00 110.10,187.90 110.10,190.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="131.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">187</text>
+<rect x="141.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">186</text>
+<polygon points="127.90,189.00 130.10,187.90 130.10,190.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Z</text>
+<rect x="151.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">185</text>
+<rect x="161.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">184</text>
+<polygon points="147.90,189.00 150.10,187.90 150.10,190.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">W</text>
+<rect x="171.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">183</text>
+<rect x="181.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">182</text>
+<polygon points="167.90,189.00 170.10,187.90 170.10,190.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Ö</text>
+<rect x="191.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">181</text>
+<rect x="201.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">180</text>
+<polygon points="187.90,189.00 190.10,187.90 190.10,190.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">L</text>
+<rect x="211.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">179</text>
+<rect x="221.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">178</text>
+<polygon points="207.90,189.00 210.10,187.90 210.10,190.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="182.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">F</text>
+<rect x="231.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">177</text>
+<rect x="241.50" y="186.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="197.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">176</text>
+<polygon points="227.90,189.00 230.10,187.90 230.10,190.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="189.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 9</text>
+<text x="265.50" y="189.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 9</text>
+<rect x="29.00" y="204.00" width="220.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="29.00,215.50 29.00,202.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="249.00,215.50 249.00,202.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<text x="39.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">Z</text>
+<rect x="31.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="34.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">198</text>
+<rect x="41.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="44.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">199</text>
+<text x="59.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="51.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="54.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">200</text>
+<rect x="61.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="64.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">201</text>
+<polygon points="50.10,209.00 47.90,207.90 47.90,210.10" fill="rgb(232,89,13)"/>
+<text x="79.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">H</text>
+<rect x="71.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="74.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">202</text>
+<rect x="81.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="84.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">203</text>
+<polygon points="70.10,209.00 67.90,207.90 67.90,210.10" fill="rgb(232,89,13)"/>
+<text x="99.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="91.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="94.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">204</text>
+<rect x="101.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="104.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">205</text>
+<polygon points="90.10,209.00 87.90,207.90 87.90,210.10" fill="rgb(232,89,13)"/>
+<text x="119.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">E</text>
+<rect x="111.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="114.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">206</text>
+<rect x="121.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">207</text>
+<polygon points="110.10,209.00 107.90,207.90 107.90,210.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">U</text>
+<rect x="131.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">208</text>
+<rect x="141.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">209</text>
+<polygon points="130.10,209.00 127.90,207.90 127.90,210.10" fill="rgb(232,89,13)"/>
+<text x="159.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">N</text>
+<rect x="151.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">210</text>
+<rect x="161.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="164.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">211</text>
+<polygon points="150.10,209.00 147.90,207.90 147.90,210.10" fill="rgb(232,89,13)"/>
+<text x="179.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">K</text>
+<rect x="171.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="174.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">212</text>
+<rect x="181.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="184.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">213</text>
+<polygon points="170.10,209.00 167.90,207.90 167.90,210.10" fill="rgb(232,89,13)"/>
+<text x="199.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">U</text>
+<rect x="191.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="194.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">214</text>
+<rect x="201.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="204.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">215</text>
+<polygon points="190.10,209.00 187.90,207.90 187.90,210.10" fill="rgb(232,89,13)"/>
+<text x="219.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">H</text>
+<rect x="211.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="214.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">216</text>
+<rect x="221.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="224.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">217</text>
+<polygon points="210.10,209.00 207.90,207.90 207.90,210.10" fill="rgb(232,89,13)"/>
+<text x="239.00" y="202.80" font-size="3.00" fill="rgb(115,128,148)" text-anchor="middle" font-weight="700">R</text>
+<rect x="231.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="234.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">218</text>
+<rect x="241.50" y="206.50" width="5.00" height="5.00" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="244.00" y="217.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">219</text>
+<polygon points="230.10,209.00 227.90,207.90 227.90,210.10" fill="rgb(232,89,13)"/>
+<text x="12.50" y="209.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="end" font-weight="700">Reihe 10</text>
+<text x="265.50" y="209.90" font-size="2.40" fill="rgb(28,36,51)" text-anchor="start" font-weight="700">Reihe 10</text>
+<polyline points="29.00,29.00 23.00,29.00 23.00,49.00 29.00,49.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="249.00,49.00 255.00,49.00 255.00,69.00 249.00,69.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="29.00,69.00 23.00,69.00 23.00,89.00 29.00,89.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="249.00,89.00 255.00,89.00 255.00,109.00 249.00,109.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="29.00,109.00 23.00,109.00 23.00,129.00 29.00,129.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="249.00,129.00 255.00,129.00 255.00,149.00 249.00,149.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="29.00,149.00 23.00,149.00 23.00,169.00 29.00,169.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="249.00,169.00 255.00,169.00 255.00,189.00 249.00,189.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="29.00,189.00 23.00,189.00 23.00,209.00 29.00,209.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<rect x="119.00" y="232.00" width="40.00" height="10.00" fill="rgb(237,242,250)" stroke="rgb(115,128,148)" stroke-width="0.25"/>
+<polyline points="119.00,243.50 119.00,230.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<polyline points="159.00,243.50 159.00,230.50" fill="none" stroke="rgb(214,41,41)" stroke-width="0.35" stroke-dasharray="1.2 0.8"/>
+<circle cx="124.00" cy="237.00" r="2.50" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="124.00" y="245.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">223</text>
+<circle cx="134.00" cy="237.00" r="2.50" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="134.00" y="245.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">222</text>
+<circle cx="144.00" cy="237.00" r="2.50" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="144.00" y="245.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">221</text>
+<circle cx="154.00" cy="237.00" r="2.50" fill="rgb(255,255,255)" stroke="rgb(28,36,51)" stroke-width="0.25"/>
+<text x="154.00" y="245.60" font-size="1.70" fill="rgb(115,128,148)" text-anchor="middle">220</text>
+<polygon points="127.90,237.00 130.10,235.90 130.10,238.10" fill="rgb(232,89,13)"/>
+<polygon points="137.90,237.00 140.10,235.90 140.10,238.10" fill="rgb(232,89,13)"/>
+<polygon points="147.90,237.00 150.10,235.90 150.10,238.10" fill="rgb(232,89,13)"/>
+<text x="139.00" y="229.50" font-size="2.40" fill="rgb(28,36,51)" text-anchor="middle" font-weight="700">Minutenpunkte (4 LEDs am Stück)</text>
+<polyline points="249.00,209.00 255.00,209.00 255.00,237.00 159.00,237.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.70"/>
+<polyline points="249.00,24.00 249.00,17.00" fill="none" stroke="rgb(43,148,71)" stroke-width="0.80"/>
+<text x="247.50" y="19.00" font-size="2.40" fill="rgb(43,148,71)" text-anchor="end" font-weight="700">Daten rein (DIN) + LED 0</text>
+<circle cx="252.60" cy="29.00" r="3.00" fill="rgb(232,89,13)" />
+<text x="252.60" y="29.95" font-size="2.50" fill="rgb(255,255,255)" text-anchor="middle" font-weight="700">E1</text>
+<circle cx="23.00" cy="119.00" r="3.00" fill="rgb(232,89,13)" />
+<text x="23.00" y="119.95" font-size="2.50" fill="rgb(255,255,255)" text-anchor="middle" font-weight="700">E2</text>
+<circle cx="255.00" cy="223.00" r="3.00" fill="rgb(232,89,13)" />
+<text x="255.00" y="223.95" font-size="2.50" fill="rgb(255,255,255)" text-anchor="middle" font-weight="700">E3</text>
+<polyline points="139.00,254.00 139.00,4.00" fill="none" stroke="rgb(115,128,148)" stroke-width="0.20" stroke-dasharray="2 1.5"/>
+<polyline points="135.00,249.00 143.00,249.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.30"/>
+<polyline points="139.00,253.00 139.00,245.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.30"/>
+<polyline points="135.00,119.00 143.00,119.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.30"/>
+<polyline points="139.00,123.00 139.00,115.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.30"/>
+<polyline points="135.00,9.00 143.00,9.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.30"/>
+<polyline points="139.00,13.00 139.00,5.00" fill="none" stroke="rgb(28,36,51)" stroke-width="0.30"/>
+</svg>

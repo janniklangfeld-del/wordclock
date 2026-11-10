@@ -26,4 +26,5 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Erledigt (Sichtprüfung, nur 1. von 3 Streifen angeschlossen): LEDs leuchten, Farbreihenfolge GRB stimmt (rot→grün→blau), Lauflicht bis zum Streifenende, Weiß-Test gleichmäßig (bei 2-A-Testlimit). Erster Fehlversuch: Netzteil war nicht an.
 - Erledigt: alle 224 LEDs angeschlossen, Weiß-Test gleichmäßig über alle (2-A-Testlimit, nur Einspeisung am Anfang). Lauflicht bis LED 223 nicht ausdrücklich bestätigt.
 - Offen: Einspeisung an 3 Punkten löten (Nutzerwunsch für höhere Helligkeit), danach ggf. `LED_MAX_MILLIAMPS` anheben.
-- Offen: Lichtgitter sind noch im 3D-Druck → Startecke und Schlangenrichtung erst nach Einbau vermessen → Uhrzeit-Mapping (Buchstabenmatrix in cad/Wordclock_30x30_v3.scad).
+- Erledigt: 1:1-Lötvorlagen (PDF, 2 × A4) für Start oben links/rechts in docs/hardware, erzeugt mit `scripts/loetvorlage.py`. Ansicht = LED-Seite = Vorderansicht (nicht gespiegelt). Reihe 1 oben, Reihe 10 unten → Minutenpunkte.
+- Offen: Startecke (oben links oder rechts) festlegen, Streifen zuschneiden und verlöten; Lichtgitter sind noch im 3D-Druck. Danach Uhrzeit-Mapping (Buchstabenmatrix in cad/Wordclock_30x30_v3.scad, LED-Indizes wie in der Vorlage).

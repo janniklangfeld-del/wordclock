@@ -61,6 +61,25 @@ Test am 10.11.2026 mit allen 224 LEDs (2-A-Limit): Weiß überall gleich, Einspe
 - 74AHCT125 Pin 14 und ESP32-GND ebenfalls am Verteiler.
 - Mehr Helligkeit braucht zusätzlich ein höheres Software-Limit (`LED_MAX_MILLIAMPS`, aktuell 7000).
 
+## LED-Streifen zuschneiden und verlöten
+
+1:1-Lötvorlage (je 2 × A4 hoch, an der Klebelinie mit den Kreuzen überlappen; vor dem Löten das 100-mm-Kontrollmaß nachmessen):
+
+- [Start oben links (PDF)](loetvorlage_start_oben_links.pdf)
+- [Start oben rechts (PDF)](loetvorlage_start_oben_rechts.pdf)
+
+Neu erzeugen: `python scripts/loetvorlage.py` (Maße aus `cad/Wordclock_30x30_v3.scad`).
+
+![Lötvorlage Start oben links](loetvorlage_start_oben_links_vorschau.svg)
+
+- Ansicht = **LED-Seite oben = Vorderansicht der Uhr**, nicht gespiegelt (die LEDs zeigen später nach vorne).
+- Reihe 1 liegt oben, damit Reihe 10 unten bei den Minutenpunkten endet. Links oder rechts richtet sich nach dem Platz für ESP32/Verteiler.
+- Jede Reihe 22 LEDs = 220 mm, Reihenabstand 20 mm, Minutenpunkte (4 LEDs am Stück) 28 mm unter der Mitte von Reihe 10, mittig.
+- Pfeile auf dem Streifen müssen der Schlange folgen (Dreiecke in der Vorlage).
+- Zuschneideplan: Streifen 1 → Reihe 1–4 (Anfang mit Stecker = DIN/E1 an Reihe 1), Streifen 2 → Reihe 5–8, Streifen 3 → Reihe 9, 10 und Minutenpunkte. Rest 76 LEDs.
+- Verbinder: Silikonlitze 0,34 mm² (22 AWG) rot/grün/weiß, je Wende ca. 4 cm, Reihe 10 → Minutenpunkte ca. 15 cm. Einspeiseadern E2/E3 gleich mit an dieselben Pads löten.
+- Nach jeder Verbindung +5 V gegen GND auf Kurzschluss messen; Lauflicht muss mit jeder Reihe eine Reihe weiter kommen.
+
 ## Offene Punkte / Empfehlungen
 
 - [x] Unbenutzte Gatter: Pins 4, 10, 13 (OE) an +5 V, Pins 5, 9, 12 (Eingänge) an GND – gelötet am 10.11.2026 (Pin 6 zusätzlich auf GND, unkritisch).
