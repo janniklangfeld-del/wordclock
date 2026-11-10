@@ -1,25 +1,300 @@
 #include "display.h"
-#include <FastLED.h>
+#include <time.h>
+#include "clockface.h"
 #include "hardware.h"
+#include "light.h"
+#include "settings.h"
 
 namespace {
-CRGB leds[LED_COUNT];
+constexpr int W = LEDS_PER_ROW;  // 22 Pixel breit (2 LEDs pro Buchstabe)
+constexpr int H = LED_ROWS;      // 10 Reihen
+constexpr int CELLS = LETTER_COLS * LETTER_ROWS;
+constexpr uint32_t FRAME_MS = 20;  // 50 Bilder/s
+
+CRGB leds[LED_COUNT];                       // geht an FastLED
+CRGB frameA[LED_COUNT], frameB[LED_COUNT];  // Uebergang: alt / neu
+CRGB fx[LED_COUNT];                         // Effektpuffer (Effektmodus + Hintergrund)
+uint8_t ledX[LED_COUNT], ledY[LED_COUNT];   // Pixelkoordinaten, Punkte: y = H
+int16_t ledCell[LED_COUNT];                 // Buchstabe 0..109, Punkte 110..113
+int16_t pixelLed[H][W];
+
 SysState current = SysState::Booting;
 uint32_t stateSince = 0;
 uint8_t progress = 0;
 bool testRequested = false;
 
-void setMinuteDots(const CRGB& c) {
-  for (int i = 0; i < LED_MINUTE_COUNT; i++) leds[LED_MATRIX_COUNT + i] = c;
+clockface::Face face, prevFace;
+uint8_t wordOf[CELLS], prevWordOf[CELLS];
+bool faceValid = false;
+bool transActive = false;
+uint8_t transType = TR_FADE;
+uint16_t transDur = 1000;
+uint32_t transStart = 0, transSeed = 1;
+uint8_t typeRank[CELLS];
+uint8_t typeCount = 0;
+LetterMask customMask;
+
+float briNow = 0;
+uint8_t briOut = 0;
+
+uint8_t heat[W][H];
+float dropPos[W], dropSpeed[W];
+uint8_t confettiHue = 0;
+
+const char* const HEART[H] = {
+    "..XX...XX..", ".XXXX.XXXX.", "XXXXXXXXXXX", "XXXXXXXXXXX", ".XXXXXXXXX.",
+    "..XXXXXXX..", "...XXXXX...", "....XXX....", ".....X.....", "...........",
+};
+
+uint8_t hash8(uint32_t a) {
+  a ^= a >> 16;
+  a *= 0x7feb352dUL;
+  a ^= a >> 15;
+  a *= 0x846ca68bUL;
+  a ^= a >> 16;
+  return a & 0xFF;
+}
+
+bool localNow(tm& t) {
+  time_t now = time(nullptr);
+  if (now < 1700000000) return false;  // noch keine NTP-Zeit
+  localtime_r(&now, &t);
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Effekte (Vollbild): schreiben in fx[]
+// ---------------------------------------------------------------------------
+void renderEffect(uint8_t id, uint32_t ms) {
+  const float sp = settings.speed / 40.0f;
+  const uint32_t t = (uint32_t)(ms * sp);
+  switch (id) {
+    case FX_RAINBOW:
+      for (int i = 0; i < LED_COUNT; i++) fx[i] = CHSV(t / 12 - ledX[i] * 7 - ledY[i] * 5, 235, 255);
+      break;
+    case FX_PLASMA:
+      for (int i = 0; i < LED_COUNT; i++) {
+        uint8_t x = ledX[i] * 12, y = ledY[i] * 18;
+        uint16_t v = sin8(x + t / 9) + sin8(y + t / 13) + sin8(x + y + t / 7);
+        fx[i] = CHSV(v / 3 + t / 40, 255, 255);
+      }
+      break;
+    case FX_SPARKLE:
+      fadeToBlackBy(fx, LED_COUNT, 10 + settings.speed / 5);
+      for (int n = 0; n < 1 + settings.speed / 35; n++)
+        if (random8() < 110) fx[random16(LED_COUNT)] = CHSV(random8(), 110, 255);
+      break;
+    case FX_MATRIX:
+      fadeToBlackBy(fx, LED_COUNT, 24);
+      for (int x = 0; x < W; x++) {
+        dropPos[x] += dropSpeed[x] * sp;
+        if (dropPos[x] > H + 4) {
+          dropPos[x] = -(float)random8(12);
+          dropSpeed[x] = 0.10f + random8(100) / 350.0f;
+        }
+        int y = (int)dropPos[x];
+        if (y - 1 >= 0 && y - 1 < H) fx[pixelLed[y - 1][x]] = CRGB(0, 210, 50);
+        if (y >= 0 && y < H) fx[pixelLed[y][x]] = CRGB(170, 255, 170);
+      }
+      break;
+    case FX_FIRE: {
+      static uint32_t lastStep = 0;
+      if (ms - lastStep > (uint32_t)(70 / max(sp, 0.2f))) {
+        lastStep = ms;
+        for (int x = 0; x < W; x++) {
+          for (int y = 0; y < H; y++) heat[x][y] = qsub8(heat[x][y], random8(0, 70));
+          for (int y = H - 1; y >= 2; y--) heat[x][y] = (heat[x][y - 1] + 2 * heat[x][y - 2]) / 3;
+          if (random8() < 150) {
+            int y = random8(2);
+            heat[x][y] = qadd8(heat[x][y], random8(150, 255));
+          }
+        }
+      }
+      for (int x = 0; x < W; x++)
+        for (int y = 0; y < H; y++) fx[pixelLed[H - 1 - y][x]] = HeatColor(heat[x][y]);
+      for (int k = 0; k < LED_MINUTE_COUNT; k++) fx[clockface::dotLed(k)] = HeatColor(heat[9 + k][0]);
+      break;
+    }
+    case FX_BREATHE: {
+      CRGB c(settings.color);
+      c.nscale8_video(beatsin8(4 + settings.speed / 8, 25, 255));
+      fill_solid(fx, LED_COUNT, c);
+      break;
+    }
+    case FX_HEARTS: {
+      uint8_t pulse = beatsin8(40 + settings.speed / 2, 110, 255);
+      for (int i = 0; i < LED_COUNT; i++) {
+        bool in = ledY[i] < H && HEART[ledY[i]][ledX[i] / 2] == 'X';
+        if (ledY[i] >= H) in = true;  // Minutenpunkte leuchten mit
+        CRGB c = in ? CRGB(255, 20, 90) : CRGB(18, 0, 8);
+        if (in) c.nscale8_video(pulse);
+        fx[i] = c;
+      }
+      break;
+    }
+    case FX_CONFETTI:
+    default:
+      fadeToBlackBy(fx, LED_COUNT, 8);
+      if (random8() < 80 + settings.speed) fx[random16(LED_COUNT)] = CHSV(confettiHue + random8(64), 200, 255);
+      confettiHue++;
+      break;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Uhrzeit-Darstellung
+// ---------------------------------------------------------------------------
+CRGB textColor(int i, uint8_t word, uint32_t ms) {
+  const uint32_t t = (uint32_t)(ms * (settings.speed / 40.0f));
+  const uint8_t y = min<uint8_t>(ledY[i], H - 1);
+  switch (settings.colorMode) {
+    case CM_RAINBOW: return CHSV(t / 14 + ledX[i] * 6 + y * 9, 230, 255);
+    case CM_GRADIENT: {
+      uint8_t f;
+      if (settings.gradDir == 0) f = ledX[i] * 255 / (W - 1);
+      else if (settings.gradDir == 1) f = y * 255 / (H - 1);
+      else f = (ledX[i] + 2 * y) * 255 / (W - 1 + 2 * (H - 1));
+      return blend(CRGB(settings.color), CRGB(settings.color2), f);
+    }
+    case CM_CYCLE: return CHSV(t / 40, 240, 255);
+    case CM_WORDS: return CHSV(t / 60 + word * 71, 220, 255);
+    default: return CRGB(settings.color);
+  }
+}
+
+CRGB background(int i) {
+  CRGB c;
+  if (settings.bg == BG_COLOR) c = CRGB(settings.bgColor);
+  else if (settings.bg == BG_EFFECT) c = fx[i];
+  else return CRGB::Black;
+  c.nscale8_video(settings.bgLevel * 255 / 100);
+  return c;
+}
+
+void renderFace(const clockface::Face& f, const uint8_t* words, CRGB* out, uint32_t ms) {
+  for (int i = 0; i < LED_COUNT; i++) {
+    int cell = ledCell[i];
+    bool on;
+    uint8_t w = 0;
+    if (cell < CELLS) {
+      on = f.mask[cell];
+      w = words[cell];
+    } else {
+      on = settings.dots && (cell - CELLS) < f.dots;
+    }
+    if (!on) out[i] = background(i);
+    else if (cell >= CELLS && settings.dotsOwnColor) out[i] = CRGB(settings.dotColor);
+    else out[i] = textColor(i, w, ms);
+  }
+}
+
+bool currentFace(clockface::Face& f, uint8_t* words) {
+  memset(words, 0, CELLS);
+  if (settings.mode == MODE_CUSTOM) {
+    f = clockface::Face();
+    f.mask = customMask;
+    return true;
+  }
+  tm t;
+  if (!localNow(t)) return false;
+  f = clockface::compute(t.tm_hour, t.tm_min, settings);
+  for (int n = 0; n < f.wordCount; n++)
+    for (int l = 0; l < f.words[n].len; l++) words[f.words[n].row * LETTER_COLS + f.words[n].col + l] = n;
+  return true;
+}
+
+void beginTransition(bool dotsOnly) {
+  transType = dotsOnly ? TR_FADE : settings.transition;
+  transDur = dotsOnly ? 500 : settings.transMs;
+  transStart = millis();
+  transSeed = esp_random();
+  transActive = transType != TR_NONE;
+  typeCount = 0;
+  for (int c = 0; c < CELLS; c++)
+    typeRank[c] = (face.mask[c] && !prevFace.mask[c]) ? typeCount++ : 255;
+}
+
+// 0 = noch altes Bild, 1 = schon neues Bild (pro Buchstabe / Punkt)
+float cellWeight(int cell, float p) {
+  int col, row;
+  if (cell < CELLS) { col = cell % LETTER_COLS; row = cell / LETTER_COLS; }
+  else { col = 4 + (cell - CELLS); row = H; }
+  float d;
+  switch (transType) {
+    case TR_FADE: return p;
+    case TR_WIPE: d = col / 10.0f; break;
+    case TR_DIAG: d = (col + row) / 20.0f; break;
+    case TR_RANDOM: d = hash8(transSeed + cell * 2654435761UL) / 255.0f; break;
+    case TR_MATRIX: d = row / 10.0f * 0.7f + hash8(transSeed + col * 7919) / 255.0f * 0.3f; break;
+    case TR_TYPE:
+      d = (cell < CELLS && typeRank[cell] != 255 && typeCount > 1) ? (float)typeRank[cell] / (typeCount - 1) : 0;
+      break;
+    default: return 1;
+  }
+  return constrain((p - d * 0.7f) / 0.3f, 0.0f, 1.0f);
+}
+
+bool inNight(const tm& t) {
+  uint16_t m = t.tm_hour * 60 + t.tm_min;
+  uint16_t a = settings.nightFrom, b = settings.nightTo;
+  return a <= b ? (m >= a && m < b) : (m >= a || m < b);
+}
+
+uint8_t targetBrightness(bool haveTime, const tm& t) {
+  if (!settings.power) return 0;
+  uint8_t b = settings.brightness;
+  if (settings.autoOn && light::found() && light::lux() >= 0) {
+    float f = log1pf(light::lux()) / log1pf((float)settings.autoLux);
+    f = constrain(f, 0.0f, 1.0f);
+    b = settings.autoMin + (settings.autoMax - settings.autoMin) * f;
+  }
+  if (haveTime && settings.nightOn && inNight(t)) b = settings.nightOff ? 0 : settings.nightBri;
+  return b;
+}
+
+// Statusanzeige auf den Minutenpunkten, solange keine Uhrzeit bekannt ist
+void renderStatus(uint32_t now) {
+  uint32_t t = now - stateSince;
+  CRGB c = CRGB::Black;
+  switch (current) {
+    case SysState::Booting: c = CRGB(40, 40, 40); break;
+    case SysState::Connecting: c = (t / 300) % 2 ? CRGB(80, 60, 0) : CRGB::Black; break;
+    case SysState::Portal: c = CRGB(0, 0, 40 + beatsin8(15, 0, 180)); break;
+    case SysState::Online: c = CRGB(0, 60 + beatsin8(30, 0, 60), 0); break;  // wartet auf NTP
+    case SysState::Error: c = CRGB(120, 0, 0); break;
+    default: break;
+  }
+  fill_solid(leds, LED_COUNT, CRGB::Black);
+  for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = c;
 }
 }  // namespace
 
 namespace display {
 
 void begin() {
+  for (int r = 0; r < H; r++)
+    for (int c = 0; c < LETTER_COLS; c++)
+      for (int h = 0; h < 2; h++) {
+        int i = clockface::letterLed(r, c, h);
+        ledX[i] = c * 2 + h;
+        ledY[i] = r;
+        ledCell[i] = r * LETTER_COLS + c;
+        pixelLed[r][c * 2 + h] = i;
+      }
+  for (int k = 0; k < LED_MINUTE_COUNT; k++) {
+    int i = clockface::dotLed(k);
+    ledX[i] = 9 + k;  // liegen unter den Spalten 9..12 (Pixel)
+    ledY[i] = H;
+    ledCell[i] = CELLS + k;
+  }
+  for (int x = 0; x < W; x++) {
+    dropPos[x] = -(float)random8(12);
+    dropSpeed[x] = 0.10f + random8(100) / 350.0f;
+  }
+  settingsChanged();
   FastLED.addLeds<WS2812B, PIN_LED_DATA, GRB>(leds, LED_COUNT);
   FastLED.setMaxPowerInVoltsAndMilliamps(LED_VOLTAGE_V, LED_MAX_MILLIAMPS);
-  FastLED.setBrightness(80);
+  FastLED.setBrightness(0);
   FastLED.clear(true);
 }
 
@@ -34,55 +309,126 @@ SysState state() { return current; }
 
 void setProgress(uint8_t percent) {
   progress = percent;
-  loop();  // waehrend des Updates blockiert loop(), daher direkt zeichnen
+  loop();  // waehrend des Updates blockiert die Hauptschleife -> direkt zeichnen
 }
-
-void setBrightness(uint8_t b) { FastLED.setBrightness(b); }
 
 void testPattern() { testRequested = true; }
 
+void replayTransition() {
+  if (!faceValid) return;
+  prevFace = clockface::Face();  // aus dem Dunkeln neu aufbauen
+  memset(prevWordOf, 0, CELLS);
+  beginTransition(false);
+}
+
+void settingsChanged() {
+  customMask.reset();
+  for (size_t i = 0; i < settings.custom.length() && i < (size_t)CELLS; i++)
+    if (settings.custom[i] == '1') customMask.set(i);
+}
+
+const CRGB* frame() { return leds; }
+uint8_t brightness() { return briOut; }
+
+bool timeValid() {
+  tm t;
+  return localNow(t);
+}
+
 void loop() {
   static uint32_t lastFrame = 0;
-  uint32_t now = millis();
-  if (now - lastFrame < 20 && current != SysState::Updating) return;
+  const uint32_t now = millis();
+  if (now - lastFrame < FRAME_MS && current != SysState::Updating) return;
   lastFrame = now;
 
   if (testRequested) {
     testRequested = false;
+    FastLED.setBrightness(max<uint8_t>(briOut, 40));
     for (int i = 0; i < LED_COUNT; i++) {
       FastLED.clear();
       leds[i] = CRGB::White;
       FastLED.show();
-      delay(15);
+      delay(12);
     }
   }
 
-  FastLED.clear();
-  uint32_t t = now - stateSince;
-  switch (current) {
-    case SysState::Booting:
-      setMinuteDots(CRGB(40, 40, 40));
-      break;
-    case SysState::Connecting:
-      setMinuteDots((t / 300) % 2 ? CRGB(80, 60, 0) : CRGB::Black);
-      break;
-    case SysState::Portal:
-      setMinuteDots(CRGB(0, 0, 40 + beatsin8(15, 0, 180)));
-      break;
-    case SysState::Online:
-      if (t < 2000) setMinuteDots(CRGB(0, 120, 0));
-      else if ((now / 100) % 50 == 0) leds[LED_MATRIX_COUNT] = CRGB(0, 8, 0);  // Herzschlag
-      break;
-    case SysState::Updating: {
-      int n = (int)LED_MATRIX_COUNT * progress / 100;
-      for (int i = 0; i < n; i++) leds[i] = CRGB(30, 0, 40);
-      setMinuteDots(CRGB(80, 0, 100));
-      break;
-    }
-    case SysState::Error:
-      setMinuteDots(CRGB(120, 0, 0));
-      break;
+  if (current == SysState::Updating) {  // Fortschrittsbalken ueber die ganze Matrix
+    fill_solid(leds, LED_COUNT, CRGB::Black);
+    int n = (int)LED_MATRIX_COUNT * progress / 100;
+    for (int i = 0; i < n; i++) leds[i] = CRGB(30, 0, 40);
+    for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = CRGB(80, 0, 100);
+    FastLED.setBrightness(80);
+    FastLED.show();
+    return;
   }
+
+  tm t;
+  const bool haveTime = localNow(t);
+  clockface::Face nf;
+  uint8_t nw[CELLS];
+  const bool showFace = settings.mode != MODE_EFFECT && currentFace(nf, nw);
+
+  if (settings.mode == MODE_EFFECT || settings.bg == BG_EFFECT) renderEffect(settings.effect, now);
+
+  if (showFace) {
+    if (!faceValid) {  // erster Aufbau: aus dem Dunkeln einblenden
+      prevFace = clockface::Face();
+      memset(prevWordOf, 0, CELLS);
+      face = nf;
+      memcpy(wordOf, nw, CELLS);
+      faceValid = true;
+      beginTransition(false);
+    } else if (nf.mask != face.mask || nf.dots != face.dots) {
+      bool dotsOnly = nf.mask == face.mask;
+      prevFace = face;
+      memcpy(prevWordOf, wordOf, CELLS);
+      face = nf;
+      memcpy(wordOf, nw, CELLS);
+      beginTransition(dotsOnly);
+    } else {
+      memcpy(wordOf, nw, CELLS);
+    }
+
+    float p = transActive ? (now - transStart) / (float)transDur : 1.0f;
+    if (p >= 1.0f) transActive = false;
+    if (!transActive) {
+      renderFace(face, wordOf, leds, now);
+    } else {
+      renderFace(prevFace, prevWordOf, frameA, now);
+      renderFace(face, wordOf, frameB, now);
+      for (int i = 0; i < LED_COUNT; i++) {
+        float w = cellWeight(ledCell[i], p);
+        leds[i] = blend(frameA[i], frameB[i], (uint8_t)(w * 255));
+        if (transType == TR_MATRIX && w > 0.02f && w < 0.98f)
+          nblend(leds[i], CRGB(120, 255, 140), (uint8_t)((1 - fabsf(w - 0.5f) * 2) * 220));
+      }
+    }
+  } else if (settings.mode == MODE_EFFECT) {
+    memcpy(leds, fx, sizeof(leds));
+  } else {
+    renderStatus(now);
+  }
+
+  // Majas Geburtstag: zu jeder Viertelstunde 20 s Herzchen
+  if (haveTime && settings.bdayOn && t.tm_mday == settings.bdayDay && t.tm_mon + 1 == settings.bdayMonth &&
+      t.tm_min % 15 == 0 && t.tm_sec < 20) {
+    renderEffect(FX_HEARTS, now);
+    memcpy(leds, fx, sizeof(leds));
+  }
+
+  // Overlays: Einrichtungsportal offen / Fehler (10 s)
+  if (showFace || settings.mode == MODE_EFFECT) {
+    if (current == SysState::Portal)
+      for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = CRGB(0, 0, 40 + beatsin8(15, 0, 180));
+    if (current == SysState::Error && now - stateSince < 10000)
+      for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = CRGB(150, 0, 0);
+  }
+
+  uint8_t target = showFace || settings.mode == MODE_EFFECT ? targetBrightness(haveTime, t) : 80;
+  briNow += (target - briNow) * 0.08f;
+  if (fabsf(target - briNow) < 0.5f) briNow = target;
+  briOut = (uint8_t)lroundf(briNow);
+  FastLED.setBrightness(briOut);
   FastLED.show();
 }
 

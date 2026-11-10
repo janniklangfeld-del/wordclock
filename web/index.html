@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07080c">
+<title>Majas Wordclock</title>
+<style>
+:root{
+  --bg:#07080c;--card:rgba(255,255,255,.045);--card2:rgba(255,255,255,.07);--line:rgba(255,255,255,.09);
+  --text:#f3f3f6;--muted:#9aa0ad;--accent:#ffb46e;--glow:255,180,110;--danger:#ff5d6c;
+  --s:min(84vw,430px);--d:calc(var(--s)*.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;overflow-x:hidden}
+.bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(60vmax 50vmax at 50% 18%,rgba(var(--glow),.16),transparent 70%),
+             radial-gradient(40vmax 40vmax at 90% 100%,rgba(120,90,255,.07),transparent 70%)}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 40px}
+header{display:flex;align-items:center;gap:12px;padding:6px 0 4px}
+.logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:18px;
+  background:linear-gradient(135deg,var(--accent),#ff4fa0);color:#160b05;box-shadow:0 6px 22px rgba(var(--glow),.35)}
+.brand{flex:1;min-width:0}
+.brand h1{margin:0;font-size:20px;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand .sub{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:#666;display:inline-block}
+.dot.live{background:#3ddc84;box-shadow:0 0 8px #3ddc84}
+.power{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);
+  display:grid;place-items:center;cursor:pointer;transition:.25s}
+.power svg{width:22px;height:22px}
+.power.on{background:linear-gradient(135deg,var(--accent),#ff4fa0);color:#140a05;border-color:transparent;box-shadow:0 6px 24px rgba(var(--glow),.45)}
+
+/* ---------- 3D-Uhr ---------- */
+.stage{position:relative;height:calc(var(--s)*1.18);display:grid;place-items:center;perspective:1300px;
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;margin-top:4px}
+.stage:before{content:"";position:absolute;width:calc(var(--s)*1.5);height:calc(var(--s)*1.5);border-radius:50%;
+  background:radial-gradient(closest-side,rgba(var(--glow),var(--glowA,.25)),transparent);filter:blur(10px);pointer-events:none}
+.stage:after{content:"";position:absolute;bottom:2%;width:calc(var(--s)*.8);height:calc(var(--s)*.07);border-radius:50%;
+  background:radial-gradient(closest-side,rgba(0,0,0,.65),transparent);pointer-events:none}
+.clock{position:relative;width:var(--s);height:var(--s);transform-style:preserve-3d;cursor:grab;will-change:transform}
+.clock.drag{cursor:grabbing}
+.clock>div{position:absolute;backface-visibility:hidden}
+.front{inset:0;transform:translateZ(calc(var(--d)/2));border-radius:3px;padding:8.333%;
+  background:repeating-linear-gradient(92deg,rgba(110,70,30,.07) 0 2px,transparent 2px 9px),
+             linear-gradient(135deg,#e7cc9f,#cfa774 55%,#dfbd8c);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),inset 0 -6px 14px rgba(90,55,20,.25)}
+.back{inset:0;transform:rotateY(180deg) translateZ(calc(var(--d)/2));background:#2a1d12}
+.side{background:linear-gradient(90deg,#b98f5c,#d4b07e,#b98f5c)}
+.side.l,.side.r{width:var(--d);height:100%;left:calc((var(--s) - var(--d))/2)}
+.side.r{transform:rotateY(90deg) translateZ(calc(var(--s)/2))}
+.side.l{transform:rotateY(-90deg) translateZ(calc(var(--s)/2))}
+.side.t,.side.b{height:var(--d);width:100%;top:calc((var(--s) - var(--d))/2);background:linear-gradient(#c9a26e,#b48955)}
+.side.t{transform:rotateX(90deg) translateZ(calc(var(--s)/2))}
+.side.b{transform:rotateX(-90deg) translateZ(calc(var(--s)/2))}
+.panel{position:relative;width:100%;height:100%;background:#0b0b0d;border-radius:1px;
+  box-shadow:inset 0 2px 10px rgba(0,0,0,.9),inset 0 0 0 1px rgba(255,255,255,.04)}
+.grid{position:absolute;left:6%;top:6%;width:88%;height:80%;display:grid;
+  grid-template-columns:repeat(11,1fr);grid-template-rows:repeat(10,1fr)}
+.lt{display:grid;place-items:center;font-weight:800;font-size:calc(var(--s)*.043);color:#1f1f23;
+  transition:color .12s,text-shadow .12s;font-family:"Arial Black",system-ui,sans-serif}
+.custom .lt{cursor:pointer}
+.custom .lt:hover{outline:1px dashed rgba(255,255,255,.18);outline-offset:-3px;border-radius:4px}
+.dots{position:absolute;left:42%;width:16%;top:91%;height:4.4%;display:grid;grid-template-columns:repeat(4,1fr);place-items:center}
+.md{width:calc(var(--s)*.017);height:calc(var(--s)*.017);border-radius:50%;background:#1f1f23;transition:.12s}
+.hint{text-align:center;color:var(--muted);font-size:12px;margin-top:-6px}
+.phrase{text-align:center;font-size:19px;font-weight:650;margin:10px 0 4px;min-height:28px;letter-spacing:.2px}
+.phrase small{display:block;font-size:12.5px;font-weight:500;color:var(--muted)}
+
+/* ---------- Karten & Bedienelemente ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.card h3{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:700}
+.row{display:flex;align-items:center;gap:12px;padding:8px 0}
+.row+.row{border-top:1px solid var(--line)}
+.row label,.row .lbl{flex:1;min-width:0}
+.row .lbl small{display:block;color:var(--muted);font-size:12px}
+output{min-width:52px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;flex:2}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(var(--glow),.75))}
+input[type=range]::-moz-range-track{height:8px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(var(--glow),.75))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-8px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border:0;border-radius:50%;background:#fff}
+input[type=color]{width:46px;height:34px;border:1px solid var(--line);border-radius:10px;background:none;padding:2px;cursor:pointer}
+input[type=text],input[type=time],input[type=password],select{background:var(--card2);color:var(--text);border:1px solid var(--line);
+  border-radius:11px;padding:9px 11px;font:inherit;min-width:0}
+select{flex:1.4}
+.seg{display:flex;flex-wrap:wrap;gap:6px;background:rgba(0,0,0,.25);border:1px solid var(--line);padding:4px;border-radius:14px}
+.seg button{flex:1 1 auto;border:0;background:transparent;color:var(--muted);padding:9px 10px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.seg button.on{background:#fff;color:#111;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}
+.tiles button{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:16px;padding:12px 6px;
+  font:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.15s}
+.tiles button i{font-style:normal;font-size:22px}
+.tiles button.on{border-color:rgba(var(--glow),.9);background:rgba(var(--glow),.16);box-shadow:0 0 0 1px rgba(var(--glow),.6),0 6px 20px rgba(var(--glow),.18)}
+.sw{position:relative;width:50px;height:30px;flex:none}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw span{position:absolute;inset:0;border-radius:30px;background:rgba(255,255,255,.14);transition:.2s;cursor:pointer}
+.sw span:after{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked+span{background:linear-gradient(135deg,var(--accent),#ff4fa0)}
+.sw input:checked+span:after{transform:translateX(20px)}
+.swatches{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px}
+.swatches button{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.18);cursor:pointer;padding:0}
+.swatches button.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+.btn{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:12px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#ff4fa0);color:#160b05;border:0}
+.btn.danger{color:var(--danger)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.note{color:var(--muted);font-size:12.5px;margin:8px 0 0}
+.tabs{position:sticky;top:0;z-index:5;display:flex;gap:4px;overflow-x:auto;padding:10px 0;margin:4px -16px 0;padding-left:16px;padding-right:16px;
+  background:linear-gradient(var(--bg) 70%,transparent);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:9px 15px;font:inherit;font-weight:650;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:#fff;color:#111}
+section[data-tab]{display:none;animation:fade .25s}
+section[data-tab].on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.info{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.info dt{color:var(--muted)}
+.info dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.examples{display:grid;gap:6px;margin-top:10px}
+.examples div{display:flex;justify-content:space-between;gap:10px;background:rgba(0,0,0,.2);border-radius:10px;padding:8px 11px;font-size:13.5px}
+.examples b{color:var(--muted);font-weight:600}
+#toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(120px);background:#fff;color:#111;
+  padding:11px 16px;border-radius:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:.3s;z-index:20;max-width:90vw}
+#toast.show{transform:translateX(-50%)}
+#toast.err{background:var(--danger);color:#fff}
+dialog{background:#15171e;color:var(--text);border:1px solid var(--line);border-radius:20px;padding:20px;width:min(360px,90vw)}
+dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(3px)}
+dialog h3{margin:0 0 6px}
+dialog input{width:100%;margin:12px 0}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px}
+.demo{display:none;text-align:center;font-size:12px;color:#160b05;background:var(--accent);border-radius:10px;padding:5px 10px;margin:6px auto 0;width:max-content}
+.isdemo .demo{display:block}
+@media (min-width:700px){.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cols .card{margin:0}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrap">
+  <header>
+    <div class="logo">W</div>
+    <div class="brand">
+      <h1 id="title">Majas Wordclock</h1>
+      <div class="sub"><span class="dot" id="liveDot"></span><span id="liveText">verbinde …</span></div>
+    </div>
+    <button class="power" id="power" title="An/Aus" aria-label="An/Aus">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg>
+    </button>
+  </header>
+  <div class="demo">Demo-Vorschau – nicht mit der Uhr verbunden</div>
+
+  <div class="stage" id="stage">
+    <div class="clock" id="clock">
+      <div class="side t"></div><div class="side b"></div><div class="side l"></div><div class="side r"></div>
+      <div class="back"></div>
+      <div class="front"><div class="panel"><div class="grid" id="grid"></div><div class="dots" id="dots"></div></div></div>
+    </div>
+  </div>
+  <div class="hint" id="hint">Ziehen zum Drehen · Doppeltippen zum Geraderücken</div>
+  <div class="phrase" id="phrase"></div>
+
+  <div class="card">
+    <div class="row">
+      <span title="Helligkeit">☀️</span>
+      <input type="range" min="1" max="255" data-key="brightness" aria-label="Helligkeit">
+      <output data-out="brightness" data-fmt="pct255"></output>
+    </div>
+    <div class="swatches" id="swatches"></div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button data-go="look" class="on">Anzeige</button>
+    <button data-go="fx">Effekte</button>
+    <button data-go="lang">Sprache</button>
+    <button data-go="plan">Zeitplan &amp; Licht</button>
+    <button data-go="sys">System</button>
+  </nav>
+
+  <!-- ================= Anzeige ================= -->
+  <section data-tab="look" class="on">
+    <div class="card">
+      <h3>Modus</h3>
+      <div class="seg" data-key="mode" data-opts="clock=Uhrzeit;effect=Effekt;custom=Eigener Text"></div>
+      <div data-show="mode=custom">
+        <p class="note">Tippe oben in der Uhr auf Buchstaben, um sie an- oder auszuschalten. So kannst du Wörter oder kleine Botschaften legen.</p>
+        <div class="btns" style="margin-top:10px">
+          <button class="btn" data-action="customFromTime">Aktuelle Uhrzeit übernehmen</button>
+          <button class="btn" data-action="customClear">Alles aus</button>
+        </div>
+      </div>
+      <div data-show="mode=effect"><p class="note">Der Effekt wird im Reiter „Effekte“ ausgewählt.</p></div>
+    </div>
+
+    <div class="card" data-show="mode=clock,custom">
+      <h3>Farbe</h3>
+      <div class="tiles" data-key="colorMode" data-opts="solid=🎨|Einfarbig;rainbow=🌈|Regenbogen;gradient=🌅|Verlauf;cycle=🔄|Farbwechsel;words=🧩|Wortfarben"></div>
+      <div class="row" data-show="colorMode=solid,gradient"><label>Farbe</label><input type="color" data-key="color"></div>
+      <div class="row" data-show="colorMode=gradient"><label>Zweite Farbe</label><input type="color" data-key="color2"></div>
+      <div class="row" data-show="colorMode=gradient"><div class="seg" style="flex:1" data-key="gradDir" data-opts="h=↔ Waagerecht;v=↕ Senkrecht;d=⤡ Diagonal"></div></div>
+      <div class="row" data-show="colorMode=rainbow,cycle,words"><label>Tempo</label><input type="range" min="1" max="100" data-key="speed"><output data-out="speed"></output></div>
+    </div>
+
+    <div class="cols">
+      <div class="card" data-show="mode=clock,custom">
+        <h3>Hintergrund</h3>
+        <div class="seg" data-key="bg" data-opts="off=Aus;color=Farbe;effect=Effekt"></div>
+        <div class="row" data-show="bg=color"><label>Farbe</label><input type="color" data-key="bgColor"></div>
+        <div class="row" data-show="bg=color,effect"><label>Stärke</label><input type="range" min="0" max="100" data-key="bgLevel"><output data-out="bgLevel" data-fmt="pct100"></output></div>
+        <p class="note" data-show="bg=effect">Unbenutzte Buchstaben zeigen den Effekt aus „Effekte“ – ganz leise im Hintergrund.</p>
+      </div>
+      <div class="card" data-show="mode=clock">
+        <h3>Minutenpunkte</h3>
+        <div class="row"><label>Anzeigen</label><label class="sw"><input type="checkbox" data-key="dots"><span></span></label></div>
+        <div class="row" data-show="dots=true"><label>Eigene Farbe</label><label class="sw"><input type="checkbox" data-key="dotsOwnColor"><span></span></label></div>
+        <div class="row" data-show="dots=true&amp;dotsOwnColor=true"><label>Farbe</label><input type="color" data-key="dotColor"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Effekte ================= -->
+  <section data-tab="fx">
+    <div class="card">
+      <h3>Effekt</h3>
+      <div class="tiles" data-key="effect" data-opts="rainbow=🌈|Regenbogen;plasma=🫧|Plasma;sparkle=✨|Funkeln;matrix=💚|Matrix;fire=🔥|Feuer;breathe=🌙|Atmen;hearts=💗|Herzen;confetti=🎉|Konfetti"></div>
+      <div class="row"><label>Tempo</label><input type="range" min="1" max="100" data-key="speed"><output data-out="speed"></output></div>
+      <div class="btns" style="margin-top:6px">
+        <button class="btn primary" data-action="showEffect" data-show="mode=clock,custom">Effekt jetzt zeigen</button>
+        <button class="btn" data-action="showClock" data-show="mode=effect">Zurück zur Uhrzeit</button>
+      </div>
+      <p class="note">Effekte laufen im Modus „Effekt“ oder leise als Hintergrund hinter der Uhrzeit (Anzeige → Hintergrund → Effekt).</p>
+    </div>
+    <div class="card">
+      <h3>Übergang beim Minutenwechsel</h3>
+      <div class="tiles" data-key="transition" data-opts="none=⚡|Sofort;fade=🌫️|Überblenden;wipe=➡️|Wischen;diag=↘️|Diagonal;random=🎲|Zufall;matrix=💚|Matrix;type=⌨️|Schreib&shy;maschine"></div>
+      <div class="row"><label>Dauer</label><input type="range" min="200" max="5000" step="100" data-key="transMs"><output data-out="transMs" data-fmt="sec"></output></div>
+      <button class="btn" data-action="replay">▶ Übergang vorführen</button>
+    </div>
+  </section>
+
+  <!-- ================= Sprache ================= -->
+  <section data-tab="lang">
+    <div class="card">
+      <h3>„Es ist“</h3>
+      <div class="seg" data-key="prefix" data-opts="always=Immer;hourly=Volle &amp; halbe;never=Nie"></div>
+    </div>
+    <div class="card">
+      <h3>Viertel</h3>
+      <div class="seg" data-key="quarter" data-opts="nach=Viertel nach drei;viertel=Viertel vier"></div>
+      <h3 style="margin-top:16px">Dreiviertel</h3>
+      <div class="seg" data-key="threeQuarter" data-opts="vor=Viertel vor vier;dreiviertel=Dreiviertel vier"></div>
+      <h3 style="margin-top:16px">Zwanzig</h3>
+      <div class="seg" data-key="twenty" data-opts="zwanzig=Zwanzig nach drei;halb=Zehn vor halb vier"></div>
+      <div class="examples" id="examples"></div>
+    </div>
+  </section>
+
+  <!-- ================= Zeitplan & Licht ================= -->
+  <section data-tab="plan">
+    <div class="card">
+      <h3>Nachtmodus</h3>
+      <div class="row"><div class="lbl">Nachts dimmen<small>z. B. im Schlafzimmer</small></div><label class="sw"><input type="checkbox" data-key="nightOn"><span></span></label></div>
+      <div data-show="nightOn=true">
+        <div class="row"><label>Von</label><input type="time" data-key="nightFrom"><label style="flex:none">bis</label><input type="time" data-key="nightTo"></div>
+        <div class="row"><label>Ganz ausschalten</label><label class="sw"><input type="checkbox" data-key="nightOff"><span></span></label></div>
+        <div class="row" data-show="nightOff=false"><label>Helligkeit</label><input type="range" min="1" max="255" data-key="nightBri"><output data-out="nightBri" data-fmt="pct255"></output></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Automatische Helligkeit</h3>
+      <div class="row"><div class="lbl">Lichtsensor<small id="sensorState">–</small></div><label class="sw"><input type="checkbox" data-key="autoOn"><span></span></label></div>
+      <div data-show="autoOn=true">
+        <div class="row"><label>Dunkel</label><input type="range" min="1" max="255" data-key="autoMin"><output data-out="autoMin" data-fmt="pct255"></output></div>
+        <div class="row"><label>Hell</label><input type="range" min="1" max="255" data-key="autoMax"><output data-out="autoMax" data-fmt="pct255"></output></div>
+        <div class="row"><label>Volle Helligkeit ab</label><input type="range" min="20" max="2000" step="10" data-key="autoLux"><output data-out="autoLux" data-fmt="lux"></output></div>
+      </div>
+      <p class="note">Für einen BH1750-Sensor an SDA 21 / SCL 22 vorbereitet. Er wird beim Start erkannt; ohne Sensor gilt der Helligkeitsregler oben.</p>
+    </div>
+    <div class="card">
+      <h3>Majas Geburtstag 🎂</h3>
+      <div class="row"><div class="lbl">Herzchen-Überraschung<small>am Geburtstag zu jeder Viertelstunde</small></div><label class="sw"><input type="checkbox" data-key="bdayOn"><span></span></label></div>
+      <div class="row" data-show="bdayOn=true"><label>Datum (TT.MM)</label><input type="text" inputmode="numeric" maxlength="5" placeholder="TT.MM" data-key="bday" style="width:90px"></div>
+    </div>
+  </section>
+
+  <!-- ================= System ================= -->
+  <section data-tab="sys">
+    <div class="card">
+      <h3>Info</h3>
+      <dl class="info" id="info"></dl>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h3>Name &amp; Alexa</h3>
+        <div class="row"><label>Name der Uhr</label><input type="text" maxlength="40" data-key="name" style="flex:1.3"></div>
+        <div class="row"><div class="lbl">Alexa<small>meldet sich als Lampe im Heimnetz</small></div><label class="sw"><input type="checkbox" data-key="alexa"><span></span></label></div>
+        <div class="row" data-show="alexa=true"><label>Alexa-Name</label><input type="text" maxlength="32" data-key="alexaName" style="flex:1.3"></div>
+        <p class="note" data-show="alexa=true">„Alexa, suche nach Geräten“ – danach z. B. „Alexa, <span data-text="alexaName"></span> auf 40 Prozent“, „… rot“, „… aus“. Nach Änderungen hier einmal neu starten.</p>
+      </div>
+      <div class="card">
+        <h3>Zeit</h3>
+        <div class="row"><label>Zeitzone</label>
+          <select data-key="tz">
+            <option value="CET-1CEST,M3.5.0,M10.5.0/3">Deutschland / Österreich / Schweiz</option>
+            <option value="GMT0BST,M3.5.0/1,M10.5.0">Großbritannien / Irland</option>
+            <option value="WET0WEST,M3.5.0/1,M10.5.0">Portugal</option>
+            <option value="EET-2EEST,M3.5.0/3,M10.5.0/4">Finnland / Griechenland</option>
+            <option value="EST5EDT,M3.2.0,M11.1.0">USA Ostküste</option>
+            <option value="PST8PDT,M3.2.0,M11.1.0">USA Westküste</option>
+            <option value="UTC0">UTC</option>
+          </select></div>
+        <div class="row"><label>Zeitserver</label><input type="text" maxlength="60" data-key="ntp" style="flex:1.3"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Updates</h3>
+      <div class="row"><div class="lbl">Automatisch aktualisieren<small>neue Versionen von GitHub alle 6 Stunden</small></div><label class="sw"><input type="checkbox" data-key="autoUpdate"><span></span></label></div>
+      <div class="btns" style="margin-top:8px">
+        <button class="btn" data-action="check">Jetzt nach Update suchen</button>
+        <label class="btn">Firmware-Datei …<input type="file" accept=".bin" id="fwFile" hidden></label>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Wartung</h3>
+      <div class="btns">
+        <button class="btn" data-action="test">LED-Test</button>
+        <button class="btn" data-action="wifi">WLAN ändern</button>
+        <button class="btn" data-action="password">Admin-Passwort ändern</button>
+        <button class="btn danger" data-action="reboot">Neustart</button>
+      </div>
+      <p class="note">Für Update, WLAN, Passwort und Neustart wird das Admin-Passwort gebraucht (Benutzer „admin“).</p>
+    </div>
+  </section>
+
+  <footer>Mit ♥ für Maja gebaut</footer>
+</div>
+
+<div id="toast"></div>
+<dialog id="pwDlg">
+  <form method="dialog">
+    <h3 id="pwTitle">Admin-Passwort</h3>
+    <div class="note" id="pwText">Bitte das Admin-Passwort der Uhr eingeben.</div>
+    <input type="password" id="pwInput" autocomplete="current-password" required>
+    <div class="btns" style="justify-content:flex-end">
+      <button class="btn" value="cancel" formnovalidate>Abbrechen</button>
+      <button class="btn primary" value="ok">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const DEMO = location.protocol === "file:" || new URLSearchParams(location.search).has("demo");
+if (DEMO) document.body.classList.add("isdemo");
+
+let S = {};          // Einstellungen (wie auf der Uhr)
+let L = null;        // LED-Layout
+let cells = [], dotEls = [];
+let password = sessionStorage.getItem("wc_pw") || "";
+
+/* ---------- Uhrzeit-Logik (identisch zur Firmware, fuer Satz-Vorschau und Demo) ---------- */
+const LETTERS = ["ESKISTLFÜNF","ZEHNZWANZIG","DREIVIERTEL","VORFUNKNACH","HALBAELFÜNF","EINSXAMZWEI","DREIPMJVIER","SECHSNLACHT","SIEBENZWÖLF","ZEHNEUNKUHR"];
+const WD = {ES:[0,0,2],IST:[0,3,3],FUENF:[0,7,4],ZEHN:[1,0,4],ZWANZIG:[1,4,7],DREIVIERTEL:[2,0,11],VIERTEL:[2,4,7],VOR:[3,0,3],NACH:[3,7,4],HALB:[4,0,4],UHR:[9,8,3],EIN:[5,0,3]};
+const HOURS = [[8,6,5],[5,0,4],[5,7,4],[6,0,4],[6,7,4],[4,7,4],[7,0,5],[8,0,6],[7,7,4],[9,3,4],[9,0,4],[4,5,3]];
+function compute(h24, m, s) {
+  const words = []; const add = w => words.push(w); const five = Math.floor(m / 5), h = h24 % 12, next = (h + 1) % 12;
+  const hour = x => add(HOURS[x % 12]);
+  if (s.prefix === "always" || (s.prefix === "hourly" && (five === 0 || five === 6))) { add(WD.ES); add(WD.IST); }
+  switch (five) {
+    case 0: if (h === 1) add(WD.EIN); else hour(h); add(WD.UHR); break;
+    case 1: add(WD.FUENF); add(WD.NACH); hour(h); break;
+    case 2: add(WD.ZEHN); add(WD.NACH); hour(h); break;
+    case 3: if (s.quarter === "viertel") { add(WD.VIERTEL); hour(next); } else { add(WD.VIERTEL); add(WD.NACH); hour(h); } break;
+    case 4: if (s.twenty === "halb") { add(WD.ZEHN); add(WD.VOR); add(WD.HALB); hour(next); } else { add(WD.ZWANZIG); add(WD.NACH); hour(h); } break;
+    case 5: add(WD.FUENF); add(WD.VOR); add(WD.HALB); hour(next); break;
+    case 6: add(WD.HALB); hour(next); break;
+    case 7: add(WD.FUENF); add(WD.NACH); add(WD.HALB); hour(next); break;
+    case 8: if (s.twenty === "halb") { add(WD.ZEHN); add(WD.NACH); add(WD.HALB); hour(next); } else { add(WD.ZWANZIG); add(WD.VOR); hour(next); } break;
+    case 9: if (s.threeQuarter === "dreiviertel") { add(WD.DREIVIERTEL); hour(next); } else { add(WD.VIERTEL); add(WD.VOR); hour(next); } break;
+    case 10: add(WD.ZEHN); add(WD.VOR); hour(next); break;
+    default: add(WD.FUENF); add(WD.VOR); hour(next);
+  }
+  return { words, dots: m % 5 };
+}
+const chars = LETTERS.map(r => Array.from(r));
+function phrase(h, m, s) {
+  const t = compute(h, m, s).words.map(([r, c, n]) => chars[r].slice(c, c + n).join("").toLowerCase()).join(" ");
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+/* ---------- Demo: Uhr im Browser simulieren ---------- */
+const DEFAULTS = {name:"Majas Wordclock",power:true,brightness:90,mode:"clock",color:"#FFB46E",color2:"#FF4FA0",colorMode:"solid",gradDir:"h",speed:40,
+  bg:"off",bgColor:"#281400",bgLevel:15,effect:"rainbow",transition:"fade",transMs:1200,dots:true,dotsOwnColor:false,dotColor:"#FF4FA0",custom:"",
+  prefix:"always",quarter:"nach",threeQuarter:"vor",twenty:"zwanzig",nightOn:false,nightFrom:"22:30",nightTo:"06:30",nightBri:12,nightOff:false,
+  autoOn:false,autoMin:8,autoMax:200,autoLux:250,bdayOn:false,bday:"01.01",tz:"CET-1CEST,M3.5.0,M10.5.0/3",ntp:"de.pool.ntp.org",alexa:true,alexaName:"Wordclock",autoUpdate:true};
+function letterLed(r, c, half) { const p = c * 2 + half; return r * 22 + (r % 2 === 0 ? p : 21 - p); }
+const demoLayout = () => ({ letters: LETTERS, leds: [...Array(110)].map((_, i) => [letterLed(Math.floor(i / 11), i % 11, 0), letterLed(Math.floor(i / 11), i % 11, 1)]), dots: [220, 221, 222, 223], count: 224 });
+const hex = c => [1, 3, 5].map(i => parseInt(c.substr(i, 2), 16));
+function hsv(h, s = 1, v = 1) { h = ((h % 1) + 1) % 1; const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+  return [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i % 6].map(x => x * 255); }
+function demoFrame() {
+  const f = new Uint8Array(2 + 224 * 3), now = new Date(), ms = performance.now() * S.speed / 40;
+  f[1] = S.power ? S.brightness : 0;
+  const put = (i, c) => { f[2 + i * 3] = c[0]; f[3 + i * 3] = c[1]; f[4 + i * 3] = c[2]; };
+  const fxCol = (x, y) => hsv(ms / 3000 - x * 0.027 - y * 0.02, .92);
+  if (S.mode === "effect") { L.leds.forEach(([a, b], i) => { const y = Math.floor(i / 11), x = (i % 11) * 2; put(a, fxCol(x, y)); put(b, fxCol(x + 1, y)); }); L.dots.forEach((d, k) => put(d, fxCol(9 + k, 10))); return f; }
+  let on = new Set(), wordOf = {}, dots = 0;
+  if (S.mode === "custom") { [...(S.custom || "")].forEach((ch, i) => ch === "1" && on.add(i)); }
+  else { const r = compute(now.getHours(), now.getMinutes(), S); dots = r.dots; r.words.forEach(([rr, c, n], wi) => { for (let k = 0; k < n; k++) { on.add(rr * 11 + c + k); wordOf[rr * 11 + c + k] = wi; } }); }
+  const text = (x, y, w) => { switch (S.colorMode) {
+      case "rainbow": return hsv(ms / 3600 + x * 0.023 + y * 0.035, .9);
+      case "gradient": { const t = S.gradDir === "h" ? x / 21 : S.gradDir === "v" ? y / 9 : (x + 2 * y) / 39; const a = hex(S.color), b = hex(S.color2); return a.map((v, i) => v + (b[i] - v) * t); }
+      case "cycle": return hsv(ms / 10000, .94);
+      case "words": return hsv(ms / 15000 + w * 0.277, .86);
+      default: return hex(S.color); } };
+  const bgc = (x, y) => S.bg === "color" ? hex(S.bgColor).map(v => v * S.bgLevel / 100) : S.bg === "effect" ? fxCol(x, y).map(v => v * S.bgLevel / 100) : [0, 0, 0];
+  L.leds.forEach(([a, b], i) => { const y = Math.floor(i / 11), x = (i % 11) * 2;
+    put(a, on.has(i) ? text(x, y, wordOf[i] || 0) : bgc(x, y)); put(b, on.has(i) ? text(x + 1, y, wordOf[i] || 0) : bgc(x + 1, y)); });
+  L.dots.forEach((d, k) => put(d, S.dots && k < dots ? (S.dotsOwnColor ? hex(S.dotColor) : text(10, 9, 0)) : bgc(9 + k, 10)));
+  return f;
+}
+async function mock(path, method, body) {
+  if (path === "/v1/settings") { if (method === "POST") Object.assign(S, body); return { ...S }; }
+  if (path === "/v1/layout") return demoLayout();
+  if (path === "/v1/info") { const n = new Date(); return { fw: "demo", repo: "janniklangfeld-del/wordclock", ip: "192.168.178.42", ssid: "Heimnetz", rssi: -58, mac: "20:50:0D:D1:DF:64",
+      uptime: Math.floor(performance.now() / 1000), heap: 182000, timeValid: true, localTime: new Date(n - n.getTimezoneOffset() * 60000).toISOString().slice(0, 19), sensor: { found: false, lux: -1 },
+      update: { result: "aktuell (v1.0.0)", latest: "v1.0.0" }, alexa: true }; }
+  await new Promise(r => setTimeout(r, 200));
+  return { ok: true };
+}
+
+/* ---------- Verbindung zur Uhr ---------- */
+async function getPassword(title, text) {
+  if (password && !title) return password;
+  const dlg = $("#pwDlg"); $("#pwTitle").textContent = title || "Admin-Passwort"; $("#pwText").textContent = text || "Bitte das Admin-Passwort der Uhr eingeben.";
+  $("#pwInput").value = ""; dlg.showModal();
+  return new Promise(res => dlg.addEventListener("close", () => res(dlg.returnValue === "ok" ? $("#pwInput").value : null), { once: true }));
+}
+async function api(path, { method = "GET", body, auth = false } = {}) {
+  if (DEMO) return mock(path, method, body);
+  const headers = {}; let payload;
+  if (body instanceof FormData) payload = body; else if (body !== undefined) { headers["Content-Type"] = "application/json"; payload = JSON.stringify(body); }
+  if (auth) { const pw = await getPassword(); if (pw === null) throw new Error("Abgebrochen"); headers.Authorization = "Basic " + btoa("admin:" + pw);
+    password = pw; }
+  const r = await fetch(path, { method, headers, body: payload });
+  if (r.status === 401) { password = ""; sessionStorage.removeItem("wc_pw"); throw new Error("Passwort falsch"); }
+  if (!r.ok) { let m = r.status; try { m = (await r.json()).error || m; } catch (e) {} throw new Error("Fehler: " + m); }
+  if (auth) sessionStorage.setItem("wc_pw", password);
+  return r.json();
+}
+function toast(msg, err) { const t = $("#toast"); t.textContent = msg; t.className = "show" + (err ? " err" : ""); clearTimeout(t._h); t._h = setTimeout(() => t.className = "", 2600); }
+function live(on, text) { $("#liveDot").classList.toggle("live", on); $("#liveText").textContent = text; }
+
+let ws, lastFrameAt = 0;
+function connectWs() {
+  if (DEMO) { live(true, "Demo"); setInterval(() => applyFrame(demoFrame()), 66); return; }
+  ws = new WebSocket(`ws://${location.hostname}:81/`); ws.binaryType = "arraybuffer";
+  ws.onopen = () => live(true, "live verbunden");
+  ws.onclose = () => { live(false, "verbinde …"); setTimeout(connectWs, 2000); };
+  ws.onmessage = e => {
+    if (typeof e.data === "string") { try { const m = JSON.parse(e.data); if (m.t === "settings") mergeSettings(m.s); } catch (x) {} return; }
+    const u = new Uint8Array(e.data); if (u[0] === 1) applyFrame(u);
+  };
+}
+
+/* ---------- 3D-Uhr ---------- */
+function buildClock() {
+  const grid = $("#grid"), dots = $("#dots"); grid.innerHTML = ""; dots.innerHTML = "";
+  cells = []; L.letters.forEach((row, r) => Array.from(row).forEach((ch, c) => {
+    const el = document.createElement("div"); el.className = "lt"; el.textContent = ch; el.dataset.i = r * 11 + c; grid.appendChild(el); cells.push(el); }));
+  dotEls = [0, 1, 2, 3].map(() => { const d = document.createElement("div"); d.className = "md"; dots.appendChild(d); return d; });
+}
+function paint(el, r, g, b, isDot) {
+  const m = Math.max(r, g, b);
+  if (m < 6) { if (el._on) { el.style.color = el.style.textShadow = el.style.background = el.style.boxShadow = ""; el._on = false; } return; }
+  // Echte Helligkeitsverhaeltnisse beibehalten; dunkle Buchstaben liegen auf der Schablonenfarbe
+  const k = Math.min(1, m / 255), base = 31 * (1 - k);
+  const R = Math.min(255, r + base) | 0, G = Math.min(255, g + base) | 0, B = Math.min(255, b + base * 1.1) | 0;
+  const c = `rgb(${R},${G},${B})`, glow = `rgba(${r | 0},${g | 0},${b | 0},${(0.25 + 0.6 * k).toFixed(2)})`, blur = (2 + 12 * k).toFixed(1);
+  if (isDot) { el.style.background = c; el.style.boxShadow = `0 0 ${blur}px ${glow}`; }
+  else { el.style.color = c; el.style.textShadow = k > 0.12 ? `0 0 ${blur}px ${glow}` : "none"; }
+  el._on = true;
+}
+function applyFrame(u) {
+  if (!L) return; lastFrameAt = performance.now();
+  // Bildschirm-Helligkeit: dunkle Uhr bleibt sichtbar, Verhaeltnisse zwischen LEDs bleiben echt
+  const f = u[1] ? 0.4 + 0.6 * Math.sqrt(u[1] / 255) : 0; let sr = 0, sg = 0, sb = 0, n = 0;
+  const px = i => [u[2 + i * 3], u[3 + i * 3], u[4 + i * 3]];
+  L.leds.forEach(([a, b], i) => { const A = px(a), B = px(b); const r = (A[0] + B[0]) / 2 * f, g = (A[1] + B[1]) / 2 * f, bl = (A[2] + B[2]) / 2 * f;
+    paint(cells[i], r, g, bl); if (Math.max(r, g, bl) > 20) { sr += r; sg += g; sb += bl; n++; } });
+  L.dots.forEach((d, k) => { const P = px(d); paint(dotEls[k], P[0] * f, P[1] * f, P[2] * f, true); });
+  const root = document.documentElement.style;
+  if (n) { const m = Math.max(sr, sg, sb) / n || 1, sc = 255 / m; root.setProperty("--glow", `${sr / n * sc | 0},${sg / n * sc | 0},${sb / n * sc | 0}`); }
+  root.setProperty("--glowA", (n ? Math.min(.38, .08 + n / 110 * .5) * (0.4 + 0.6 * f) : 0.04).toFixed(3));
+}
+
+// Drehen per Maus/Finger, sonst sanftes Schweben
+let rx = -8, ry = 16, dragging = false, lastX = 0, lastY = 0, lastInput = 0, tapAt = 0;
+const clock = $("#clock"), stage = $("#stage");
+function startDrag(x, y) { dragging = true; lastX = x; lastY = y; clock.classList.add("drag"); }
+function moveDrag(x, y) { if (!dragging) return; ry = Math.max(-70, Math.min(70, ry + (x - lastX) * .35)); rx = Math.max(-45, Math.min(45, rx - (y - lastY) * .3)); lastX = x; lastY = y; lastInput = performance.now(); }
+function endDrag() { dragging = false; clock.classList.remove("drag"); lastInput = performance.now(); }
+stage.addEventListener("pointerdown", e => { if (e.target.closest(".custom .lt")) return; startDrag(e.clientX, e.clientY); stage.setPointerCapture(e.pointerId);
+  const n = performance.now(); if (n - tapAt < 300) { rx = -8; ry = 0; lastInput = n; } tapAt = n; });
+stage.addEventListener("pointermove", e => moveDrag(e.clientX, e.clientY));
+stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", endDrag);
+(function anim(t) {
+  if (!dragging && t - lastInput > 3500) { const tx = -7 + Math.sin(t / 5200) * 4, ty = Math.sin(t / 4100) * 15; rx += (tx - rx) * .02; ry += (ty - ry) * .02; }
+  clock.style.transform = `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+  requestAnimationFrame(anim);
+})(0);
+
+// Eigener Text: Buchstaben antippen
+$("#grid").addEventListener("click", e => {
+  const el = e.target.closest(".lt"); if (!el || S.mode !== "custom") return;
+  const arr = (S.custom || "").padEnd(110, "0").split(""); const i = +el.dataset.i; arr[i] = arr[i] === "1" ? "0" : "1"; set("custom", arr.join(""));
+});
+
+/* ---------- Bedienelemente ---------- */
+const FMT = { pct255: v => Math.round(v / 255 * 100) + " %", pct100: v => v + " %", sec: v => (v / 1000).toFixed(1).replace(".", ",") + " s", lux: v => v + " lx" };
+function buildControls() {
+  $$("[data-opts]").forEach(box => {
+    box.innerHTML = "";
+    box.dataset.opts.split(";").forEach(o => { const [val, label] = o.split("="); const b = document.createElement("button"); b.type = "button"; b.dataset.val = val;
+      if (box.classList.contains("tiles")) { const [icon, txt] = label.split("|"); b.innerHTML = `<i>${icon}</i><span>${txt}</span>`; } else b.innerHTML = label;
+      b.onclick = () => set(box.dataset.key, val); box.appendChild(b); });
+  });
+  $$("input[data-key],select[data-key]").forEach(el => {
+    const key = el.dataset.key;
+    if (el.type === "checkbox") el.onchange = () => set(key, el.checked);
+    else if (el.type === "range") el.oninput = () => { set(key, +el.value); out(key); };
+    else if (el.type === "color") el.oninput = () => set(key, el.value.toUpperCase());
+    else el.onchange = () => set(key, el.value.trim());
+  });
+  const SW = ["#FFB46E", "#FFFFFF", "#FF5FA2", "#FF2A2A", "#FF7A1A", "#FFD23F", "#3DDC84", "#2EE6D6", "#3D7BFF", "#9B5CFF"];
+  $("#swatches").innerHTML = SW.map(c => `<button style="background:${c}" data-c="${c}" title="${c}"></button>`).join("");
+  $("#swatches").onclick = e => { const c = e.target.dataset.c; if (!c) return; set({ color: c, colorMode: "solid", mode: S.mode === "effect" ? "clock" : S.mode }); };
+  $("#power").onclick = () => set("power", !S.power);
+  $("#tabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; $$("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+    $$("section[data-tab]").forEach(s => s.classList.toggle("on", s.dataset.tab === b.dataset.go)); if (b.dataset.go === "sys") refreshInfo(); };
+  $$("[data-action]").forEach(b => b.onclick = () => ACTIONS[b.dataset.action]());
+  $("#fwFile").onchange = uploadFirmware;
+}
+function out(key) { $$(`output[data-out="${key}"]`).forEach(o => { const f = FMT[o.dataset.fmt]; o.textContent = f ? f(S[key]) : S[key]; }); }
+function refreshControls() {
+  $$("[data-opts]").forEach(box => box.querySelectorAll("button").forEach(b => b.classList.toggle("on", String(S[box.dataset.key]) === b.dataset.val)));
+  $$("input[data-key],select[data-key]").forEach(el => { if (el === document.activeElement && el.type !== "checkbox") return; const v = S[el.dataset.key]; if (v === undefined) return;
+    if (el.type === "checkbox") el.checked = !!v; else if (el.type === "color") el.value = String(v).toLowerCase(); else el.value = v; });
+  Object.keys(S).forEach(out);
+  $$("[data-text]").forEach(el => el.textContent = S[el.dataset.text] || "");
+  $$("#swatches button").forEach(b => b.classList.toggle("on", S.colorMode === "solid" && S.mode !== "effect" && b.dataset.c === S.color));
+  $("#power").classList.toggle("on", !!S.power);
+  $("#title").textContent = S.name || "Majas Wordclock"; document.title = S.name || "Majas Wordclock";
+  $("#clock").classList.toggle("custom", S.mode === "custom");
+  $("#hint").textContent = S.mode === "custom" ? "Buchstaben antippen zum An-/Ausschalten · daneben ziehen zum Drehen" : "Ziehen zum Drehen · Doppeltippen zum Geraderücken";
+  if (/^#[0-9A-F]{6}$/i.test(S.color || "")) document.documentElement.style.setProperty("--accent", S.color);
+  $$("[data-show]").forEach(el => el.style.display = el.dataset.show.split("&").every(cond => { const [k, vals] = cond.split("="); return vals.split(",").includes(String(S[k])); }) ? "" : "none");
+  updatePhrase();
+}
+let pending = {}, timer = null;
+function set(key, val) {
+  const obj = typeof key === "object" ? key : { [key]: val };
+  Object.assign(S, obj); Object.assign(pending, obj); refreshControls();
+  clearTimeout(timer); timer = setTimeout(flush, 120);
+}
+async function flush() { const body = pending; pending = {}; try { mergeSettings(await api("/v1/settings", { method: "POST", body })); } catch (e) { toast(e.message, true); } }
+function mergeSettings(s) { const keep = { ...pending }; S = { ...S, ...s, ...keep }; refreshControls(); }
+
+function updatePhrase() {
+  const n = new Date(), p = $("#phrase");
+  if (!S.power) p.innerHTML = "Ausgeschaltet<small>Tippe oben rechts zum Einschalten</small>";
+  else if (S.mode === "effect") p.innerHTML = "Effekt läuft<small>" + ($(`[data-key=effect] .on span`)?.textContent || "") + "</small>";
+  else if (S.mode === "custom") p.innerHTML = "Eigener Text<small>Tippe auf die Buchstaben</small>";
+  else p.innerHTML = phrase(n.getHours(), n.getMinutes(), S) + `<small>${n.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr</small>`;
+  $("#examples").innerHTML = [[3, 15], [3, 20], [3, 30], [3, 40], [3, 45]].map(([h, m]) => `<div><b>${h}:${String(m).padStart(2, "0")}</b><span>${phrase(h, m, S)}</span></div>`).join("");
+}
+setInterval(updatePhrase, 10000);
+
+/* ---------- Aktionen ---------- */
+const run = async (fn, okMsg) => { try { await fn(); if (okMsg) toast(okMsg); } catch (e) { toast(e.message, true); } };
+const ACTIONS = {
+  showEffect: () => set("mode", "effect"),
+  showClock: () => set("mode", "clock"),
+  replay: () => run(() => api("/v1/replay", { method: "POST" }), "Übergang wird gezeigt"),
+  test: () => run(() => api("/v1/test", { method: "POST" }), "LED-Test läuft"),
+  customClear: () => set("custom", "0".repeat(110)),
+  customFromTime: () => { const n = new Date(), r = compute(n.getHours(), n.getMinutes(), S), a = Array(110).fill("0");
+    r.words.forEach(([rr, c, k]) => { for (let i = 0; i < k; i++) a[rr * 11 + c + i] = "1"; }); set("custom", a.join("")); },
+  check: () => run(() => api("/v1/check", { method: "POST", auth: true }), "Suche läuft – bei einem Update startet die Uhr neu"),
+  wifi: () => confirm("WLAN-Einrichtung öffnen? Danach mit dem WLAN „Majas-Wordclock“ verbinden.") &&
+    run(() => api("/v1/wifi", { method: "POST", auth: true }), "Einrichtungs-WLAN „Majas-Wordclock“ ist offen"),
+  reboot: () => confirm("Uhr neu starten?") && run(() => api("/v1/reboot", { method: "POST", auth: true }), "Startet neu …"),
+  password: async () => { const pw = await getPassword("Neues Passwort", "Neues Admin-Passwort (4–32 Zeichen). Danach wirst du nach dem bisherigen gefragt.");
+    if (!pw) return; await run(() => api("/v1/password", { method: "POST", body: { password: pw }, auth: true }), "Passwort geändert");
+    password = pw; sessionStorage.setItem("wc_pw", pw); },
+};
+async function uploadFirmware(e) {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  if (!confirm(`„${file.name}“ (${Math.round(file.size / 1024)} KB) installieren? Die Uhr startet danach neu.`)) return;
+  const fd = new FormData(); fd.append("fw", file, file.name);
+  toast("Lade hoch … nicht schließen"); await run(() => api("/update", { method: "POST", body: fd, auth: true }), "Update installiert – Uhr startet neu");
+}
+async function refreshInfo() {
+  try {
+    const i = await api("/v1/info"); const up = i.uptime, d = Math.floor(up / 86400), h = Math.floor(up / 3600) % 24, m = Math.floor(up / 60) % 60;
+    const rows = [["Firmware", i.fw], ["Uhrzeit", i.timeValid ? i.localTime.replace("T", " ") : "noch keine Internetzeit"], ["WLAN", i.ssid], ["Signal", i.rssi + " dBm"],
+      ["Adresse", `${i.ip} · wordclock.local`], ["Laufzeit", `${d} T ${h} h ${m} min`], ["Freier Speicher", Math.round(i.heap / 1024) + " KB"],
+      ["Update", i.update.result], ["Alexa", i.alexa ? "aktiv" : "aus"], ["Lichtsensor", i.sensor.found ? Math.round(i.sensor.lux) + " lx" : "nicht angeschlossen"]];
+    $("#info").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${String(v).replace(/</g, "&lt;")}</dd>`).join("");
+    $("#sensorState").textContent = i.sensor.found ? `BH1750 erkannt · ${Math.round(i.sensor.lux)} lx` : "kein Sensor angeschlossen";
+  } catch (e) { $("#info").innerHTML = `<dt>Fehler</dt><dd>${e.message}</dd>`; }
+}
+setInterval(() => { if ($('section[data-tab="sys"]').classList.contains("on") || $('section[data-tab="plan"]').classList.contains("on")) refreshInfo(); }, 5000);
+
+/* ---------- Start ---------- */
+(async function init() {
+  if (DEMO) S = { ...DEFAULTS };
+  buildControls();
+  try { L = await api("/v1/layout"); S = { ...S, ...(await api("/v1/settings")) }; }
+  catch (e) { toast("Uhr nicht erreichbar", true); L = demoLayout(); S = { ...DEFAULTS, ...S }; }
+  buildClock(); refreshControls(); refreshInfo(); connectWs();
+})();
+</script>
+</body>
+</html>

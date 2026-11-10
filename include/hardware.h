@@ -13,6 +13,9 @@ constexpr int PIN_LED_DATA = 18;
 //   Reihe 1 (oben) laeuft links -> rechts, Reihe 2 rechts -> links, ...
 //   Reihe 10 (unten) endet links, Minutenpunkte 220..223 von links nach rechts.
 //   Vorlage mit allen Indizes: docs/hardware/loetvorlage_start_oben_links.pdf
+constexpr bool LED_START_TOP_LEFT = true;   // false = Start oben rechts
+constexpr int LETTER_COLS = 11;
+constexpr int LETTER_ROWS = 10;
 constexpr int LED_ROWS          = 10;
 constexpr int LEDS_PER_ROW      = 22;
 constexpr int LED_MINUTE_COUNT  = 4;
@@ -29,3 +32,9 @@ constexpr int LED_MAX_MILLIAMPS = 7000;
 // BOOT-Taste des ELEGOO-Devboards (GPIO0, gegen GND, interner Pull-up).
 // 5 s halten -> WLAN-Einrichtungsportal oeffnen.
 constexpr int PIN_BUTTON = 0;
+
+// --- Optionaler Helligkeitssensor ----------------------------------------------
+// BH1750 (I2C-Adresse 0x23, ADDR-Pin an GND) an den Standard-I2C-Pins.
+// Wird beim Start automatisch erkannt; ohne Sensor laeuft alles wie gehabt.
+constexpr int PIN_I2C_SDA = 21;
+constexpr int PIN_I2C_SCL = 22;

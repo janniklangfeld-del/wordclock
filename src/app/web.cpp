@@ -1,153 +1,241 @@
 #include "web.h"
+#include <ArduinoJson.h>
 #include <Update.h>
 #include <WebServer.h>
+#include <WebSocketsServer.h>
 #include <WiFi.h>
+#include "alexa.h"
+#include "app.h"
+#include "clockface.h"
 #include "display.h"
+#include "hardware.h"
+#include "light.h"
 #include "net.h"
 #include "ota.h"
 #include "settings.h"
+#include "web_index.h"
 
 namespace {
-WebServer* server = nullptr;
+WebServer http(80);
+WebSocketsServer ws(81);
+bool routesReady = false;
+bool listening = false;
+uint32_t lastFrameSent = 0;
+uint8_t frameBuf[2 + LED_COUNT * 3];
 
-bool auth() {
-  if (server->authenticate("admin", settings.adminPassword.c_str())) return true;
-  server->requestAuthentication(BASIC_AUTH, "Wordclock");
+void sendJson(int code, const JsonDocument& doc) {
+  String s;
+  serializeJson(doc, s);
+  http.sendHeader("Cache-Control", "no-store");
+  http.send(code, "application/json", s);
+}
+
+void sendOk() { http.send(200, "application/json", "{\"ok\":true}"); }
+
+// Ohne WWW-Authenticate: die Webseite fragt das Passwort selbst ab.
+bool authOk() {
+  if (http.authenticate("admin", settings.adminPassword.c_str())) return true;
+  http.send(401, "application/json", "{\"error\":\"auth\"}");
   return false;
 }
 
-String uptime() {
-  uint32_t s = millis() / 1000;
-  char buf[32];
-  snprintf(buf, sizeof(buf), "%lud %02lu:%02lu", (unsigned long)(s / 86400), (unsigned long)(s / 3600 % 24),
-           (unsigned long)(s / 60 % 60));
-  return buf;
+String settingsJson(bool wrapped) {
+  JsonDocument d;
+  if (wrapped) {
+    d["t"] = "settings";
+    settings.toJson(d["s"].to<JsonObject>());
+  } else {
+    settings.toJson(d.to<JsonObject>());
+  }
+  String s;
+  serializeJson(d, s);
+  return s;
 }
 
-String timeNow() {
-  struct tm t;
-  if (!getLocalTime(&t, 10)) return "(noch keine NTP-Zeit)";
-  char buf[32];
-  strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M:%S", &t);
-  return buf;
+void handleIndex() {
+  http.sendHeader("Content-Encoding", "gzip");
+  http.sendHeader("Cache-Control", "no-cache");
+  http.send_P(200, "text/html; charset=utf-8", (const char*)WEB_INDEX_GZ, WEB_INDEX_GZ_LEN);
 }
 
-const char* PAGE_HEAD = R"(<!doctype html><html lang=de><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><title>Wordclock</title>
-<style>body{font-family:system-ui,sans-serif;max-width:32rem;margin:1rem auto;padding:0 1rem;background:#111;color:#eee}
-td{padding:.2rem .6rem .2rem 0}button,input{font-size:1rem;padding:.4rem .8rem;margin:.2rem 0}
-form{display:inline}a{color:#9cf}</style><h1>Wordclock</h1>)";
-
-void handleRoot() {
-  String h = PAGE_HEAD;
-  h += "<table>";
-  h += "<tr><td>Firmware</td><td>" FW_VERSION "</td></tr>";
-  h += "<tr><td>Uhrzeit</td><td>" + timeNow() + "</td></tr>";
-  h += "<tr><td>WLAN</td><td>" + WiFi.SSID() + " (" + String(WiFi.RSSI()) + " dBm)</td></tr>";
-  h += "<tr><td>IP</td><td>" + WiFi.localIP().toString() + "</td></tr>";
-  h += "<tr><td>Laufzeit</td><td>" + uptime() + "</td></tr>";
-  h += "<tr><td>Update-Quelle</td><td>" GITHUB_REPO "</td></tr>";
-  h += "<tr><td>Update-Status</td><td>" + ota::lastResult() + "</td></tr>";
-  h += "<tr><td>Auto-Update</td><td>" + String(settings.autoUpdate ? "an" : "aus") + "</td></tr>";
-  h += "</table><p>";
-  h += "<form method=post action=/check><button>Jetzt auf Update pruefen</button></form> ";
-  h += "<form method=post action=/autoupdate><button>Auto-Update " + String(settings.autoUpdate ? "aus" : "an") +
-       "schalten</button></form><br>";
-  h += "<form method=post action=/test><button>LED-Test</button></form> ";
-  h += "<form method=post action=/wifi><button>WLAN aendern</button></form> ";
-  h += "<form method=post action=/reboot><button>Neustart</button></form>";
-  h += "<p><a href=/update>Firmware-Datei hochladen</a></p>";
-  server->send(200, "text/html", h);
+void handleInfo() {
+  JsonDocument d;
+  d["fw"] = FW_VERSION;
+  d["repo"] = GITHUB_REPO;
+  d["ip"] = WiFi.localIP().toString();
+  d["ssid"] = WiFi.SSID();
+  d["rssi"] = WiFi.RSSI();
+  d["mac"] = WiFi.macAddress();
+  d["uptime"] = millis() / 1000;
+  d["heap"] = ESP.getFreeHeap();
+  d["timeValid"] = display::timeValid();
+  time_t now = time(nullptr);
+  tm t;
+  localtime_r(&now, &t);
+  char buf[24];
+  strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", &t);
+  d["localTime"] = buf;
+  d["sensor"]["found"] = light::found();
+  d["sensor"]["lux"] = light::lux();
+  d["update"]["result"] = ota::lastResult();
+  d["update"]["latest"] = ota::latestKnownVersion();
+  d["alexa"] = alexa::running();
+  d["brightness"] = display::brightness();
+  sendJson(200, d);
 }
 
-void redirectHome(const char* msg) {
-  String h = PAGE_HEAD;
-  h += "<p>" + String(msg) + "</p><p><a href=/>zurueck</a></p><meta http-equiv=refresh content='3;url=/'>";
-  server->send(200, "text/html", h);
+void handleLayout() {
+  JsonDocument d;
+  JsonArray rows = d["letters"].to<JsonArray>();
+  for (int r = 0; r < LETTER_ROWS; r++) rows.add(clockface::LETTERS[r]);
+  JsonArray leds = d["leds"].to<JsonArray>();
+  for (int r = 0; r < LETTER_ROWS; r++)
+    for (int c = 0; c < LETTER_COLS; c++) {
+      JsonArray p = leds.add<JsonArray>();
+      p.add(clockface::letterLed(r, c, 0));
+      p.add(clockface::letterLed(r, c, 1));
+    }
+  JsonArray dots = d["dots"].to<JsonArray>();
+  for (int k = 0; k < LED_MINUTE_COUNT; k++) dots.add(clockface::dotLed(k));
+  d["count"] = LED_COUNT;
+  sendJson(200, d);
+}
+
+void handleSettingsPost() {
+  JsonDocument d;
+  if (deserializeJson(d, http.arg("plain")) || !d.is<JsonObject>()) {
+    http.send(400, "application/json", "{\"error\":\"json\"}");
+    return;
+  }
+  uint32_t ch = settings.applyJson(d.as<JsonObjectConst>());
+  app::settingsChanged(ch, app::SRC_WEB);
+  http.sendHeader("Cache-Control", "no-store");
+  http.send(200, "application/json", settingsJson(false));
+}
+
+void handlePassword() {
+  if (!authOk()) return;
+  JsonDocument d;
+  deserializeJson(d, http.arg("plain"));
+  String pw = d["password"] | "";
+  pw.trim();
+  if (pw.length() < 4 || pw.length() > 32) {
+    http.send(400, "application/json", "{\"error\":\"Passwort: 4 bis 32 Zeichen\"}");
+    return;
+  }
+  settings.adminPassword = pw;
+  settings.save();
+  sendOk();
 }
 
 void setupRoutes() {
-  server->on("/", HTTP_GET, handleRoot);
-  server->on("/check", HTTP_POST, [] {
-    if (!auth()) return;
-    ota::requestCheck();
-    redirectHome("Update-Pruefung gestartet. Bei einem Update startet die Uhr neu.");
+  http.on("/", HTTP_GET, handleIndex);
+  http.on("/index.html", HTTP_GET, handleIndex);
+  http.on("/v1/settings", HTTP_GET, [] {
+    http.sendHeader("Cache-Control", "no-store");
+    http.send(200, "application/json", settingsJson(false));
   });
-  server->on("/autoupdate", HTTP_POST, [] {
-    if (!auth()) return;
-    settings.autoUpdate = !settings.autoUpdate;
+  http.on("/v1/settings", HTTP_POST, handleSettingsPost);
+  http.on("/v1/info", HTTP_GET, handleInfo);
+  http.on("/v1/layout", HTTP_GET, handleLayout);
+  http.on("/v1/replay", HTTP_POST, [] { display::replayTransition(); sendOk(); });
+  http.on("/v1/test", HTTP_POST, [] { display::testPattern(); sendOk(); });
+  http.on("/v1/auth", HTTP_GET, [] { if (authOk()) sendOk(); });
+  http.on("/v1/check", HTTP_POST, [] { if (!authOk()) return; ota::requestCheck(); sendOk(); });
+  http.on("/v1/wifi", HTTP_POST, [] { if (!authOk()) return; sendOk(); net::requestPortal(); });
+  http.on("/v1/reboot", HTTP_POST, [] {
+    if (!authOk()) return;
+    sendOk();
     settings.save();
-    redirectHome(settings.autoUpdate ? "Auto-Update an" : "Auto-Update aus");
-  });
-  server->on("/test", HTTP_POST, [] {
-    display::testPattern();
-    redirectHome("LED-Test laeuft");
-  });
-  server->on("/wifi", HTTP_POST, [] {
-    if (!auth()) return;
-    redirectHome("Einrichtungsportal startet: mit WLAN 'Wordclock-Setup' verbinden.");
-    net::requestPortal();
-  });
-  server->on("/reboot", HTTP_POST, [] {
-    if (!auth()) return;
-    redirectHome("Neustart ...");
-    delay(500);
+    delay(300);
     ESP.restart();
   });
-  server->on("/update", HTTP_GET, [] {
-    if (!auth()) return;
-    String h = PAGE_HEAD;
-    h += "<p>firmware.bin auswaehlen (aus GitHub Release oder .pio/build/wordclock/):</p>"
-         "<form method=post action=/update enctype=multipart/form-data>"
-         "<input type=file name=fw accept=.bin><br><button>Hochladen</button></form>";
-    server->send(200, "text/html", h);
-  });
-  server->on(
+  http.on("/v1/password", HTTP_POST, handlePassword);
+
+  // Firmware-Datei hochladen (aus GitHub Release oder .pio/build/wordclock/firmware.bin)
+  http.on(
       "/update", HTTP_POST,
       [] {
-        if (!auth()) return;
+        if (!authOk()) return;
         bool ok = !Update.hasError();
-        redirectHome(ok ? "Update ok – Neustart" : "Update fehlgeschlagen");
-        if (ok) { delay(500); ESP.restart(); }
+        http.send(ok ? 200 : 500, "application/json", ok ? "{\"ok\":true}" : "{\"error\":\"update\"}");
+        if (ok) {
+          delay(500);
+          ESP.restart();
+        }
       },
       [] {
-        if (!server->authenticate("admin", settings.adminPassword.c_str())) return;
-        HTTPUpload& up = server->upload();
+        if (!http.authenticate("admin", settings.adminPassword.c_str())) return;
+        HTTPUpload& up = http.upload();
         if (up.status == UPLOAD_FILE_START) {
           display::setState(SysState::Updating);
           Update.begin(UPDATE_SIZE_UNKNOWN);
         } else if (up.status == UPLOAD_FILE_WRITE) {
           Update.write(up.buf, up.currentSize);
+          if (up.totalSize) display::setProgress(min<size_t>(99, up.totalSize * 100 / 1400000));
         } else if (up.status == UPLOAD_FILE_END) {
           Update.end(true);
           if (Update.hasError()) display::setState(SysState::Error);
         }
       });
-  server->onNotFound([] { server->send(404, "text/plain", "nicht gefunden"); });
+
+  http.onNotFound([] {
+    if (alexa::handleApi(http.uri(), http.arg(0))) return;  // Hue-API fuer Alexa
+    http.send(404, "text/plain", "nicht gefunden");
+  });
+
+  ws.onEvent([](uint8_t num, WStype_t type, uint8_t*, size_t) {
+    if (type == WStype_CONNECTED) {
+      String s = settingsJson(true);
+      ws.sendTXT(num, s);
+    }
+  });
 }
 }  // namespace
 
 namespace web {
 
 void begin() {
-  if (server) return;
-  server = new WebServer(80);
-  setupRoutes();
-  server->begin();
-  Serial.println("[web] http://wordclock.local");
+  if (!routesReady) {
+    setupRoutes();
+    ws.begin();
+    routesReady = true;
+  }
+  if (!listening) {
+    http.begin();
+    listening = true;
+    Serial.println("[web] http://wordclock.local");
+  }
 }
 
 void end() {
-  if (!server) return;
-  server->stop();
-  delete server;
-  server = nullptr;
+  if (!listening) return;
+  http.stop();
+  listening = false;
 }
 
-bool running() { return server != nullptr; }
+bool running() { return listening; }
 
 void loop() {
-  if (server) server->handleClient();
+  if (!routesReady) return;
+  if (listening) http.handleClient();
+  ws.loop();
+  // Live-Bild fuer die 3D-Ansicht: ~15 Bilder/s, nur wenn jemand zuschaut
+  if (ws.connectedClients() > 0 && millis() - lastFrameSent >= 66) {
+    lastFrameSent = millis();
+    frameBuf[0] = 1;
+    frameBuf[1] = display::brightness();
+    memcpy(frameBuf + 2, display::frame(), LED_COUNT * 3);
+    ws.broadcastBIN(frameBuf, sizeof(frameBuf));
+  }
 }
+
+void notifySettings() {
+  if (!routesReady || ws.connectedClients() == 0) return;
+  String s = settingsJson(true);
+  ws.broadcastTXT(s);
+}
+
+WebServer* server() { return &http; }
 
 }  // namespace web

@@ -17,7 +17,10 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Envs: `ledtest` (src/ledtest), `wordclock` (src/app), `wordclock_ota` (lokales ArduinoOTA).
 - pio unter Windows: `$env:USERPROFILE\.platformio\penv\Scripts\pio.exe`
 - Internet-OTA: Uhr fragt alle 6 h `github.com/<repo>/releases/latest` ab (302 → Tag) und lädt firmware.bin. Öffentliches Repo, kein Token. TLS über certs/github_roots.pem. Release = Tag `vX.Y.Z` → .github/workflows/firmware.yml.
-- WLAN-Portal „Wordclock-Setup“: ohne Zugangsdaten, nach 5 min WLAN-Ausfall, BOOT 5 s, Web-Button.
+- WLAN-Portal „Majas-Wordclock“: ohne Zugangsdaten, nach 5 min WLAN-Ausfall, BOOT 5 s, Web-Button.
+- Libs (env wordclock): ArduinoJson 7.2.1, WebSockets 2.6.1 (Port 81, Live-Bild), Espalexa 2.7.0 (Alexa als Hue-Lampe, `/api` reserviert).
+- Webseite: `web/index.html` (eine Datei, offline), `scripts/embed_web.py` → `src/app/web_index.h` (generiert, nicht im Git). Vorschau: `index.html?demo`. Überblick: docs/SOFTWARE.md.
+- Personalisiert: Name „Majas Wordclock“ (Webseite, Portal-Titel), in den Einstellungen änderbar.
 
 ## Stand (10.11.2026)
 - Erledigt: `ledtest` und `wordclock` kompilieren fehlerfrei, ohne Warnungen im eigenen Code (Flash 22 % / 49 %).
@@ -28,4 +31,6 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Offen: Einspeisung an 3 Punkten löten (Nutzerwunsch für höhere Helligkeit), danach ggf. `LED_MAX_MILLIAMPS` anheben.
 - Erledigt: 1:1-Lötvorlagen (PDF, 2 × A4) für Start oben links/rechts in docs/hardware, erzeugt mit `scripts/loetvorlage.py`. Ansicht = LED-Seite = Vorderansicht (nicht gespiegelt). Reihe 1 oben, Reihe 10 unten → Minutenpunkte.
 - Entschieden (10.11.): **Start oben links** (Vorderansicht). LED 0 = Reihe 1 links, Reihe 1 läuft nach rechts, Schlange; Reihe 10 endet links → Minutenpunkte LED 220–223 von links nach rechts. E2 rechts (Wende 5/6), E3 links. Vorlage: docs/hardware/loetvorlage_start_oben_links.pdf.
-- Offen: Streifen zuschneiden und verlöten; Lichtgitter sind noch im 3D-Druck. Danach Uhrzeit-Mapping (Buchstabenmatrix in cad/Wordclock_30x30_v3.scad, LED-Indizes wie in der Vorlage).
+- Offen: Streifen zuschneiden und verlöten; Lichtgitter sind noch im 3D-Druck.
+- Erledigt (10.11.): Uhr-Firmware komplett (Uhrzeit-Mapping, Farben, 8 Effekte, 7 Übergänge, eigener Text, Sprachvarianten, Nachtmodus, BH1750-Autohelligkeit, Geburtstags-Herzen, Alexa, Webseite mit CSS-3D-Live-Ansicht). Kompiliert (Flash 63 %), Webseite im Demo-Modus geprüft. NOCH NICHT auf der Hardware getestet; ESP32 hat noch den LED-Test drauf.
+- Offen: Majas Geburtstag eintragen (Default aus, 01.01.); Firmware auf Ersatz-ESP32 testen (WLAN, Alexa, Live-Ansicht).

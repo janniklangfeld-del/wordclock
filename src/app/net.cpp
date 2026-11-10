@@ -2,6 +2,7 @@
 #include <ESPmDNS.h>
 #include <WiFi.h>
 #include <WiFiManager.h>
+#include "alexa.h"
 #include "display.h"
 #include "hardware.h"
 #include "settings.h"
@@ -28,8 +29,9 @@ void onOnline() {
                 WiFi.localIP().toString().c_str(), WiFi.RSSI());
   MDNS.end();
   if (MDNS.begin(net::HOSTNAME)) MDNS.addService("http", "tcp", 80);
-  configTzTime("CET-1CEST,M3.5.0,M10.5.0/3", "de.pool.ntp.org", "pool.ntp.org");
+  net::applyTimeConfig();
   web::begin();
+  alexa::begin(web::server());
   display::setState(SysState::Online);
 }
 
@@ -71,7 +73,7 @@ void begin() {
   wm.setConfigPortalTimeout(0);     // Portal bleibt offen, bis eingerichtet
   wm.setConnectTimeout(20);
   wm.setCaptivePortalEnable(true);
-  wm.setTitle("Wordclock");
+  wm.setTitle("Majas Wordclock");
   wm.addParameter(&paramAdminPw);
   wm.setSaveParamsCallback(onSaveParams);
   std::vector<const char*> menu = {"wifi", "info", "restart"};
@@ -140,6 +142,10 @@ void loop() {
 }
 
 bool online() { return WiFi.status() == WL_CONNECTED; }
+
+void applyTimeConfig() {
+  configTzTime(settings.tz.c_str(), settings.ntp.c_str(), "pool.ntp.org");
+}
 bool portalActive() { return wm.getConfigPortalActive(); }
 
 }  // namespace net
