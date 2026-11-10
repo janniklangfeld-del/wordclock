@@ -9,7 +9,14 @@
 //      -> Ende des Streifens rot-/gelbstichig = Einspeisung zu schwach.
 //   4. Regenbogen fuer 10 s.
 //
-// Serielle Befehle: '+' / '-' Helligkeit, 'n' naechste Phase, 'p' Pause.
+// Serielle Befehle: '+' / '-' Helligkeit, 'n' naechste Phase, 'p' Pause,
+//                   'd' Pin-Messmodus (bis zum Neustart).
+//
+// Pin-Messmodus: GPIO18 wechselt alle 3 s zwischen HIGH und LOW (statisch, kein
+// LED-Protokoll). Mit dem Multimeter gegen GND messen:
+//   74AHCT125 Pin 2 (1A): 0 V <-> ~3,3 V   (kommt das Signal vom ESP32 an?)
+//   74AHCT125 Pin 3 (1Y): 0 V <-> ~5 V     (arbeitet der Pegelwandler?)
+//   LED DIN (nach 330 Ohm): wie Pin 3      (Leitung zum Streifen ok?)
 
 #include <Arduino.h>
 #include <FastLED.h>
@@ -25,9 +32,26 @@ uint8_t brightness = 40;
 bool paused = false;
 volatile bool skip = false;
 
+// Kehrt nicht zurueck: der Pin gehoert danach nicht mehr FastLED -> Neustart zum Beenden.
+[[noreturn]] void pinMeasureMode() {
+  Serial.println("\n[d] Pin-Messmodus: GPIO18 wechselt alle 3 s HIGH/LOW. Beenden: Reset/USB neu.");
+  FastLED.clear(true);
+  delay(10);
+  pinMode(PIN_LED_DATA, OUTPUT);
+  bool high = false;
+  for (;;) {
+    high = !high;
+    digitalWrite(PIN_LED_DATA, high ? HIGH : LOW);
+    Serial.println(high ? "  GPIO18 HIGH  -> Pin 2 ~3,3 V, Pin 3/DIN ~5 V"
+                        : "  GPIO18 LOW   -> Pin 2/3/DIN 0 V");
+    delay(3000);
+  }
+}
+
 void handleSerial() {
   while (Serial.available()) {
     char c = Serial.read();
+    if (c == 'd') pinMeasureMode();
     if (c == '+') brightness = min(255, brightness + 15);
     if (c == '-') brightness = max(5, brightness - 15);
     if (c == 'n') skip = true;
@@ -92,7 +116,7 @@ void setup() {
   delay(300);
   Serial.println("\n=== Wordclock LED-Test ===");
   Serial.printf("Daten-Pin GPIO%d, Puffer %d LEDs, Limit %d mA\n", PIN_LED_DATA, TEST_LEDS, TEST_MAX_MILLIAMPS);
-  Serial.println("Befehle: + / - Helligkeit, n naechste Phase, p Pause");
+  Serial.println("Befehle: + / - Helligkeit, n naechste Phase, p Pause, d Pin-Messmodus");
 
   FastLED.addLeds<WS2812B, PIN_LED_DATA, COLOR_ORDER>(leds, TEST_LEDS);
   FastLED.setMaxPowerInVoltsAndMilliamps(LED_VOLTAGE_V, TEST_MAX_MILLIAMPS);

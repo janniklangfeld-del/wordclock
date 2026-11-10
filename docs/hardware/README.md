@@ -62,5 +62,5 @@ Reihenfolge beim Einschalten: erst Netzteil, dann USB.
 3. Alle weiß gedimmt (Strom auf 2 A begrenzt).
 4. Regenbogen.
 
-Serieller Monitor (115200): `+`/`-` Helligkeit, `n` nächste Phase, `p` Pause.
-Leuchtet gar nichts: GND-Verbindung, Pin 1 des 74AHCT125 auf GND, Datenrichtung des Streifens (Pfeil auf dem Band, DIN-Ende) prüfen.
+Serieller Monitor (115200): `+`/`-` Helligkeit, `n` nächste Phase, `p` Pause, `d` Pin-Messmodus (GPIO18 wechselt alle 3 s HIGH/LOW; Pin 2 ≈ 3,3 V, Pin 3 und DIN ≈ 5 V; Ende nur per Reset).
+Leuchtet gar nichts: **zuerst prüfen, ob das Netzteil an ist** – ohne Netzteil haben weder Streifen noch 74AHCT125 (Pin 14) Strom, USB versorgt nur den ESP32 (so passiert am 10.11.2026). Danach: GND-Verbindung, Pin 1 des 74AHCT125 auf GND, Datenrichtung des Streifens (Pfeil auf dem Band, DIN-Ende) prüfen.
