@@ -9,6 +9,10 @@ constexpr int PIN_LED_DATA = 18;
 // --- LED-Layout ----------------------------------------------------------------
 // 10 Reihen a 22 LEDs (2 LEDs pro Buchstabe, 11 Spalten), schlangenfoermig,
 // danach 4 Minutenpunkte. Siehe docs/PROJEKTSTAND_2026-11-09.md
+// Startecke (entschieden 10.11.2026): OBEN LINKS in der Vorderansicht.
+//   Reihe 1 (oben) laeuft links -> rechts, Reihe 2 rechts -> links, ...
+//   Reihe 10 (unten) endet links, Minutenpunkte 220..223 von links nach rechts.
+//   Vorlage mit allen Indizes: docs/hardware/loetvorlage_start_oben_links.pdf
 constexpr int LED_ROWS          = 10;
 constexpr int LEDS_PER_ROW      = 22;
 constexpr int LED_MINUTE_COUNT  = 4;

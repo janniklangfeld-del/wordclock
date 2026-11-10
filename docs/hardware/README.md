@@ -73,7 +73,7 @@ Neu erzeugen: `python scripts/loetvorlage.py` (Maße aus `cad/Wordclock_30x30_v3
 ![Lötvorlage Start oben links](loetvorlage_start_oben_links_vorschau.svg)
 
 - Ansicht = **LED-Seite oben = Vorderansicht der Uhr**, nicht gespiegelt (die LEDs zeigen später nach vorne).
-- Reihe 1 liegt oben, damit Reihe 10 unten bei den Minutenpunkten endet. Links oder rechts richtet sich nach dem Platz für ESP32/Verteiler.
+- **Entschieden: Start oben links** (10.11.2026) → [loetvorlage_start_oben_links.pdf](loetvorlage_start_oben_links.pdf) verwenden. Reihe 1 liegt oben, Reihe 10 endet unten links bei den Minutenpunkten.
 - Jede Reihe 22 LEDs = 220 mm, Reihenabstand 20 mm, Minutenpunkte (4 LEDs am Stück) 28 mm unter der Mitte von Reihe 10, mittig.
 - Pfeile auf dem Streifen müssen der Schlange folgen (Dreiecke in der Vorlage).
 - Zuschneideplan: Streifen 1 → Reihe 1–4 (Anfang mit Stecker = DIN/E1 an Reihe 1), Streifen 2 → Reihe 5–8, Streifen 3 → Reihe 9, 10 und Minutenpunkte. Rest 76 LEDs.
