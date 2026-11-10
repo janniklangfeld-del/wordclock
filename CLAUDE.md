@@ -7,7 +7,8 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - 224 WS2812B (100 LEDs/m): 10 Reihen × 22 LEDs (2 pro Buchstabe, 11×10 Buchstaben), schlangenförmig, danach 4 Minutenpunkte.
 - Daten: GPIO18 → 74AHCT125 Pin 2 (1A) → Pin 3 (1Y) → 330 Ω → DIN. Pin 1 + 7 an GND, Pin 14 an +5 V, 100 nF. Pin 8 nicht verbunden.
 - Netzteil 5 V / 20 A. Software-Stromlimit 7 A (Test: 2 A). ESP32 aktuell per USB versorgt, VIN NICHT an +5 V.
-- Offen: unbenutzte OE (4,10,13) → +5 V, Eingänge (5,9,12) → GND; 1000-µF-Elko; Rückspeiseschutz für VIN.
+- Gelötet (10.11.): unbenutzte OE (4,10,13) → +5 V, Eingänge (5,9,12) → GND, Pin 6 versehentlich auch GND (unkritisch).
+- Offen: 1000-µF-Elko; Rückspeiseschutz für VIN.
 - Details: docs/hardware/README.md, docs/PROJEKTSTAND_2026-11-09.md
 
 ## Software

@@ -15,7 +15,7 @@
 | LED +5 V (rot) / GND (weiß) | Netzteil 5 V / 20 A |
 | Pin 8 | **nicht verbunden** (gestrichelte Linie im Plan ist nicht verlötet) |
 
-## Unbenutzte Gatter des 74AHCT125 (noch nachzurüsten)
+## Unbenutzte Gatter des 74AHCT125 (gelötet am 10.11.2026)
 
 Draufsicht (Bauteilseite):
 
@@ -37,7 +37,7 @@ Pin 13 darf direkt mit Pin 14 gebrückt werden. Die Nachbarpaare 4/5, 9/10 und 1
 
 ## Offene Punkte / Empfehlungen
 
-- [ ] Unbenutzte Gatter: Pins 4, 10, 13 (OE) an +5 V, Pins 5, 9, 12 (Eingänge) an GND. Offene CMOS-Eingänge können schwingen und Strom ziehen. Für den Test unkritisch, vor dem Einbau nachrüsten.
+- [x] Unbenutzte Gatter: Pins 4, 10, 13 (OE) an +5 V, Pins 5, 9, 12 (Eingänge) an GND – gelötet am 10.11.2026 (Pin 6 zusätzlich auf GND, unkritisch).
 - [ ] Elko 1000 µF / ≥ 10 V parallel zur LED-Einspeisung (fehlt im Plan).
 - [ ] ESP32 VIN an +5 V erst nach Prüfung des Boards und mit Rückspeiseschutz (Diode/Schottky), solange parallel per USB programmiert wird.
 - [ ] Netzteil 20 A: Sicherung je Stromgruppe, Leitungsquerschnitte (siehe Projektstand: 5 abgesicherte Gruppen).
