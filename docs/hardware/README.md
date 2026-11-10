@@ -35,6 +35,15 @@ Ansicht von unten (Lötseite, gespiegelt – Pin 1 oben rechts), zum Löten bei 
 
 Pin 13 darf direkt mit Pin 14 gebrückt werden. Die Nachbarpaare 4/5, 9/10 und 12/13 führen verschiedene Potenziale und dürfen **nicht** überbrückt werden. Nach dem Löten Pin 14 gegen Pin 7 auf Kurzschluss messen.
 
+## LED-Streifen: Anschlüsse laut Herstellerkarte
+
+![Herstellerkarte: Reihenschaltung und Einspeisung](led_streifen_anleitung.jpg)
+
+- Jedes Streifenende hat einen 3-poligen Stecker: **rot = +5 V, grün = Daten, weiß = GND** (passt zur Verdrahtung oben).
+- Daten fließen nur in **Pfeilrichtung**. Der Datenausgang des 74AHCT125 gehört an das Ende, an dem der Pfeil vom Stecker weg zeigt (DIN).
+- An beiden Enden hängen **zusätzliche lose Adern rot (+V) und weiß (−V)**. Sie dienen nur der Stromeinspeisung („Voltage Compensation“), nicht den Daten. Wird das Streifenende im Test (Phase 3, alles weiß) rot-/gelbstichig, hier zusätzlich +5 V/GND vom Netzteil einspeisen.
+- Den „LED Controller“ aus der Karte brauchen wir nicht, ESP32 + 74AHCT125 ersetzen ihn. Das Netzteil versorgt den Streifen direkt.
+
 ## Offene Punkte / Empfehlungen
 
 - [x] Unbenutzte Gatter: Pins 4, 10, 13 (OE) an +5 V, Pins 5, 9, 12 (Eingänge) an GND – gelötet am 10.11.2026 (Pin 6 zusätzlich auf GND, unkritisch).
