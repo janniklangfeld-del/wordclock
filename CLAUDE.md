@@ -22,5 +22,6 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Erledigt: `ledtest` und `wordclock` kompilieren fehlerfrei, ohne Warnungen im eigenen Code (Flash 22 % / 49 %).
 - Erledigt: öffentliches Repo https://github.com/janniklangfeld-del/wordclock (gh-Login `janniklangfeld-del`), Branch `main`. Workflow liegt in `.github/workflows/firmware.yml`, erster CI-Lauf grün. Noch kein Release-Tag.
 - Erledigt: LED-Test auf ESP32 geflasht (ESP32-D0WD-V3 rev 3.1, MAC 20:50:0d:d1:df:64). USB-Chip CP2102, Treiber installiert → **COM7**. COM5/COM6 sind Intel-Ports (VID 8087), NICHT der ESP32. Seriell läuft der Test sauber durch alle Phasen.
-- Offen: Sichtprüfung am Streifen – Farbreihenfolge (LED 0 rot→grün→blau?), Lauflicht bis LED 223, Weiß-Test (Ende rot-/gelbstichig?).
-- Danach: LED-Reihenfolge am Aufbau vermessen (Startecke, Schlangenrichtung) → Uhrzeit-Mapping (Buchstabenmatrix in cad/Wordclock_30x30_v3.scad).
+- Erledigt (Sichtprüfung, nur 1. von 3 Streifen angeschlossen): LEDs leuchten, Farbreihenfolge GRB stimmt (rot→grün→blau), Lauflicht bis zum Streifenende, Weiß-Test gleichmäßig (bei 2-A-Testlimit). Erster Fehlversuch: Netzteil war nicht an.
+- Offen: Streifen 2 und 3 anschließen und Test wiederholen (Lauflicht bis LED 223 inkl. 4 Minutenpunkte, Weiß-Test am Ende).
+- Offen: Lichtgitter sind noch im 3D-Druck → Startecke und Schlangenrichtung erst nach Einbau vermessen → Uhrzeit-Mapping (Buchstabenmatrix in cad/Wordclock_30x30_v3.scad).
