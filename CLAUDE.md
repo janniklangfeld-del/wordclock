@@ -8,7 +8,8 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Daten: GPIO18 → 74AHCT125 Pin 2 (1A) → Pin 3 (1Y) → 330 Ω → DIN. Pin 1 + 7 an GND, Pin 14 an +5 V, 100 nF. Pin 8 nicht verbunden.
 - Netzteil 5 V / 20 A. Software-Stromlimit 7 A (Test: 2 A). ESP32 aktuell per USB versorgt, VIN NICHT an +5 V.
 - Gelötet (10.11.): unbenutzte OE (4,10,13) → +5 V, Eingänge (5,9,12) → GND, Pin 6 versehentlich auch GND (unkritisch).
-- Offen: 1000-µF-Elko; Rückspeiseschutz für VIN.
+- Geplant: Einspeisung an 3 Punkten (E1 Anfang, E2 Wende Reihe 5/6, E3 Ende Reihe 10) über Verteiler mit 10-A-Sicherung und 1000-µF-Elko → docs/hardware/einspeisung_3_punkte.svg.
+- Offen: Rückspeiseschutz für VIN (Schottky Netzteil-+ → VIN, nie an 3V3).
 - Details: docs/hardware/README.md, docs/PROJEKTSTAND_2026-11-09.md
 
 ## Software
@@ -23,5 +24,6 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Erledigt: öffentliches Repo https://github.com/janniklangfeld-del/wordclock (gh-Login `janniklangfeld-del`), Branch `main`. Workflow liegt in `.github/workflows/firmware.yml`, erster CI-Lauf grün. Noch kein Release-Tag.
 - Erledigt: LED-Test auf ESP32 geflasht (ESP32-D0WD-V3 rev 3.1, MAC 20:50:0d:d1:df:64). USB-Chip CP2102, Treiber installiert → **COM7**. COM5/COM6 sind Intel-Ports (VID 8087), NICHT der ESP32. Seriell läuft der Test sauber durch alle Phasen.
 - Erledigt (Sichtprüfung, nur 1. von 3 Streifen angeschlossen): LEDs leuchten, Farbreihenfolge GRB stimmt (rot→grün→blau), Lauflicht bis zum Streifenende, Weiß-Test gleichmäßig (bei 2-A-Testlimit). Erster Fehlversuch: Netzteil war nicht an.
-- Offen: Streifen 2 und 3 anschließen und Test wiederholen (Lauflicht bis LED 223 inkl. 4 Minutenpunkte, Weiß-Test am Ende).
+- Erledigt: alle 224 LEDs angeschlossen, Weiß-Test gleichmäßig über alle (2-A-Testlimit, nur Einspeisung am Anfang). Lauflicht bis LED 223 nicht ausdrücklich bestätigt.
+- Offen: Einspeisung an 3 Punkten löten (Nutzerwunsch für höhere Helligkeit), danach ggf. `LED_MAX_MILLIAMPS` anheben.
 - Offen: Lichtgitter sind noch im 3D-Druck → Startecke und Schlangenrichtung erst nach Einbau vermessen → Uhrzeit-Mapping (Buchstabenmatrix in cad/Wordclock_30x30_v3.scad).

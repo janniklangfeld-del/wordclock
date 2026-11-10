@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 900" width="1000" height="900" font-family="system-ui, Segoe UI, Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="900" rx="18" fill="#eef2f8"/>
+  <text x="500" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#1d2433">Stromeinspeisung an 3 Punkten</text>
+  <text x="500" y="68" text-anchor="middle" font-size="14" fill="#4a5468">Anfang (E1) · Mitte zwischen Reihe 5 und 6 (E2) · Ende vor den Minutenpunkten (E3) – alle aus einem Verteiler</text>
+
+  <!-- Legende -->
+  <g font-size="12" fill="#4a5468">
+    <line x1="40" y1="96" x2="70" y2="96" stroke="#d62828" stroke-width="4"/><text x="78" y="100">+5 V</text>
+    <line x1="130" y1="96" x2="160" y2="96" stroke="#1d2433" stroke-width="4"/><text x="168" y="100">GND</text>
+    <line x1="220" y1="96" x2="250" y2="96" stroke="#2b9348" stroke-width="3"/><text x="258" y="100">Daten (unverändert)</text>
+    <line x1="390" y1="96" x2="420" y2="96" stroke="#8a94a6" stroke-width="3"/><text x="428" y="100">LED-Reihe / Reihenverbinder</text>
+  </g>
+
+  <!-- Netzteil -->
+  <rect x="40" y="290" width="150" height="120" rx="10" fill="#fff" stroke="#1d2433" stroke-width="2"/>
+  <text x="115" y="325" text-anchor="middle" font-size="16" font-weight="700" fill="#1d2433">Netzteil</text>
+  <text x="115" y="345" text-anchor="middle" font-size="13" fill="#4a5468">5 V / 20 A</text>
+  <text x="180" y="374" text-anchor="end" font-size="12" font-weight="700" fill="#d62828">+</text>
+  <text x="180" y="398" text-anchor="end" font-size="12" font-weight="700" fill="#1d2433">−</text>
+
+  <!-- Hauptleitung mit Sicherung -->
+  <line x1="190" y1="370" x2="212" y2="370" stroke="#d62828" stroke-width="5"/>
+  <rect x="212" y="361" width="30" height="18" rx="3" fill="#ffd8a8" stroke="#9c3d00" stroke-width="2"/>
+  <text x="227" y="355" text-anchor="middle" font-size="11" font-weight="700" fill="#9c3d00">10 A</text>
+  <line x1="242" y1="370" x2="260" y2="370" stroke="#d62828" stroke-width="5"/>
+  <line x1="190" y1="394" x2="260" y2="394" stroke="#1d2433" stroke-width="5"/>
+  <text x="225" y="420" text-anchor="middle" font-size="11" fill="#4a5468">1,5 mm²</text>
+
+  <!-- Verteiler -->
+  <rect x="260" y="270" width="160" height="210" rx="10" fill="#fff" stroke="#e8590c" stroke-width="2.5"/>
+  <text x="340" y="296" text-anchor="middle" font-size="15" font-weight="700" fill="#1d2433">Verteiler</text>
+  <text x="340" y="314" text-anchor="middle" font-size="12" fill="#4a5468">z. B. WAGO-Klemmen</text>
+  <text x="340" y="338" text-anchor="middle" font-size="12" fill="#d62828">1× +5 V-Klemme</text>
+  <text x="340" y="354" text-anchor="middle" font-size="12" fill="#1d2433">1× GND-Klemme</text>
+  <text x="340" y="380" text-anchor="middle" font-size="12" font-weight="700" fill="#1d2433">Elko 1000 µF ≥ 10 V</text>
+  <text x="340" y="396" text-anchor="middle" font-size="12" fill="#4a5468">zwischen + und GND</text>
+  <text x="340" y="412" text-anchor="middle" font-size="12" fill="#4a5468">(Minus-Streifen → GND)</text>
+  <text x="340" y="440" text-anchor="middle" font-size="11" fill="#4a5468">auch hier: 74AHCT125 Pin 14</text>
+  <text x="340" y="455" text-anchor="middle" font-size="11" fill="#4a5468">und ESP32-GND</text>
+
+  <!-- LED-Reihen: y = 140 + 48*(k-1), x 520..900 -->
+  <g font-size="11" fill="#4a5468">
+    <rect x="520" y="133" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="144" text-anchor="middle">Reihe 1  →</text>
+    <rect x="520" y="181" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="192" text-anchor="middle">←  Reihe 2</text>
+    <rect x="520" y="229" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="240" text-anchor="middle">Reihe 3  →</text>
+    <rect x="520" y="277" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="288" text-anchor="middle">←  Reihe 4</text>
+    <rect x="520" y="325" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="336" text-anchor="middle">Reihe 5  →</text>
+    <rect x="520" y="373" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="384" text-anchor="middle">←  Reihe 6</text>
+    <rect x="520" y="421" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="432" text-anchor="middle">Reihe 7  →</text>
+    <rect x="520" y="469" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="480" text-anchor="middle">←  Reihe 8</text>
+    <rect x="520" y="517" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="528" text-anchor="middle">Reihe 9  →</text>
+    <rect x="520" y="565" width="380" height="14" rx="4" fill="#dfe5ef" stroke="#8a94a6"/><text x="710" y="576" text-anchor="middle">←  Reihe 10</text>
+  </g>
+  <!-- Reihenverbinder (Schlange) -->
+  <g fill="none" stroke="#8a94a6" stroke-width="3">
+    <path d="M900 140 h12 a12 12 0 0 1 0 48 h-12"/>
+    <path d="M900 236 h12 a12 12 0 0 1 0 48 h-12"/>
+    <path d="M900 332 h12 a12 12 0 0 1 0 48 h-12"/>
+    <path d="M900 428 h12 a12 12 0 0 1 0 48 h-12"/>
+    <path d="M900 524 h12 a12 12 0 0 1 0 48 h-12"/>
+    <path d="M520 188 h-12 a12 12 0 0 0 0 48 h12"/>
+    <path d="M520 284 h-12 a12 12 0 0 0 0 48 h12"/>
+    <path d="M520 380 h-12 a12 12 0 0 0 0 48 h12"/>
+    <path d="M520 476 h-12 a12 12 0 0 0 0 48 h12"/>
+    <!-- Reihe 10 -> Minutenpunkte -->
+    <path d="M520 572 h-6 v78 h116"/>
+  </g>
+  <!-- Minutenpunkte -->
+  <g fill="#dfe5ef" stroke="#8a94a6" stroke-width="2">
+    <circle cx="645" cy="650" r="8"/><circle cx="670" cy="650" r="8"/><circle cx="695" cy="650" r="8"/><circle cx="720" cy="650" r="8"/>
+  </g>
+  <text x="740" y="655" font-size="12" fill="#4a5468">4 Minutenpunkte (LED 220–223)</text>
+
+  <!-- Daten -->
+  <line x1="520" y1="110" x2="520" y2="130" stroke="#2b9348" stroke-width="3"/>
+  <text x="530" y="120" font-size="12" fill="#2b9348">DIN ← 330 Ω ← 74AHCT125 Pin 3</text>
+
+  <!-- E1: Anfang -->
+  <polyline points="420,300 470,300 470,140 512,140" fill="none" stroke="#d62828" stroke-width="4"/>
+  <polyline points="420,308 478,308 478,148 512,148" fill="none" stroke="#1d2433" stroke-width="4"/>
+  <!-- E3: Ende (zwischen Reihe 10 und Minutenpunkten) -->
+  <polyline points="420,375 470,375 470,600 506,600" fill="none" stroke="#d62828" stroke-width="4"/>
+  <polyline points="420,383 462,383 462,608 506,608" fill="none" stroke="#1d2433" stroke-width="4"/>
+  <!-- E2: Mitte (Wende Reihe 5 -> 6) -->
+  <polyline points="420,450 450,450 450,720 960,720 960,356 926,356" fill="none" stroke="#d62828" stroke-width="4"/>
+  <polyline points="420,458 442,458 442,728 968,728 968,348 926,348" fill="none" stroke="#1d2433" stroke-width="4"/>
+
+  <!-- Einspeisepunkte -->
+  <g font-size="13" font-weight="700">
+    <circle cx="518" cy="144" r="11" fill="#e8590c"/><text x="518" y="149" text-anchor="middle" fill="#fff">E1</text>
+    <circle cx="514" cy="604" r="11" fill="#e8590c"/><text x="514" y="609" text-anchor="middle" fill="#fff">E3</text>
+    <circle cx="924" cy="356" r="11" fill="#e8590c"/><text x="924" y="361" text-anchor="middle" fill="#fff">E2</text>
+  </g>
+  <text x="480" y="760" font-size="12" fill="#4a5468">je Abgang 0,75 mm² (mind. 0,5 mm²), rot +5 V / schwarz bzw. weiß GND</text>
+
+  <!-- Hinweise -->
+  <rect x="40" y="780" width="920" height="104" rx="12" fill="#fff4e6" stroke="#f0b37a"/>
+  <g font-size="13" fill="#1d2433">
+    <text x="60" y="806">• Einspeisen = <tspan font-weight="700">nur +5 V und GND</tspan> zusätzlich an die Kupferpads löten. Daten-Pad nicht anfassen, Reihenverbinder bleiben, wie sie sind.</text>
+    <text x="60" y="830">• Startecke ist noch unbekannt; der Plan zeigt Start oben links. Egal wo: E1 = erste LED, E2 = Wende zwischen Reihe 5 und 6, E3 = Ende von Reihe 10.</text>
+    <text x="60" y="854">• Vor dem ersten Einschalten: +5 V gegen GND am Verteiler auf Kurzschluss messen. Netzteil zuerst an, dann USB.</text>
+    <text x="60" y="878">• Mehr Helligkeit braucht zusätzlich ein höheres Software-Limit (aktuell 7 A, LED_MAX_MILLIAMPS in include/hardware.h).</text>
+  </g>
+</svg>
