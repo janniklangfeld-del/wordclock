@@ -18,7 +18,7 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - WLAN-Portal „Wordclock-Setup“: ohne Zugangsdaten, nach 5 min WLAN-Ausfall, BOOT 5 s, Web-Button.
 
 ## Stand (10.11.2026)
-- Code geschrieben, aber NOCH NIE KOMPILIERT. Erster Schritt: `pio run -e ledtest -e wordclock`, Fehler beheben.
-- Danach: `scripts/setup-github.ps1` (Git + öffentliches Repo `wordclock` auf GitHub-Konto Jannik Langfeld). Die Workflow-Datei liegt noch in `_move_to_github_workflows/` und muss nach `.github/workflows/` (das Skript erledigt das).
-- Dann LED-Test flashen (`pio run -e ledtest -t upload -t monitor`), Farbreihenfolge/Lauflicht prüfen.
+- Erledigt: `ledtest` und `wordclock` kompilieren fehlerfrei, ohne Warnungen im eigenen Code (Flash 22 % / 49 %).
+- Erledigt: öffentliches Repo https://github.com/janniklangfeld-del/wordclock (gh-Login `janniklangfeld-del`), Branch `main`. Workflow liegt in `.github/workflows/firmware.yml`, erster CI-Lauf grün. Noch kein Release-Tag.
+- Offen: LED-Test flashen (`pio run -e ledtest -t upload -t monitor`), Farbreihenfolge/Lauflicht prüfen. Am 10.11. war kein ESP32 erkannt – COM5/COM6 sind Intel-Ports (VID 8087), NICHT der ESP32. Board per Datenkabel anstecken, neuen Port mit `pio device list` prüfen.
 - Danach: LED-Reihenfolge am Aufbau vermessen (Startecke, Schlangenrichtung) → Uhrzeit-Mapping (Buchstabenmatrix in cad/Wordclock_30x30_v3.scad).
