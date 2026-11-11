@@ -128,6 +128,32 @@ void handlePassword() {
   sendOk();
 }
 
+// LED-Testmodus: {"mode":"chase|rows|letters|rgbw|color|led|dots|off","color":"#RRGGBB","index":0..223,"bri":0..255,"speed":1..100}
+// Ohne Inhalt: einmaliges Lauflicht wie frueher.
+void handleTest() {
+  const String body = http.arg("plain");
+  if (body.isEmpty()) {
+    display::testPattern();
+    sendOk();
+    return;
+  }
+  JsonDocument d;
+  if (deserializeJson(d, body)) {
+    http.send(400, "application/json", "{\"error\":\"json\"}");
+    return;
+  }
+  static const char* const NAMES[] = {"off", "chase", "rows", "letters", "rgbw", "color", "led", "dots"};
+  const char* m = d["mode"] | "off";
+  uint8_t mode = display::TEST_OFF;
+  for (uint8_t i = 0; i < sizeof(NAMES) / sizeof(NAMES[0]); i++)
+    if (!strcmp(m, NAMES[i])) mode = i;
+  const char* c = d["color"] | "#FFFFFF";
+  const uint32_t rgb = c[0] == '#' ? strtoul(c + 1, nullptr, 16) : 0xFFFFFF;
+  display::setTest((display::TestMode)mode, CRGB(rgb), d["index"] | 0, constrain(d["bri"] | 60, 0, 255),
+                   constrain(d["speed"] | 50, 1, 100));
+  sendOk();
+}
+
 void setupRoutes() {
   http.on("/", HTTP_GET, handleIndex);
   http.on("/index.html", HTTP_GET, handleIndex);
@@ -139,7 +165,7 @@ void setupRoutes() {
   http.on("/v1/info", HTTP_GET, handleInfo);
   http.on("/v1/layout", HTTP_GET, handleLayout);
   http.on("/v1/replay", HTTP_POST, [] { display::replayTransition(); sendOk(); });
-  http.on("/v1/test", HTTP_POST, [] { display::testPattern(); sendOk(); });
+  http.on("/v1/test", HTTP_POST, handleTest);
   http.on("/v1/auth", HTTP_GET, [] { if (authOk()) sendOk(); });
   http.on("/v1/check", HTTP_POST, [] { if (!authOk()) return; ota::requestCheck(); sendOk(); });
   http.on("/v1/wifi", HTTP_POST, [] { if (!authOk()) return; sendOk(); net::requestPortal(); });

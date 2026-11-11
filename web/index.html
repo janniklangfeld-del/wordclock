@@ -59,7 +59,7 @@ header{display:flex;align-items:center;gap:12px;padding:6px 0 4px}
   grid-template-columns:repeat(11,1fr);grid-template-rows:repeat(10,1fr)}
 .lt{display:grid;place-items:center;font-weight:800;font-size:calc(var(--s)*.043);color:#1f1f23;
   transition:color .12s,text-shadow .12s;font-family:"Arial Black",system-ui,sans-serif}
-.custom .lt{cursor:pointer}
+.custom .lt,.pick .lt{cursor:pointer}
 .custom .lt:hover{outline:1px dashed rgba(255,255,255,.18);outline-offset:-3px;border-radius:4px}
 .dots{position:absolute;left:42%;width:16%;top:91%;height:4.4%;display:grid;grid-template-columns:repeat(4,1fr);place-items:center}
 .md{width:calc(var(--s)*.017);height:calc(var(--s)*.017);border-radius:50%;background:#1f1f23;transition:.12s}
@@ -129,7 +129,11 @@ dialog{background:#15171e;color:var(--text);border:1px solid var(--line);border-
 dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(3px)}
 dialog h3{margin:0 0 6px}
 dialog input{width:100%;margin:12px 0}
-footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px}
+footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;user-select:none;-webkit-user-select:none}
+#testCard{border-color:rgba(var(--glow),.55)}
+.stepper{display:flex;gap:6px;align-items:center}
+.stepper input{width:70px;text-align:center}
+.stepper .btn{padding:8px 12px;min-width:42px}
 .demo{display:none;text-align:center;font-size:12px;color:#160b05;background:var(--accent);border-radius:10px;padding:5px 10px;margin:6px auto 0;width:max-content}
 .isdemo .demo{display:block}
 @media (min-width:700px){.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cols .card{margin:0}}
@@ -323,16 +327,38 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px}
     <div class="card">
       <h3>Wartung</h3>
       <div class="btns">
-        <button class="btn" data-action="test">LED-Test</button>
         <button class="btn" data-action="wifi">WLAN ändern</button>
         <button class="btn" data-action="password">Admin-Passwort ändern</button>
         <button class="btn danger" data-action="reboot">Neustart</button>
       </div>
       <p class="note">Für Update, WLAN, Passwort und Neustart wird das Admin-Passwort gebraucht (Benutzer „admin“).</p>
     </div>
+    <div class="card" id="testCard" hidden>
+      <h3>LED-Testmodus</h3>
+      <div class="tiles" id="testModes">
+        <button type="button" data-tm="chase"><i>➰</i><span>Lauflicht</span></button>
+        <button type="button" data-tm="rows"><i>☰</i><span>Reihen</span></button>
+        <button type="button" data-tm="letters"><i>🔤</i><span>Buchstaben</span></button>
+        <button type="button" data-tm="rgbw"><i>🚦</i><span>R · G · B · W</span></button>
+        <button type="button" data-tm="color"><i>⬛</i><span>Alle an</span></button>
+        <button type="button" data-tm="led"><i>🎯</i><span>Einzel-LED</span></button>
+        <button type="button" data-tm="dots"><i>⋯</i><span>Minuten­punkte</span></button>
+      </div>
+      <div class="row" style="margin-top:8px"><label>Farbe</label><input type="color" id="tColor" value="#ffffff"></div>
+      <div class="row"><label>Helligkeit</label><input type="range" id="tBri" min="1" max="255" value="60"><output id="tBriOut">24 %</output></div>
+      <div class="row" id="tSpeedRow"><label>Tempo</label><input type="range" id="tSpeed" min="1" max="100" value="50"><output id="tSpeedOut">50</output></div>
+      <div class="row" id="tLedRow"><div class="lbl">LED-Nummer<small id="tInfo"></small></div>
+        <div class="stepper"><button class="btn" type="button" id="tPrev">−</button><input type="text" inputmode="numeric" id="tIndex" value="0"><button class="btn" type="button" id="tNext">+</button></div></div>
+      <div class="btns" style="margin-top:10px">
+        <button class="btn primary" type="button" id="tStop">Test beenden</button>
+        <button class="btn" type="button" id="tHide">Ausblenden</button>
+      </div>
+      <p class="note">Läuft auch in der 3D-Ansicht oben mit. Bei Einzel-LED kann man einen Buchstaben in der 3D-Uhr antippen. Endet von selbst 10 Minuten nach der letzten Eingabe.
+        Achtung: „Alle an“ in Weiß bei voller Helligkeit zieht bis 7 A – nur mit mehreren Einspeisungen.</p>
+    </div>
   </section>
 
-  <footer>Mit ♥ für Maja gebaut</footer>
+  <footer id="footer">Mit ♥ für Maja gebaut</footer>
 </div>
 
 <div id="toast"></div>
@@ -399,7 +425,23 @@ const demoLayout = () => ({ letters: LETTERS, leds: [...Array(110)].map((_, i) =
 const hex = c => [1, 3, 5].map(i => parseInt(c.substr(i, 2), 16));
 function hsv(h, s = 1, v = 1) { h = ((h % 1) + 1) % 1; const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
   return [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i % 6].map(x => x * 255); }
+function demoTestFrame() {
+  const f = new Uint8Array(2 + 224 * 3), t = performance.now() - T.start, step = 8 + (100 - T.speed) * 4, col = hex(T.color.toUpperCase());
+  f[1] = T.bri; const put = (i, c, k = 1) => { f[2 + i * 3] = c[0] * k; f[3 + i * 3] = c[1] * k; f[4 + i * 3] = c[2] * k; };
+  const rowOf = i => i >= 220 ? 10 : Math.floor(i / 22), cellOf = i => { if (i >= 220) return 110 + i - 220; const r = Math.floor(i / 22), p = i % 22; return r * 11 + Math.floor((r % 2 ? 21 - p : p) / 2); };
+  switch (T.mode) {
+    case "chase": { const pos = Math.floor(t / step) % 224; for (let k = 0; k < 6 && pos - k >= 0; k++) put(pos - k, col, 1 / (1 << k)); break; }
+    case "rows": { const r = Math.floor(t / (step * 12)) % 11; for (let i = 0; i < 224; i++) if (rowOf(i) === r) put(i, col); break; }
+    case "letters": { const c = Math.floor(t / (step * 3)) % 114; for (let i = 0; i < 224; i++) if (cellOf(i) === c) put(i, col); break; }
+    case "rgbw": { const c = [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 255]][Math.floor(t / 1500) % 4]; for (let i = 0; i < 224; i++) put(i, c); break; }
+    case "color": for (let i = 0; i < 224; i++) put(i, col); break;
+    case "led": put(T.index, col); break;
+    case "dots": { const k = Math.floor(t / (step * 6)) % 5; for (let d = 0; d < 4; d++) if (k === 4 || d === k) put(220 + d, col); break; }
+  }
+  return f;
+}
 function demoFrame() {
+  if (T.mode !== "off") return demoTestFrame();
   const f = new Uint8Array(2 + 224 * 3), now = new Date(), ms = performance.now() * S.speed / 40;
   f[1] = S.power ? S.brightness : 0;
   const put = (i, c) => { f[2 + i * 3] = c[0]; f[3 + i * 3] = c[1]; f[4 + i * 3] = c[2]; };
@@ -501,7 +543,7 @@ const clock = $("#clock"), stage = $("#stage");
 function startDrag(x, y) { dragging = true; lastX = x; lastY = y; clock.classList.add("drag"); }
 function moveDrag(x, y) { if (!dragging) return; ry = Math.max(-70, Math.min(70, ry + (x - lastX) * .35)); rx = Math.max(-45, Math.min(45, rx - (y - lastY) * .3)); lastX = x; lastY = y; lastInput = performance.now(); }
 function endDrag() { dragging = false; clock.classList.remove("drag"); lastInput = performance.now(); }
-stage.addEventListener("pointerdown", e => { if (e.target.closest(".custom .lt")) return; startDrag(e.clientX, e.clientY); stage.setPointerCapture(e.pointerId);
+stage.addEventListener("pointerdown", e => { if (e.target.closest(".custom .lt,.pick .lt")) return; startDrag(e.clientX, e.clientY); stage.setPointerCapture(e.pointerId);
   const n = performance.now(); if (n - tapAt < 300) { rx = -8; ry = 0; lastInput = n; } tapAt = n; });
 stage.addEventListener("pointermove", e => moveDrag(e.clientX, e.clientY));
 stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", endDrag);
@@ -513,7 +555,10 @@ stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercan
 
 // Eigener Text: Buchstaben antippen
 $("#grid").addEventListener("click", e => {
-  const el = e.target.closest(".lt"); if (!el || S.mode !== "custom") return;
+  const el = e.target.closest(".lt"); if (!el) return;
+  if (T.mode === "led") { const i = +el.dataset.i, a = letterLed(Math.floor(i / 11), i % 11, 0), b = letterLed(Math.floor(i / 11), i % 11, 1);
+    setTestIndex(T.index === a ? b : a); return; }
+  if (S.mode !== "custom") return;
   const arr = (S.custom || "").padEnd(110, "0").split(""); const i = +el.dataset.i; arr[i] = arr[i] === "1" ? "0" : "1"; set("custom", arr.join(""));
 });
 
@@ -569,7 +614,8 @@ function mergeSettings(s) { const keep = { ...pending }; S = { ...S, ...s, ...ke
 
 function updatePhrase() {
   const n = new Date(), p = $("#phrase");
-  if (!S.power) p.innerHTML = "Ausgeschaltet<small>Tippe oben rechts zum Einschalten</small>";
+  if (T.mode !== "off") p.innerHTML = "LED-Testmodus<small>" + ($(`#testModes [data-tm=${T.mode}] span`)?.textContent || "") + "</small>";
+  else if (!S.power) p.innerHTML = "Ausgeschaltet<small>Tippe oben rechts zum Einschalten</small>";
   else if (S.mode === "effect") p.innerHTML = "Effekt läuft<small>" + ($(`[data-key=effect] .on span`)?.textContent || "") + "</small>";
   else if (S.mode === "custom") p.innerHTML = "Eigener Text<small>Tippe auf die Buchstaben</small>";
   else p.innerHTML = phrase(n.getHours(), n.getMinutes(), S) + `<small>${n.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr</small>`;
@@ -613,6 +659,54 @@ async function refreshInfo() {
 }
 setInterval(() => { if ($('section[data-tab="sys"]').classList.contains("on") || $('section[data-tab="plan"]').classList.contains("on")) refreshInfo(); }, 5000);
 
+/* ---------- LED-Testmodus (versteckt: 5x auf das Herz unten tippen oder #test) ---------- */
+const T = { mode: "off", color: "#FFFFFF", index: 0, bri: 60, speed: 50, start: 0 };
+let testTimer = null, testKeep = null;
+function ledInfo(i) {
+  if (i >= 220) return `Minutenpunkt ${i - 219}`;
+  const r = Math.floor(i / 22), p = i % 22, pos = r % 2 ? 21 - p : p, c = Math.floor(pos / 2);
+  return `Reihe ${r + 1}, Buchstabe „${chars[r][c]}“ (Spalte ${c + 1}), ${pos % 2 ? "rechte" : "linke"} LED`;
+}
+function refreshTest() {
+  $$("#testModes button").forEach(b => b.classList.toggle("on", b.dataset.tm === T.mode));
+  $("#tBriOut").textContent = Math.round(T.bri / 255 * 100) + " %"; $("#tSpeedOut").textContent = T.speed;
+  $("#tSpeedRow").style.display = ["chase", "rows", "letters", "dots"].includes(T.mode) ? "" : "none";
+  $("#tLedRow").style.display = T.mode === "led" ? "" : "none";
+  if (document.activeElement !== $("#tIndex")) $("#tIndex").value = T.index;
+  $("#tInfo").textContent = ledInfo(T.index);
+  $("#clock").classList.toggle("pick", T.mode === "led");
+  updatePhrase();
+}
+function sendTest() {
+  refreshTest(); clearTimeout(testTimer);
+  testTimer = setTimeout(() => run(() => api("/v1/test", { method: "POST", body: { mode: T.mode, color: T.color, index: T.index, bri: T.bri, speed: T.speed } })), 80);
+  clearInterval(testKeep); if (T.mode !== "off") testKeep = setInterval(sendTest, 4 * 60 * 1000);  // Testmodus offen halten, solange die Seite offen ist
+}
+function setTestMode(m) { if (m !== T.mode) T.start = performance.now(); T.mode = m; sendTest(); }
+function setTestIndex(i) { T.index = Math.max(0, Math.min(223, i | 0)); if (T.mode !== "led") setTestMode("led"); else sendTest(); }
+function showTestCard() {
+  $("#testCard").hidden = false;
+  $$("#tabs button").forEach(x => x.classList.toggle("on", x.dataset.go === "sys"));
+  $$("section[data-tab]").forEach(s => s.classList.toggle("on", s.dataset.tab === "sys")); refreshInfo();
+  setTimeout(() => $("#testCard").scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+}
+(function setupTest() {
+  $("#testModes").onclick = e => { const b = e.target.closest("button"); if (b) setTestMode(b.dataset.tm); };
+  $("#tColor").oninput = e => { T.color = e.target.value.toUpperCase(); if (T.mode === "off" || T.mode === "rgbw") setTestMode("color"); else sendTest(); };
+  $("#tBri").oninput = e => { T.bri = +e.target.value; if (T.mode !== "off") sendTest(); else refreshTest(); };
+  $("#tSpeed").oninput = e => { T.speed = +e.target.value; if (T.mode !== "off") sendTest(); else refreshTest(); };
+  $("#tPrev").onclick = () => setTestIndex(T.index - 1);
+  $("#tNext").onclick = () => setTestIndex(T.index + 1);
+  $("#tIndex").onchange = e => setTestIndex(parseInt(e.target.value, 10) || 0);
+  $("#tStop").onclick = () => { setTestMode("off"); toast("Test beendet – Uhr läuft wieder"); };
+  $("#tHide").onclick = () => { if (T.mode !== "off") setTestMode("off"); $("#testCard").hidden = true; };
+  let taps = 0, tapT = 0;
+  $("#footer").addEventListener("click", () => { const n = performance.now(); taps = n - tapT < 600 ? taps + 1 : 1; tapT = n;
+    if (taps >= 5) { taps = 0; showTestCard(); toast("LED-Testmodus freigeschaltet"); } });
+  window.addEventListener("pagehide", () => { if (T.mode !== "off" && !DEMO) navigator.sendBeacon?.("/v1/test", new Blob(['{"mode":"off"}'], { type: "application/json" })); });
+  refreshTest();
+})();
+
 /* ---------- Start ---------- */
 (async function init() {
   if (DEMO) S = { ...DEFAULTS };
@@ -620,6 +714,7 @@ setInterval(() => { if ($('section[data-tab="sys"]').classList.contains("on") ||
   try { L = await api("/v1/layout"); S = { ...S, ...(await api("/v1/settings")) }; }
   catch (e) { toast("Uhr nicht erreichbar", true); L = demoLayout(); S = { ...DEFAULTS, ...S }; }
   buildClock(); refreshControls(); refreshInfo(); connectWs();
+  if (location.hash === "#test") showTestCard();
 })();
 </script>
 </body>

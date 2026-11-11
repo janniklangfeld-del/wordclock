@@ -34,4 +34,5 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Offen: Streifen zuschneiden und verlöten; Lichtgitter sind noch im 3D-Druck.
 - Erledigt (10.11.): Uhr-Firmware komplett (Uhrzeit-Mapping, Farben, 8 Effekte, 7 Übergänge, eigener Text, Sprachvarianten, Nachtmodus, BH1750-Autohelligkeit, Geburtstags-Herzen, Alexa, Webseite mit CSS-3D-Live-Ansicht). Kompiliert (Flash 63 %), Webseite im Demo-Modus geprüft (auch 375 px Handybreite).
 - Erledigt (10.11.): Uhr-Firmware (Stand c35628a) auf ESP32 an COM7 geflasht – ersetzt den LED-Test (zurück: `pio run -e ledtest -t upload --upload-port COM7`). Bootet sauber, kein BH1750, startet Portal „Majas-Wordclock“ (noch kein WLAN gespeichert). Entwicklungs-Build → Auto-Update aus.
+- Erledigt (11.11.): versteckter LED-Testmodus auf der Webseite (5× auf „Mit ♥ für Maja gebaut“ tippen oder `#test`), kompiliert, Demo geprüft. Noch NICHT auf den ESP32 geflasht.
 - Offen: WLAN über Portal einrichten, dann auf der Hardware testen (Uhrzeit-Mapping, Webseite/Live-Ansicht, Alexa). Majas Geburtstag eintragen (Default aus, 01.01.).

@@ -19,6 +19,7 @@ Stand 10.11.2026: kompiliert fehlerfrei, Webseite im Demo-Modus geprüft. **Auf 
 | Alexa | Meldet sich als Hue-kompatible Farblampe im Heimnetz (Espalexa, ohne Cloud/Skill): an/aus, Helligkeit, Farbe |
 | Webseite | `http://wordclock.local` – live mitlaufende 3D-Uhr (zeigt exakt die LED-Farben), alle Einstellungen, Updates, WLAN, Neustart |
 | Updates | GitHub Releases (automatisch), lokales ArduinoOTA, Datei-Upload über die Webseite |
+| LED-Testmodus | Versteckt: unten auf der Webseite 5× schnell auf „Mit ♥ für Maja gebaut“ tippen (oder `http://wordclock.local/#test`). Lauflicht, Reihen, Buchstaben, R·G·B·W, alle an, Einzel-LED (mit Anzeige Reihe/Buchstabe; Buchstabe in der 3D-Uhr antippbar), Minutenpunkte. Farbe, Helligkeit, Tempo einstellbar. Endet 10 min nach der letzten Eingabe oder beim Schließen der Seite. |
 
 ## Aufbau (`src/app/`)
 
@@ -46,7 +47,8 @@ Die Webseite liegt in `web/index.html` (eine Datei, keine externen Quellen, funk
 | GET/POST | `/v1/settings` | Einstellungen lesen / teilweise ändern (JSON) | nein |
 | GET | `/v1/info` | Firmware, WLAN, Zeit, Sensor, Update-Status | nein |
 | GET | `/v1/layout` | Buchstaben + LED-Indizes (für die 3D-Ansicht) | nein |
-| POST | `/v1/replay`, `/v1/test` | Übergang vorführen, LED-Lauflicht | nein |
+| POST | `/v1/replay` | Übergang vorführen | nein |
+| POST | `/v1/test` | LED-Testmodus: `{"mode":"chase\|rows\|letters\|rgbw\|color\|led\|dots\|off","color":"#RRGGBB","index":0–223,"bri":0–255,"speed":1–100}`; ohne Inhalt einmaliges Lauflicht | nein |
 | POST | `/v1/check`, `/v1/wifi`, `/v1/reboot`, `/v1/password` | Update suchen, WLAN-Portal, Neustart, Passwort | ja |
 | POST | `/update` | Firmware-Datei | ja |
 | WS | `:81` | Binär `[1, Helligkeit, 224×RGB]` ~15/s, Text `{"t":"settings"}` bei Änderungen | – |

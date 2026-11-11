@@ -18,7 +18,13 @@ void begin();
 void setState(SysState s);
 SysState state();
 void setProgress(uint8_t percent);  // nur im Zustand Updating
-void testPattern();                 // Lauflicht (Weboberflaeche)
+void testPattern();                 // Lauflicht (alte Schnittstelle)
+
+// LED-Testmodus (versteckt in der Weboberflaeche). Ueberlagert alles andere,
+// endet automatisch 10 min nach dem letzten Befehl.
+enum TestMode : uint8_t { TEST_OFF, TEST_CHASE, TEST_ROWS, TEST_LETTERS, TEST_RGBW, TEST_COLOR, TEST_LED, TEST_DOTS };
+void setTest(TestMode mode, CRGB color, uint16_t index, uint8_t bri, uint8_t speed);
+bool testActive();
 void replayTransition();            // aktuellen Uebergang vorfuehren
 void settingsChanged();
 void loop();

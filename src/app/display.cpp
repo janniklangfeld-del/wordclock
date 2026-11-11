@@ -23,6 +23,16 @@ uint32_t stateSince = 0;
 uint8_t progress = 0;
 bool testRequested = false;
 
+struct TestState {
+  uint8_t mode = 0;  // display::TestMode
+  CRGB color = CRGB::White;
+  uint16_t index = 0;
+  uint8_t bri = 60;
+  uint8_t speed = 50;
+  uint32_t start = 0, lastCmd = 0;
+} test;
+constexpr uint32_t TEST_TIMEOUT_MS = 10UL * 60 * 1000;
+
 clockface::Face face, prevFace;
 uint8_t wordOf[CELLS], prevWordOf[CELLS];
 bool faceValid = false;
@@ -267,6 +277,55 @@ void renderStatus(uint32_t now) {
   fill_solid(leds, LED_COUNT, CRGB::Black);
   for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = c;
 }
+
+// Testbilder: Schrittdauer aus Geschwindigkeit 1..100 -> ca. 400..8 ms
+void renderTest(uint32_t now) {
+  fill_solid(leds, LED_COUNT, CRGB::Black);
+  const uint32_t t = now - test.start;
+  const uint32_t step = 8 + (uint32_t)(100 - constrain(test.speed, 1, 100)) * 4;
+  switch (test.mode) {
+    case display::TEST_CHASE: {  // eine LED mit kurzem Schweif, Index 0 -> 223
+      int pos = (t / step) % LED_COUNT;
+      for (int k = 0; k < 6; k++) {
+        int i = pos - k;
+        if (i < 0) break;
+        leds[i] = test.color;
+        leds[i].nscale8(255 >> k);
+      }
+      break;
+    }
+    case display::TEST_ROWS: {  // Reihe 1..10, dann Minutenpunkte
+      int row = (t / (step * 12)) % (H + 1);
+      for (int i = 0; i < LED_COUNT; i++)
+        if (ledY[i] == row) leds[i] = test.color;
+      break;
+    }
+    case display::TEST_LETTERS: {  // Buchstabe fuer Buchstabe (beide LEDs), dann Punkte
+      int cell = (t / (step * 3)) % (CELLS + LED_MINUTE_COUNT);
+      for (int i = 0; i < LED_COUNT; i++)
+        if (ledCell[i] == cell) leds[i] = test.color;
+      break;
+    }
+    case display::TEST_RGBW: {
+      static const CRGB C[4] = {CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::White};
+      fill_solid(leds, LED_COUNT, C[(t / 1500) % 4]);
+      break;
+    }
+    case display::TEST_COLOR:
+      fill_solid(leds, LED_COUNT, test.color);
+      break;
+    case display::TEST_LED:
+      if (test.index < LED_COUNT) leds[test.index] = test.color;
+      break;
+    case display::TEST_DOTS: {  // Punkte nacheinander, dann alle
+      int k = (t / (step * 6)) % (LED_MINUTE_COUNT + 1);
+      for (int d = 0; d < LED_MINUTE_COUNT; d++)
+        if (k == LED_MINUTE_COUNT || d == k) leds[clockface::dotLed(d)] = test.color;
+      break;
+    }
+  }
+}
+
 }  // namespace
 
 namespace display {
@@ -314,6 +373,19 @@ void setProgress(uint8_t percent) {
 
 void testPattern() { testRequested = true; }
 
+void setTest(TestMode mode, CRGB color, uint16_t index, uint8_t bri, uint8_t speed) {
+  const uint32_t now = millis();
+  if (mode != test.mode) test.start = now;
+  test.mode = mode;
+  test.color = color;
+  test.index = index < LED_COUNT ? index : LED_COUNT - 1;
+  test.bri = bri;
+  test.speed = speed;
+  test.lastCmd = now;
+}
+
+bool testActive() { return test.mode != TEST_OFF; }
+
 void replayTransition() {
   if (!faceValid) return;
   prevFace = clockface::Face();  // aus dem Dunkeln neu aufbauen
@@ -360,6 +432,18 @@ void loop() {
     FastLED.setBrightness(80);
     FastLED.show();
     return;
+  }
+
+  if (test.mode != TEST_OFF) {
+    if (now - test.lastCmd > TEST_TIMEOUT_MS) {
+      test.mode = TEST_OFF;
+    } else {
+      renderTest(now);
+      briOut = test.bri;
+      FastLED.setBrightness(briOut);
+      FastLED.show();
+      return;
+    }
   }
 
   tm t;
