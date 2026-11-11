@@ -43,5 +43,7 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Erledigt (11.11.): Release v1.0.0 (CI) per Web-Upload aufgespielt → Auto-Update aktiv, Uhr erreicht GitHub per TLS („aktuell (v1.0.0)“).
 - Erledigt (11.11.): Internet-OTA getestet: v1.0.1 getaggt → CI-Release → „Jetzt nach Update suchen“ → Uhr lädt von GitHub, installiert, läuft mit 1.0.1 (43 s). Funktioniert auch aus fremdem WLAN, solange Internet da ist.
 - Erledigt (11.11., Code auf main, noch nicht auf der Uhr): Begrüßung jetzt „HAPPY BIRTHDAY MAJA“ (auf der Uhr steht evtl. noch „MAJA“ gespeichert → nach dem Update per Webseite/API setzen), Eigener Text wahlweise als Laufschrift (customStyle/scrollText/scrollSpeed), Webseite ohne seitliches Verschieben (Leuchtkreis hinter der Uhr ragte raus), Schalter wieder 50 px (`.row label` gab flex:1).
+- Release v1.0.2 (11.11.): Laufschrift, „HAPPY BIRTHDAY MAJA“, Webseiten-Fixes – noch OHNE Majas Bild.
+- Erledigt (11.11., auf main, noch kein Release): Majas Foto statt „W“ links oben + Favicon. Quelle web/maja.jpg (128 px, 4 KB), als data-URI in web/index.html eingebettet. Kommt mit v1.0.3 auf die Uhr.
 - Offen: Begrüßung auf echten LEDs prüfen (Lesbarkeit/Tempo) – LEDs aktuell nicht angeschlossen.
 - Offen: auf der Hardware testen (Uhrzeit-Mapping, Webseite/Live-Ansicht, Alexa). Majas Geburtstag eintragen (Default aus, 01.01.).
