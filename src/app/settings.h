@@ -36,6 +36,9 @@ struct Settings {
   bool dotsOwnColor = false;
   uint32_t dotColor = 0xFF4FA0;
   String custom;                    // 110 x '0'/'1' (Modus "Eigener Text")
+  bool customScroll = false;        // Eigener Text als Laufschrift statt Buchstaben
+  String scrollText = "MAJA <3";
+  uint8_t scrollSpeed = 50;         // 1..100
 
   // --- Sprache ---------------------------------------------------------------
   uint8_t prefix = 0;               // "Es ist": 0 immer, 1 nur volle/halbe, 2 nie
@@ -55,7 +58,7 @@ struct Settings {
   bool bdayOn = false;               // Herzchen an Majas Geburtstag (Datum noch offen)
   uint8_t bdayDay = 1, bdayMonth = 1;
   bool introOn = true;               // Begruessung beim Einschalten (Laufschrift)
-  String introText = "MAJA";
+  String introText = "HAPPY BIRTHDAY MAJA";
 
   // --- System ----------------------------------------------------------------
   String tz = "CET-1CEST,M3.5.0,M10.5.0/3";

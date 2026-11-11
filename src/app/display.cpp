@@ -45,6 +45,12 @@ struct IntroState {
   int cols = 0;
   uint8_t col[INTRO_MAX_COLS];
 } introSt;
+// Eigener Text als Laufschrift
+constexpr int SCROLL_MAX_COLS = 60 * 6 * 2;
+uint8_t scrollCols[SCROLL_MAX_COLS];
+int scrollLen = 0;
+uint32_t scrollStart = 0;
+
 uint8_t forceTrans = 255;  // naechster Uhr-Aufbau mit diesem Uebergang (255 = Einstellung)
 bool lastPower = true;
 
@@ -298,6 +304,19 @@ void renderStatus(uint32_t now) {
   for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = c;
 }
 
+// Eigener Text als Endlos-Laufschrift (Farben wie die Uhrzeit, Hintergrund wie eingestellt)
+void renderScroll(uint32_t now) {
+  const uint32_t step = 40 + (uint32_t)(100 - constrain(settings.scrollSpeed, 1, 100)) * 3;  // 40..337 ms
+  const int period = scrollLen + LETTER_COLS;
+  const int offset = period > 0 ? ((now - scrollStart) / step) % period : 0;
+  for (int i = 0; i < LED_COUNT; i++) {
+    const int y = ledY[i];
+    const int tc = ledX[i] / 2 + offset - LETTER_COLS;
+    const bool on = y >= 1 && y <= 7 && tc >= 0 && tc < scrollLen && (scrollCols[tc] >> (y - 1) & 1);
+    leds[i] = on ? textColor(i, tc / 6, now) : background(i);
+  }
+}
+
 // Begruessung: 1) Text laeuft von rechts nach links durch, 2) Herz pulsiert,
 // 3) Funkenregen. Danach baut sich die Uhr mit "Zufall" aus dem Dunkeln auf.
 // Rueckgabe false = fertig.
@@ -468,6 +487,14 @@ void settingsChanged() {
   if (settings.power && !lastPower && settings.introOn) playIntro();
   if (!settings.power) introSt.active = false;
   lastPower = settings.power;
+  {
+    static String lastText;
+    if (settings.scrollText != lastText) {
+      lastText = settings.scrollText;
+      scrollLen = intro::toColumns(settings.scrollText, scrollCols, SCROLL_MAX_COLS);
+      scrollStart = millis();
+    }
+  }
   customMask.reset();
   for (size_t i = 0; i < settings.custom.length() && i < (size_t)CELLS; i++)
     if (settings.custom[i] == '1') customMask.set(i);
@@ -524,7 +551,8 @@ void loop() {
   const bool haveTime = localNow(t);
   clockface::Face nf;
   uint8_t nw[CELLS];
-  const bool showFace = settings.mode != MODE_EFFECT && currentFace(nf, nw);
+  const bool scrolling = settings.mode == MODE_CUSTOM && settings.customScroll;
+  const bool showFace = settings.mode != MODE_EFFECT && !scrolling && currentFace(nf, nw);
 
   if (settings.mode == MODE_EFFECT || settings.bg == BG_EFFECT) renderEffect(settings.effect, now);
 
@@ -561,6 +589,9 @@ void loop() {
           nblend(leds[i], CRGB(120, 255, 140), (uint8_t)((1 - fabsf(w - 0.5f) * 2) * 220));
       }
     }
+  } else if (scrolling) {
+    renderScroll(now);
+    faceValid = false;  // beim Zurueckwechseln Uhr neu einblenden
   } else if (settings.mode == MODE_EFFECT) {
     memcpy(leds, fx, sizeof(leds));
   } else {
@@ -587,14 +618,14 @@ void loop() {
   }
 
   // Overlays: Einrichtungsportal offen / Fehler (10 s)
-  if ((showFace || settings.mode == MODE_EFFECT) && !introSt.active) {
+  if ((showFace || scrolling || settings.mode == MODE_EFFECT) && !introSt.active) {
     if (current == SysState::Portal)
       for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = CRGB(0, 0, 40 + beatsin8(15, 0, 180));
     if (current == SysState::Error && now - stateSince < 10000)
       for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = CRGB(150, 0, 0);
   }
 
-  uint8_t target = showFace || settings.mode == MODE_EFFECT || introSt.active ? targetBrightness(haveTime, t) : 80;
+  uint8_t target = showFace || scrolling || settings.mode == MODE_EFFECT || introSt.active ? targetBrightness(haveTime, t) : 80;
   briNow += (target - briNow) * 0.08f;
   if (fabsf(target - briNow) < 0.5f) briNow = target;
   briOut = (uint8_t)lroundf(briNow);

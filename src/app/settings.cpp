@@ -104,6 +104,9 @@ void Settings::toJson(JsonObject o) const {
   o["dotsOwnColor"] = dotsOwnColor;
   o["dotColor"] = colorStr(dotColor);
   o["custom"] = custom;
+  o["customStyle"] = customScroll ? "scroll" : "letters";
+  o["scrollText"] = scrollText;
+  o["scrollSpeed"] = scrollSpeed;
   o["prefix"] = PREFIXES[prefix];
   o["quarter"] = QUARTERS[quarter];
   o["threeQuarter"] = THREE_QUARTERS[threeQuarter];
@@ -155,6 +158,12 @@ uint32_t Settings::applyJson(JsonObjectConst o) {
     for (size_t i = 0; c[i] && i < 110; i++) v += (c[i] == '1') ? '1' : '0';
     if (v != custom) { custom = v; ch |= CH_DISPLAY; }
   }
+  if (const char* cs = o["customStyle"].as<const char*>()) {
+    bool v = !strcmp(cs, "scroll");
+    if (v != customScroll) { customScroll = v; ch |= CH_DISPLAY; }
+  }
+  setString(o, "scrollText", scrollText, 60, CH_DISPLAY, ch);
+  setNum(o, "scrollSpeed", scrollSpeed, 1, 100, CH_DISPLAY, ch);
   setEnum(o, "prefix", PREFIXES, prefix, CH_DISPLAY, ch);
   setEnum(o, "quarter", QUARTERS, quarter, CH_DISPLAY, ch);
   setEnum(o, "threeQuarter", THREE_QUARTERS, threeQuarter, CH_DISPLAY, ch);
