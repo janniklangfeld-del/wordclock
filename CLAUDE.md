@@ -24,7 +24,7 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 
 ## Stand (10.11.2026)
 - Erledigt: `ledtest` und `wordclock` kompilieren fehlerfrei, ohne Warnungen im eigenen Code (Flash 22 % / 49 %).
-- Erledigt: öffentliches Repo https://github.com/janniklangfeld-del/wordclock (gh-Login `janniklangfeld-del`), Branch `main`. Workflow liegt in `.github/workflows/firmware.yml`, erster CI-Lauf grün. Releases v1.0.0, v1.0.1 (11.11.). Jeder neue Tag geht automatisch an die Uhr → vorher auf Ersatzboard testen.
+- Erledigt: öffentliches Repo https://github.com/janniklangfeld-del/wordclock (gh-Login `janniklangfeld-del`), Branch `main`. Workflow liegt in `.github/workflows/firmware.yml`, erster CI-Lauf grün. Releases v1.0.0–v1.0.3 (11.11.). Jeder neue Tag geht automatisch an die Uhr → vorher auf Ersatzboard testen.
 - Erledigt: LED-Test auf ESP32 geflasht (ESP32-D0WD-V3 rev 3.1, MAC 20:50:0d:d1:df:64). USB-Chip CP2102, Treiber installiert → **COM7**. COM5/COM6 sind Intel-Ports (VID 8087), NICHT der ESP32. Seriell läuft der Test sauber durch alle Phasen.
 - Erledigt (Sichtprüfung, nur 1. von 3 Streifen angeschlossen): LEDs leuchten, Farbreihenfolge GRB stimmt (rot→grün→blau), Lauflicht bis zum Streifenende, Weiß-Test gleichmäßig (bei 2-A-Testlimit). Erster Fehlversuch: Netzteil war nicht an.
 - Erledigt: alle 224 LEDs angeschlossen, Weiß-Test gleichmäßig über alle (2-A-Testlimit, nur Einspeisung am Anfang). Lauflicht bis LED 223 nicht ausdrücklich bestätigt.
@@ -42,8 +42,8 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - ArduinoOTA (`wordclock_ota`): Einladung + Passwort ok, aber „No response from device“ – Rückverbindung Uhr → PC (TCP) blockiert vermutlich die Windows-Firewall (WLAN-Profil). Nutzer muss eine Eingangsregel für penv-python.exe selbst anlegen.
 - Erledigt (11.11.): Release v1.0.0 (CI) per Web-Upload aufgespielt → Auto-Update aktiv, Uhr erreicht GitHub per TLS („aktuell (v1.0.0)“).
 - Erledigt (11.11.): Internet-OTA getestet: v1.0.1 getaggt → CI-Release → „Jetzt nach Update suchen“ → Uhr lädt von GitHub, installiert, läuft mit 1.0.1 (43 s). Funktioniert auch aus fremdem WLAN, solange Internet da ist.
-- Erledigt (11.11., Code auf main, noch nicht auf der Uhr): Begrüßung jetzt „HAPPY BIRTHDAY MAJA“ (auf der Uhr steht evtl. noch „MAJA“ gespeichert → nach dem Update per Webseite/API setzen), Eigener Text wahlweise als Laufschrift (customStyle/scrollText/scrollSpeed), Webseite ohne seitliches Verschieben (Leuchtkreis hinter der Uhr ragte raus), Schalter wieder 50 px (`.row label` gab flex:1).
-- Release v1.0.2 (11.11.): Laufschrift, „HAPPY BIRTHDAY MAJA“, Webseiten-Fixes – noch OHNE Majas Bild.
-- Erledigt (11.11., auf main, noch kein Release): Majas Foto statt „W“ links oben + Favicon. Quelle web/maja.jpg (128 px, 4 KB), als data-URI in web/index.html eingebettet. Kommt mit v1.0.3 auf die Uhr.
+- Erledigt (11.11., Code auf main, noch nicht auf der Uhr): Begrüßung jetzt „HAPPY BIRTHDAY MAJA“ (auf der Uhr gesetzt), Eigener Text wahlweise als Laufschrift (customStyle/scrollText/scrollSpeed), Webseite ohne seitliches Verschieben (Leuchtkreis hinter der Uhr ragte raus), Schalter wieder 50 px (`.row label` gab flex:1).
+- Release v1.0.2 (11.11.): Laufschrift, „HAPPY BIRTHDAY MAJA“, Webseiten-Fixes. Uhr hat sich selbst darauf aktualisiert (nach Neustart, Auto-Check).
+- Erledigt (11.11., auf main, noch kein Release): Majas Foto statt „W“ links oben + Favicon. Quelle web/maja.jpg (128 px, 4 KB), als data-URI in web/index.html eingebettet. Release v1.0.3, Uhr per „Jetzt nach Update suchen“ aktualisiert (44 s), läuft mit 1.0.3. Begrüßungstext auf der Uhr auf „HAPPY BIRTHDAY MAJA“ gesetzt.
 - Offen: Begrüßung auf echten LEDs prüfen (Lesbarkeit/Tempo) – LEDs aktuell nicht angeschlossen.
 - Offen: auf der Hardware testen (Uhrzeit-Mapping, Webseite/Live-Ansicht, Alexa). Majas Geburtstag eintragen (Default aus, 01.01.).
