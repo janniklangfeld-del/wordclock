@@ -37,4 +37,5 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Erledigt (11.11.): versteckter LED-Testmodus auf der Webseite (5× auf „Mit ♥ für Maja gebaut“ tippen oder `#test`), kompiliert, Demo geprüft, mit 59b9cc7 geflasht.
 - Erledigt (11.11.): Begrüßung beim Einschalten: „MAJA“ als Laufschrift, Herz, Funken, dann Uhr (Einstellungen introOn/introText, Effekte-Tab). Raster kann MAJA nicht in Leserichtung → Pixelschrift. Kompiliert, Demo geprüft, auf COM7 geflasht (59b9cc7).
 - Erledigt (11.11.): WLAN eingerichtet, Uhr verbindet sich, Webseite unter http://wordclock.local, Alexa-Gerät aktiv.
+- Offen: Begrüßung „MAJA“ auf echten LEDs prüfen (Lesbarkeit/Tempo) – LEDs aktuell nicht angeschlossen.
 - Offen: auf der Hardware testen (Uhrzeit-Mapping, Webseite/Live-Ansicht, Alexa). Majas Geburtstag eintragen (Default aus, 01.01.).
