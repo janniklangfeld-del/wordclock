@@ -102,3 +102,14 @@ Reihenfolge beim Einschalten: erst Netzteil, dann USB.
 
 Serieller Monitor (115200): `+`/`-` Helligkeit, `n` nächste Phase, `p` Pause, `d` Pin-Messmodus (GPIO18 wechselt alle 3 s HIGH/LOW; Pin 2 ≈ 3,3 V, Pin 3 und DIN ≈ 5 V; Ende nur per Reset).
 Leuchtet gar nichts: **zuerst prüfen, ob das Netzteil an ist** – ohne Netzteil haben weder Streifen noch 74AHCT125 (Pin 14) Strom, USB versorgt nur den ESP32 (so passiert am 10.11.2026). Danach: GND-Verbindung, Pin 1 des 74AHCT125 auf GND, Datenrichtung des Streifens (Pfeil auf dem Band, DIN-Ende) prüfen.
+
+## Rahmen Variante 1: Holzkasten + weiße L-Profile
+
+![Bauplan Rahmen Variante 1](rahmen_variante1.svg)
+
+![Explosionsansicht](rahmen_variante1_explosion.png)
+
+- Kasten aus Leiste 20 × 40 (2 × 290,5 + 2 × 250,5, stumpf verleimt), darauf weiße PVC-L-Profile 25 × 25 × 1,5 mit 45°-Gehrung (4 × 293,5 an der Außenkante). Außenmaß ≈ 293,5 × 293,5, Tiefe 44,5.
+- Der vordere Profilschenkel ragt 3,25 mm über die Front und ist zugleich der Anschlag. Die Uhr wird von hinten eingelegt, 8 gedruckte Andruckklötze (18,4 mm) mit 3 mm Moosgummi drücken sie nach vorn. Die Rückwand (HDF 3 mm) ist mit 8 Schrauben befestigt und lässt sich abnehmen.
+- Modell: `cad/rahmen_variante1.scad` (nutzt `Wordclock_30x30_v3.scad`). Profil- und Leistenmaße oben eintragen, die Konsole zeigt dann die neuen Zuschnittmaße. `part="rueckwand_2d"` → DXF/SVG, `part="andruckklotz"` → STL.
+- Vor dem Zuschnitt: Profil im Laden nachmessen und auf Durchscheinen prüfen, gedruckte Front zusammengelegt messen.
