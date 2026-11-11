@@ -54,6 +54,8 @@ struct Settings {
   uint16_t autoLux = 250;            // ab dieser Helligkeit volle autoMax
   bool bdayOn = false;               // Herzchen an Majas Geburtstag (Datum noch offen)
   uint8_t bdayDay = 1, bdayMonth = 1;
+  bool introOn = true;               // Begruessung beim Einschalten (Laufschrift)
+  String introText = "MAJA";
 
   // --- System ----------------------------------------------------------------
   String tz = "CET-1CEST,M3.5.0,M10.5.0/3";

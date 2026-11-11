@@ -26,6 +26,8 @@ enum TestMode : uint8_t { TEST_OFF, TEST_CHASE, TEST_ROWS, TEST_LETTERS, TEST_RG
 void setTest(TestMode mode, CRGB color, uint16_t index, uint8_t bri, uint8_t speed);
 bool testActive();
 void replayTransition();            // aktuellen Uebergang vorfuehren
+void playIntro();                   // Begruessung: Laufschrift, Herz, Funken, dann Uhr
+bool introRunning();
 void settingsChanged();
 void loop();
 const CRGB* frame();                // aktuelle Farben (vor Helligkeit), LED_COUNT Eintraege

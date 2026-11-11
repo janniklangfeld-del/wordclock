@@ -2,6 +2,7 @@
 #include <time.h>
 #include "clockface.h"
 #include "hardware.h"
+#include "intro.h"
 #include "light.h"
 #include "settings.h"
 
@@ -32,6 +33,20 @@ struct TestState {
   uint32_t start = 0, lastCmd = 0;
 } test;
 constexpr uint32_t TEST_TIMEOUT_MS = 10UL * 60 * 1000;
+
+// Begruessung beim Einschalten
+constexpr int INTRO_MAX_COLS = 24 * 6 * 2;
+constexpr uint32_t INTRO_COL_MS = 85;      // Laufschrift: ms pro Spalte
+constexpr uint32_t INTRO_HEART_MS = 1600;  // Herz pulsiert
+constexpr uint32_t INTRO_SPARK_MS = 1300;  // Funkenregen, danach baut sich die Uhr auf
+struct IntroState {
+  bool active = false;
+  uint32_t start = 0;
+  int cols = 0;
+  uint8_t col[INTRO_MAX_COLS];
+} introSt;
+uint8_t forceTrans = 255;  // naechster Uhr-Aufbau mit diesem Uebergang (255 = Einstellung)
+bool lastPower = true;
 
 clockface::Face face, prevFace;
 uint8_t wordOf[CELLS], prevWordOf[CELLS];
@@ -216,6 +231,11 @@ bool currentFace(clockface::Face& f, uint8_t* words) {
 void beginTransition(bool dotsOnly) {
   transType = dotsOnly ? TR_FADE : settings.transition;
   transDur = dotsOnly ? 500 : settings.transMs;
+  if (!dotsOnly && forceTrans != 255) {
+    transType = forceTrans;
+    transDur = max<uint16_t>(settings.transMs, 1800);
+    forceTrans = 255;
+  }
   transStart = millis();
   transSeed = esp_random();
   transActive = transType != TR_NONE;
@@ -276,6 +296,46 @@ void renderStatus(uint32_t now) {
   }
   fill_solid(leds, LED_COUNT, CRGB::Black);
   for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = c;
+}
+
+// Begruessung: 1) Text laeuft von rechts nach links durch, 2) Herz pulsiert,
+// 3) Funkenregen. Danach baut sich die Uhr mit "Zufall" aus dem Dunkeln auf.
+// Rueckgabe false = fertig.
+bool renderIntro(uint32_t now) {
+  const uint32_t t = now - introSt.start;
+  const uint32_t scrollMs = (uint32_t)(introSt.cols + LETTER_COLS) * INTRO_COL_MS;
+  fill_solid(leds, LED_COUNT, CRGB::Black);
+  if (t < scrollMs) {
+    const int offset = t / INTRO_COL_MS;  // Spalte 0 der Uhr zeigt Textspalte offset - 11
+    for (int i = 0; i < LED_COUNT; i++) {
+      const int y = ledY[i];
+      if (y < 1 || y > 7) continue;  // Schrift 7 Zeilen hoch, Zeilen 2..8
+      const int tc = ledX[i] / 2 + offset - LETTER_COLS;
+      if (tc < 0 || tc >= introSt.cols || !(introSt.col[tc] >> (y - 1) & 1)) continue;
+      leds[i] = CHSV(tc * 6 - t / 12, 200, 255);  // sanfter Regenbogen ueber den Text
+    }
+    return true;
+  }
+  if (t < scrollMs + INTRO_HEART_MS) {
+    const uint32_t h = t - scrollMs;
+    // zweimal pulsieren (Herzschlag), weich ein- und ausblenden
+    uint8_t v = sin8(h * 256 / 400 + 192);
+    uint8_t env = h < 250 ? h * 255 / 250 : (h > INTRO_HEART_MS - 300 ? (INTRO_HEART_MS - h) * 255 / 300 : 255);
+    CRGB c(255, 20, 90);
+    c.nscale8_video(scale8(qadd8(v / 2, 128), env));
+    for (int i = 0; i < LED_COUNT; i++)
+      if (ledY[i] < H && HEART[ledY[i]][ledX[i] / 2] == 'X') leds[i] = c;
+    return true;
+  }
+  if (t < scrollMs + INTRO_HEART_MS + INTRO_SPARK_MS) {
+    const uint32_t s = t - scrollMs - INTRO_HEART_MS;
+    fadeToBlackBy(fx, LED_COUNT, 40);
+    const uint8_t n = 6 - s * 5 / INTRO_SPARK_MS;  // wird zum Ende weniger
+    for (uint8_t k = 0; k < n; k++) fx[random16(LED_COUNT)] = CHSV(random8(), 150, 255);
+    memcpy(leds, fx, sizeof(leds));
+    return true;
+  }
+  return false;
 }
 
 // Testbilder: Schrittdauer aus Geschwindigkeit 1..100 -> ca. 400..8 ms
@@ -351,6 +411,8 @@ void begin() {
     dropSpeed[x] = 0.10f + random8(100) / 350.0f;
   }
   settingsChanged();
+  lastPower = settings.power;
+  if (settings.power && settings.introOn) playIntro();
   FastLED.addLeds<WS2812B, PIN_LED_DATA, GRB>(leds, LED_COUNT);
   FastLED.setMaxPowerInVoltsAndMilliamps(LED_VOLTAGE_V, LED_MAX_MILLIAMPS);
   FastLED.setBrightness(0);
@@ -373,6 +435,15 @@ void setProgress(uint8_t percent) {
 
 void testPattern() { testRequested = true; }
 
+void playIntro() {
+  introSt.cols = intro::toColumns(settings.introText, introSt.col, INTRO_MAX_COLS);
+  introSt.start = millis();
+  introSt.active = true;
+  fill_solid(fx, LED_COUNT, CRGB::Black);
+}
+
+bool introRunning() { return introSt.active; }
+
 void setTest(TestMode mode, CRGB color, uint16_t index, uint8_t bri, uint8_t speed) {
   const uint32_t now = millis();
   if (mode != test.mode) test.start = now;
@@ -394,6 +465,9 @@ void replayTransition() {
 }
 
 void settingsChanged() {
+  if (settings.power && !lastPower && settings.introOn) playIntro();
+  if (!settings.power) introSt.active = false;
+  lastPower = settings.power;
   customMask.reset();
   for (size_t i = 0; i < settings.custom.length() && i < (size_t)CELLS; i++)
     if (settings.custom[i] == '1') customMask.set(i);
@@ -493,6 +567,18 @@ void loop() {
     renderStatus(now);
   }
 
+  // Begruessung ueberlagert alles; danach baut sich die Uhr neu auf
+  if (introSt.active) {
+    if (renderIntro(now)) {
+      if (current == SysState::Updating) introSt.active = false;
+    } else {
+      introSt.active = false;
+      faceValid = false;
+      forceTrans = TR_RANDOM;
+      fill_solid(leds, LED_COUNT, CRGB::Black);
+    }
+  }
+
   // Majas Geburtstag: zu jeder Viertelstunde 20 s Herzchen
   if (haveTime && settings.bdayOn && t.tm_mday == settings.bdayDay && t.tm_mon + 1 == settings.bdayMonth &&
       t.tm_min % 15 == 0 && t.tm_sec < 20) {
@@ -501,14 +587,14 @@ void loop() {
   }
 
   // Overlays: Einrichtungsportal offen / Fehler (10 s)
-  if (showFace || settings.mode == MODE_EFFECT) {
+  if ((showFace || settings.mode == MODE_EFFECT) && !introSt.active) {
     if (current == SysState::Portal)
       for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = CRGB(0, 0, 40 + beatsin8(15, 0, 180));
     if (current == SysState::Error && now - stateSince < 10000)
       for (int k = 0; k < LED_MINUTE_COUNT; k++) leds[clockface::dotLed(k)] = CRGB(150, 0, 0);
   }
 
-  uint8_t target = showFace || settings.mode == MODE_EFFECT ? targetBrightness(haveTime, t) : 80;
+  uint8_t target = showFace || settings.mode == MODE_EFFECT || introSt.active ? targetBrightness(haveTime, t) : 80;
   briNow += (target - briNow) * 0.08f;
   if (fabsf(target - briNow) < 0.5f) briNow = target;
   briOut = (uint8_t)lroundf(briNow);

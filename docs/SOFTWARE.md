@@ -15,6 +15,7 @@ Stand 10.11.2026: kompiliert fehlerfrei, Webseite im Demo-Modus geprüft. **Auf 
 | Eigener Text | Buchstaben in der 3D-Ansicht antippen → eigene Wörter/Botschaften |
 | Zeitplan | Nachtmodus (Zeitfenster, gedimmt oder aus) |
 | Helligkeit | Regler; automatisch mit BH1750-Lichtsensor (wird beim Start erkannt) |
+| Begrüßung | Beim Einschalten (Strom an, Knopf auf der Webseite, „Alexa, … an“) läuft „MAJA“ als Laufschrift in 5×7-Pixelschrift über die Buchstabenfelder, dann pulsiert ein Herz, ein Funkenregen folgt, und die Uhrzeit baut sich mit „Zufall“ auf (ca. 6 s). Text und An/Aus unter Effekte → Begrüßung. Hinweis: „MAJA“ lässt sich auf dem Buchstabenraster nicht in Leserichtung schreiben (zwischen M und dem einzigen J steht kein A), deshalb Laufschrift. |
 | Geburtstag | An Majas Geburtstag zu jeder Viertelstunde 20 s Herzchen (Datum in der Webseite eintragen) |
 | Alexa | Meldet sich als Hue-kompatible Farblampe im Heimnetz (Espalexa, ohne Cloud/Skill): an/aus, Helligkeit, Farbe |
 | Webseite | `http://wordclock.local` – live mitlaufende 3D-Uhr (zeigt exakt die LED-Farben), alle Einstellungen, Updates, WLAN, Neustart |
@@ -31,6 +32,7 @@ Stand 10.11.2026: kompiliert fehlerfrei, Webseite im Demo-Modus geprüft. **Auf 
 | `display.*` | Renderer mit 50 Bildern/s: Uhrzeit, Farben, Effekte, Übergänge, Nachtmodus, Helligkeit, Statusanzeige |
 | `web.*` | HTTP-Server (Port 80, REST unter `/v1/…`), WebSocket (Port 81) für das Live-Bild |
 | `alexa.*` | Espalexa-Gerät, synchron mit den Einstellungen |
+| `intro.*` | Pixelschrift 5×7 für die Begrüßung (A–Z, ÄÖÜ, 0–9, ! - ., Herz mit `<3`) |
 | `light.*` | BH1750-Lichtsensor (I2C, SDA 21 / SCL 22) |
 | `net.*`, `ota.*` | WLAN-Portal „Majas-Wordclock“, Internet-OTA |
 
@@ -48,6 +50,7 @@ Die Webseite liegt in `web/index.html` (eine Datei, keine externen Quellen, funk
 | GET | `/v1/info` | Firmware, WLAN, Zeit, Sensor, Update-Status | nein |
 | GET | `/v1/layout` | Buchstaben + LED-Indizes (für die 3D-Ansicht) | nein |
 | POST | `/v1/replay` | Übergang vorführen | nein |
+| POST | `/v1/intro` | Begrüßung abspielen | nein |
 | POST | `/v1/test` | LED-Testmodus: `{"mode":"chase\|rows\|letters\|rgbw\|color\|led\|dots\|off","color":"#RRGGBB","index":0–223,"bri":0–255,"speed":1–100}`; ohne Inhalt einmaliges Lauflicht | nein |
 | POST | `/v1/check`, `/v1/wifi`, `/v1/reboot`, `/v1/password` | Update suchen, WLAN-Portal, Neustart, Passwort | ja |
 | POST | `/update` | Firmware-Datei | ja |

@@ -166,6 +166,7 @@ void setupRoutes() {
   http.on("/v1/layout", HTTP_GET, handleLayout);
   http.on("/v1/replay", HTTP_POST, [] { display::replayTransition(); sendOk(); });
   http.on("/v1/test", HTTP_POST, handleTest);
+  http.on("/v1/intro", HTTP_POST, [] { display::playIntro(); sendOk(); });
   http.on("/v1/auth", HTTP_GET, [] { if (authOk()) sendOk(); });
   http.on("/v1/check", HTTP_POST, [] { if (!authOk()) return; ota::requestCheck(); sendOk(); });
   http.on("/v1/wifi", HTTP_POST, [] { if (!authOk()) return; sendOk(); net::requestPortal(); });

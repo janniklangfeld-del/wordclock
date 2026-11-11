@@ -240,6 +240,13 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;use
       <div class="row"><label>Dauer</label><input type="range" min="200" max="5000" step="100" data-key="transMs"><output data-out="transMs" data-fmt="sec"></output></div>
       <button class="btn" data-action="replay">▶ Übergang vorführen</button>
     </div>
+    <div class="card">
+      <h3>Begrüßung beim Einschalten</h3>
+      <div class="row"><div class="lbl">Laufschrift beim Angehen<small>Text läuft einmal durch, dann Herz, Funken und die Uhr baut sich auf</small></div><label class="sw"><input type="checkbox" data-key="introOn"><span></span></label></div>
+      <div class="row"><label>Text</label><input type="text" maxlength="24" data-key="introText" style="flex:1.3" placeholder="MAJA"></div>
+      <button class="btn" data-action="intro">▶ Begrüßung zeigen</button>
+      <p class="note">Läuft beim Einstecken, beim Einschalten über den Knopf oben und bei „Alexa, … an“. Buchstaben A–Z, Ä Ö Ü, Zahlen, ! - . und ein Herz mit „&lt;3“.</p>
+    </div>
   </section>
 
   <!-- ================= Sprache ================= -->
@@ -419,12 +426,35 @@ function phrase(h, m, s) {
 const DEFAULTS = {name:"Majas Wordclock",power:true,brightness:90,mode:"clock",color:"#FFB46E",color2:"#FF4FA0",colorMode:"solid",gradDir:"h",speed:40,
   bg:"off",bgColor:"#281400",bgLevel:15,effect:"rainbow",transition:"fade",transMs:1200,dots:true,dotsOwnColor:false,dotColor:"#FF4FA0",custom:"",
   prefix:"always",quarter:"nach",threeQuarter:"vor",twenty:"zwanzig",nightOn:false,nightFrom:"22:30",nightTo:"06:30",nightBri:12,nightOff:false,
-  autoOn:false,autoMin:8,autoMax:200,autoLux:250,bdayOn:false,bday:"01.01",tz:"CET-1CEST,M3.5.0,M10.5.0/3",ntp:"de.pool.ntp.org",alexa:true,alexaName:"Wordclock",autoUpdate:true};
+  autoOn:false,autoMin:8,autoMax:200,autoLux:250,bdayOn:false,bday:"01.01",introOn:true,introText:"MAJA",tz:"CET-1CEST,M3.5.0,M10.5.0/3",ntp:"de.pool.ntp.org",alexa:true,alexaName:"Wordclock",autoUpdate:true};
 function letterLed(r, c, half) { const p = c * 2 + half; return r * 22 + (r % 2 === 0 ? p : 21 - p); }
 const demoLayout = () => ({ letters: LETTERS, leds: [...Array(110)].map((_, i) => [letterLed(Math.floor(i / 11), i % 11, 0), letterLed(Math.floor(i / 11), i % 11, 1)]), dots: [220, 221, 222, 223], count: 224 });
 const hex = c => [1, 3, 5].map(i => parseInt(c.substr(i, 2), 16));
 function hsv(h, s = 1, v = 1) { h = ((h % 1) + 1) % 1; const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
   return [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i % 6].map(x => x * 255); }
+const FONT5 = "0000000000 00005F0000 0808080808 0060600000 3E5149453E 00427F4000 4261514946 2141454B31 1814127F10 2745454539 3C4A494930 0171090503 3649494936 064949291E 7E1111117E 7F49494936 3E41414122 7F4141221C 7F49494941 7F09090901 3E4149497A 7F0808087F 00417F4100 2040413F01 7F08142241 7F40404040 7F020C027F 7F0408107F 3E4141413E 7F09090906 3E4151215E 7F09192946 4649494931 01017F0101 3F4040403F 1F2040201F 3F4038403F 6314081463 0708700807 6151494543 7D1211127D 3D4242423D 3D4040403D 0C1E3C1E0C".split(" ").map(g => [0, 2, 4, 6, 8].map(i => parseInt(g.substr(i, 2), 16)));
+function textColumns(txt) {
+  const out = []; const put = g => { out.push(...FONT5[g], 0); };
+  txt = txt.replace(/<3|♥|❤/g, "\u0001").toUpperCase().replace(/ß/g, "SS");
+  for (const ch of txt) { const c = ch.charCodeAt(0);
+    put(ch === "\u0001" ? 43 : ch === "Ä" ? 40 : ch === "Ö" ? 41 : ch === "Ü" ? 42 : c >= 65 && c <= 90 ? 14 + c - 65 : c >= 48 && c <= 57 ? 4 + c - 48 : ch === "!" ? 1 : ch === "-" ? 2 : ch === "." ? 3 : 0); }
+  return out;
+}
+const HEART11 = ["..XX...XX..", ".XXXX.XXXX.", "XXXXXXXXXXX", "XXXXXXXXXXX", ".XXXXXXXXX.", "..XXXXXXX..", "...XXXXX...", "....XXX....", ".....X.....", "..........."];
+const INTRO = { active: false, start: 0, cols: [], spark: new Float32Array(224 * 3) };
+function demoIntroFrame() {
+  const f = new Uint8Array(2 + 224 * 3), t = performance.now() - INTRO.start, scroll = (INTRO.cols.length + 11) * 85; f[1] = S.brightness;
+  const put = (i, c) => { f[2 + i * 3] = c[0]; f[3 + i * 3] = c[1]; f[4 + i * 3] = c[2]; };
+  if (t < scroll) { const off = Math.floor(t / 85);
+    L.leds.forEach((pair, i) => { const y = Math.floor(i / 11), tc = i % 11 + off - 11; if (y < 1 || y > 7 || tc < 0 || tc >= INTRO.cols.length || !(INTRO.cols[tc] >> (y - 1) & 1)) return;
+      const c = hsv((tc * 6 - t / 12) / 256, .78); pair.forEach(l => put(l, c)); }); return f; }
+  if (t < scroll + 1600) { const h = t - scroll, env = Math.min(1, h / 250, (1600 - h) / 300), v = (0.5 + 0.5 * (0.5 + 0.5 * Math.sin(h / 400 * 2 * Math.PI - Math.PI / 2))) * env;
+    L.leds.forEach((pair, i) => { if (HEART11[Math.floor(i / 11)][i % 11] === "X") pair.forEach(l => put(l, [255 * v, 20 * v, 90 * v])); }); return f; }
+  if (t < scroll + 2900) { const sp = INTRO.spark; for (let k = 0; k < sp.length; k++) sp[k] *= 0.84;
+    const n = 6 - Math.floor((t - scroll - 1600) * 5 / 1300); for (let k = 0; k < n; k++) { const i = Math.floor(Math.random() * 224), c = hsv(Math.random(), .6); sp.set(c, i * 3); }
+    for (let i = 0; i < 224; i++) put(i, [sp[i * 3], sp[i * 3 + 1], sp[i * 3 + 2]]); return f; }
+  INTRO.active = false; INTRO.fadeFrom = performance.now(); return null;
+}
 function demoTestFrame() {
   const f = new Uint8Array(2 + 224 * 3), t = performance.now() - T.start, step = 8 + (100 - T.speed) * 4, col = hex(T.color.toUpperCase());
   f[1] = T.bri; const put = (i, c, k = 1) => { f[2 + i * 3] = c[0] * k; f[3 + i * 3] = c[1] * k; f[4 + i * 3] = c[2] * k; };
@@ -442,6 +472,7 @@ function demoTestFrame() {
 }
 function demoFrame() {
   if (T.mode !== "off") return demoTestFrame();
+  if (INTRO.active) { const f = demoIntroFrame(); if (f) return f; }
   const f = new Uint8Array(2 + 224 * 3), now = new Date(), ms = performance.now() * S.speed / 40;
   f[1] = S.power ? S.brightness : 0;
   const put = (i, c) => { f[2 + i * 3] = c[0]; f[3 + i * 3] = c[1]; f[4 + i * 3] = c[2]; };
@@ -460,11 +491,14 @@ function demoFrame() {
   L.leds.forEach(([a, b], i) => { const y = Math.floor(i / 11), x = (i % 11) * 2;
     put(a, on.has(i) ? text(x, y, wordOf[i] || 0) : bgc(x, y)); put(b, on.has(i) ? text(x + 1, y, wordOf[i] || 0) : bgc(x + 1, y)); });
   L.dots.forEach((d, k) => put(d, S.dots && k < dots ? (S.dotsOwnColor ? hex(S.dotColor) : text(10, 9, 0)) : bgc(9 + k, 10)));
+  if (INTRO.fadeFrom) { const p = (performance.now() - INTRO.fadeFrom) / 1800; if (p >= 1) INTRO.fadeFrom = 0;
+    else for (let i = 0; i < 224; i++) { const d = ((i * 2654435761) >>> 0) % 997 / 997, w = Math.max(0, Math.min(1, (p - d * 0.7) / 0.3)); for (let k = 0; k < 3; k++) f[2 + i * 3 + k] *= w; } }
   return f;
 }
 async function mock(path, method, body) {
   if (path === "/v1/settings") { if (method === "POST") Object.assign(S, body); return { ...S }; }
   if (path === "/v1/layout") return demoLayout();
+  if (path === "/v1/intro") { INTRO.cols = textColumns(S.introText || ""); INTRO.start = performance.now(); INTRO.active = true; INTRO.spark.fill(0); return { ok: true }; }
   if (path === "/v1/info") { const n = new Date(); return { fw: "demo", repo: "janniklangfeld-del/wordclock", ip: "192.168.178.42", ssid: "Heimnetz", rssi: -58, mac: "20:50:0D:D1:DF:64",
       uptime: Math.floor(performance.now() / 1000), heap: 182000, timeValid: true, localTime: new Date(n - n.getTimezoneOffset() * 60000).toISOString().slice(0, 19), sensor: { found: false, lux: -1 },
       update: { result: "aktuell (v1.0.0)", latest: "v1.0.0" }, alexa: true }; }
@@ -629,6 +663,7 @@ const ACTIONS = {
   showEffect: () => set("mode", "effect"),
   showClock: () => set("mode", "clock"),
   replay: () => run(() => api("/v1/replay", { method: "POST" }), "Übergang wird gezeigt"),
+  intro: () => run(() => api("/v1/intro", { method: "POST" }), "Begrüßung läuft"),
   test: () => run(() => api("/v1/test", { method: "POST" }), "LED-Test läuft"),
   customClear: () => set("custom", "0".repeat(110)),
   customFromTime: () => { const n = new Date(), r = compute(n.getHours(), n.getMinutes(), S), a = Array(110).fill("0");

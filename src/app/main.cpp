@@ -38,6 +38,12 @@ void setup() {
   display::loop();
   light::begin();
 
+  // Begruessung abspielen, bevor der (bis zu 20 s blockierende) WLAN-Aufbau startet
+  while (display::introRunning()) {
+    display::loop();
+    delay(1);
+  }
+
   net::begin();
   ota::begin();
 }

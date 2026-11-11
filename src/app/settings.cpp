@@ -121,6 +121,8 @@ void Settings::toJson(JsonObject o) const {
   char b[6];
   snprintf(b, sizeof(b), "%02u.%02u", bdayDay, bdayMonth);
   o["bday"] = b;
+  o["introOn"] = introOn;
+  o["introText"] = introText;
   o["tz"] = tz;
   o["ntp"] = ntp;
   o["alexa"] = alexa;
@@ -176,6 +178,8 @@ uint32_t Settings::applyJson(JsonObjectConst o) {
       ch |= CH_DISPLAY;
     }
   }
+  setBool(o, "introOn", introOn, CH_SYSTEM, ch);
+  setString(o, "introText", introText, 24, CH_SYSTEM, ch);
   setString(o, "tz", tz, 60, CH_TIME, ch);
   setString(o, "ntp", ntp, 60, CH_TIME, ch);
   setBool(o, "alexa", alexa, CH_ALEXA, ch);
