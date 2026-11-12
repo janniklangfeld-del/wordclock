@@ -120,8 +120,8 @@ Leuchtet gar nichts: **zuerst prüfen, ob das Netzteil an ist** – ohne Netztei
 
 ![Ansicht](rahmen_holz_ansicht.png) ![Explosionsansicht](rahmen_holz_explosion.png)
 
-- Rechteckleiste Buche 100 × 40 × 20 mm (BAUHAUS Art.-Nr. 14610733, 2 Stück), hochkant: 20 mm sichtbar, 40 mm tief. 4 × 290,5 an der Außenkante, 45°-Gehrung, verleimt; gedruckte Eckwinkel hinten in den Ecken.
+- Buche-Leimholz 18 mm nach Maß (BAUHAUS Art.-Nr. 14455864), 5 Streifen 50 × 300 zuschneiden lassen, hochkant: 18 mm sichtbar, 50 mm tief. 4 × 286,5 an der Außenkante, 45°-Gehrung, verleimt; gedruckte Eckwinkel hinten in den Ecken. (Die fertige Leiste 40 × 20 war zu flach für die 22 mm hohe ESP32-Platine.)
 - Innen ein schwarzer, gedruckter Anschlag 4 × 3 mm bündig mit der Vorderkante → Front sitzt 3 mm zurück. Fenster 242,5 mm, Buchstaben 10,75 mm vom Anschlag.
-- Uhr von hinten einlegen, 8 Andruckklötze (15,4 mm) + 3 mm Moosgummi. Rückwand Pappel-Sperrholz 3 mm (Art.-Nr. 24815310), 290,5 × 290,5, 8 Schrauben 3 × 16, Lüftung, Kabelloch, Schlüsselloch.
-- Platz hinter dem LED-Träger: 17,4 mm → Elektronik max. ~15 mm hoch.
+- Uhr von hinten einlegen, 8 Andruckklötze (25,4 mm) + 3 mm Moosgummi. Rückwand Pappel-Sperrholz 3 mm (Art.-Nr. 24815310), 286,5 × 286,5, 8 Schrauben 3 × 16, Lüftung, Kabelloch, Schlüsselloch.
+- Platz hinter dem LED-Träger: 27,4 mm → ESP32-Platine (22 mm) passt mit 5,4 mm Luft. Gesamttiefe 53 mm, außen 286,5 × 286,5.
 - Modell: `cad/rahmen_holz.scad`. Druckteile über `part` = `anschlag_lang` (2×), `anschlag_kurz` (2×), `eckwinkel` (4×), `andruckklotz` (8×); Rückwand als `rueckwand_2d`.

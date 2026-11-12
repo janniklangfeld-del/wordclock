@@ -1,10 +1,12 @@
 /*
  WORDCLOCK – HOLZRAHMEN (Variante 2, gewaehlt am 12.11.2026)
- Buche-Rechteckleiste 40 x 20 mm (BAUHAUS), 45-Grad-Gehrung, naturbelassen/geoelt.
+ Buche-Leimholz 18 mm, als Streifen 50 mm breit zugeschnitten (BAUHAUS),
+ 45-Grad-Gehrung, geoelt. Tiefe 50 mm, weil die ESP32-Platine 22 mm hoch ist.
+ (Die 40-mm-Leiste liess hinten nur 17,4 mm Platz.)
  Einheit: Millimeter. Nutzt die Uhr-Schichten aus Wordclock_30x30_v3.scad.
 
  Prinzip (Schnitt durch eine Seite):
-   - Leiste hochkant: 20 mm sichtbare Rahmenbreite, 40 mm Tiefe.
+   - Streifen hochkant: 18 mm sichtbare Rahmenbreite, 50 mm Tiefe.
    - Innen rundum ein schwarzer, gedruckter Anschlag (4 x 3 mm) buendig mit
      der Rahmenvorderkante. Die Front liegt von hinten dagegen und sitzt
      dadurch 3 mm zurueck (Schattenfuge, schwarz in schwarz).
@@ -27,8 +29,9 @@ part = "assembly"; // [assembly:Gesamt,explosion:Explosionsansicht,schnitt:Schni
 show_uhr = true;
 
 /* [Holzleiste (nachmessen!)] */
-holz_w = 20;       // sichtbare Rahmenbreite
-holz_d = 40;       // Tiefe
+holz_w = 18;       // sichtbare Rahmenbreite (Leimholz 18 mm)
+holz_d = 50;       // Tiefe (Streifenbreite)
+elektronik_h = 22; // hoechstes Bauteil hinter dem LED-Traeger (ESP32-Platine)
 spiel = 0.25;      // Luft je Seite zwischen Front und Holz
 
 /* [Anschlag (schwarz drucken)] */
@@ -65,7 +68,7 @@ echo(str("Aussen ", aussen, " | Innen ", innen, " | Fenster ", fenster,
          " | Rahmenbreite sichtbar ", holz_w, " + Anschlag ", anschlag_b,
          " | Front ", anschlag_t + anschlag_rueck, " mm zurueck | Platz Elektronik ", luft,
          " | Andruckklotz ", klotz_h, " | Gesamttiefe ", holz_d + rueckwand_t));
-assert(luft >= 12, "Zu wenig Platz hinter dem LED-Traeger: tiefere Leiste waehlen");
+assert(luft >= elektronik_h + 2, str("Elektronik passt nicht: Platz ", luft, " mm, noetig ", elektronik_h + 2, " mm -> holz_d erhoehen"));
 assert(15 - spiel - anschlag_b >= 5, "Anschlag reicht zu nah an die Buchstaben");
 
 BUCHE   = [0.88,0.73,0.56];
@@ -162,8 +165,8 @@ module andruck() {
 }
 
 module elektronik() {
-    color([0.1,0.45,0.25]) translate([front_size/2-14, 60, z_hint]) cube([28,52,13]);
-    color([0.9,0.6,0.1]) translate([front_size/2+30, 60, z_hint]) cube([40,20,10]);
+    color([0.1,0.45,0.25]) translate([front_size/2-30, 60, z_hint]) cube([60,50,elektronik_h]);
+    color([0.9,0.6,0.1]) translate([front_size/2+40, 60, z_hint]) cube([40,20,10]);
 }
 
 module uhr() {
