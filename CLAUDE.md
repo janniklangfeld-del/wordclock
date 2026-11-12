@@ -20,6 +20,7 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - WLAN-Portal „Majas-Wordclock“: ohne Zugangsdaten, nach 5 min WLAN-Ausfall, BOOT 5 s, Web-Button.
 - Libs (env wordclock): ArduinoJson 7.2.1, WebSockets 2.6.1 (Port 81, Live-Bild), Espalexa 2.7.0 (Alexa als Hue-Lampe, `/api` reserviert).
 - Webseite: `web/index.html` (eine Datei, offline), `scripts/embed_web.py` → `src/app/web_index.h` (generiert, nicht im Git). Vorschau: `index.html?demo`. Überblick: docs/SOFTWARE.md.
+- Fernzugriff: über das WireGuard-VPN von Majas FRITZ!Box (Glasfaser, ggf. DS-Lite → IPv6), Uhr dann unter http://wordclock.fritz.box. Keine Portfreigabe. Anleitung: docs/FERNZUGRIFF.md. Noch nicht eingerichtet (braucht Majas FRITZ!Box).
 - Personalisiert: Name „Majas Wordclock“ (Webseite, Portal-Titel), in den Einstellungen änderbar.
 
 ## Stand (10.11.2026)

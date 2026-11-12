@@ -22,6 +22,8 @@ Stand 10.11.2026: kompiliert fehlerfrei, Webseite im Demo-Modus geprüft. **Auf 
 | Updates | GitHub Releases (automatisch), lokales ArduinoOTA, Datei-Upload über die Webseite |
 | LED-Testmodus | Versteckt: unten auf der Webseite 5× schnell auf „Mit ♥ für Maja gebaut“ tippen (oder `http://wordclock.local/#test`). Lauflicht, Reihen, Buchstaben, R·G·B·W, alle an, Einzel-LED (mit Anzeige Reihe/Buchstabe; Buchstabe in der 3D-Uhr antippbar), Minutenpunkte. Farbe, Helligkeit, Tempo einstellbar. Endet 10 min nach der letzten Eingabe oder beim Schließen der Seite. |
 
+Von unterwegs: über das WireGuard-VPN der FRITZ!Box, siehe [FERNZUGRIFF.md](FERNZUGRIFF.md).
+
 ## Aufbau (`src/app/`)
 
 | Datei | Aufgabe |
