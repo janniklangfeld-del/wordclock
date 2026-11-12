@@ -124,4 +124,5 @@ Leuchtet gar nichts: **zuerst prüfen, ob das Netzteil an ist** – ohne Netztei
 - Innen ein schwarzer, gedruckter Anschlag 4 × 3 mm bündig mit der Vorderkante → Front sitzt 3 mm zurück. Fenster 242,5 mm, Buchstaben 10,75 mm vom Anschlag.
 - Uhr von hinten einlegen, 8 Andruckklötze (25,4 mm) + 3 mm Moosgummi. Rückwand Pappel-Sperrholz 3 mm (Art.-Nr. 24815310), 286,5 × 286,5, 8 Schrauben 3 × 16, Lüftung, Kabelloch, Schlüsselloch.
 - Platz hinter dem LED-Träger: 27,4 mm → ESP32-Platine (22 mm) passt mit 5,4 mm Luft. Gesamttiefe 53 mm, außen 286,5 × 286,5.
+- Zuschnittblatt für den Baumarkt (eine Leiste mit Gehrung, A4 quer): [zuschnitt_leiste.pdf](zuschnitt_leiste.pdf) (Quelle zuschnitt_leiste.svg, Vorschau zuschnitt_leiste.png).
 - Modell: `cad/rahmen_holz.scad`. Druckteile über `part` = `anschlag_lang` (2×), `anschlag_kurz` (2×), `eckwinkel` (4×), `andruckklotz` (8×); Rückwand als `rueckwand_2d`.
