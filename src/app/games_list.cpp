@@ -552,8 +552,8 @@ class Pong : public Game {
     bxp = 5;
     byp = rnd(2, 7);
     vx = toward == 0 ? -1 : 1;
-    vy = (esp_random() & 1) ? 1 : -1;
-    ballMs = 170;
+    vy = 0;        // Aufschlag gerade, nicht schraeg ins Eck
+    ballMs = 280;  // und langsamer; nach dem ersten Rueckschlag normales Tempo
     rally = 0;
     pauseUntil = t + 1300;
     lastBall = pauseUntil;
@@ -616,7 +616,7 @@ class Pong : public Game {
         hits[side]++;
         rally++;
         bestRally = max(bestRally, rally);
-        ballMs = max<uint32_t>(55, ballMs - 8);
+        ballMs = rally == 1 ? 170 : max<uint32_t>(55, ballMs - 8);
         nx = bxp + vx;
         ny = byp + vy;
         if (ny < 0 || ny >= GH) { vy = -vy; ny = byp + vy; }
