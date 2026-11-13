@@ -1076,6 +1076,153 @@ class Reaction : public Game {
   }
 };
 
+// ===========================================================================
+// Flatterherz (allein oder zu zweit gleichzeitig): Tippen = flattern, durch die
+// Luecken der Roehren fliegen. Zu zweit gewinnt, wer laenger in der Luft bleibt.
+// ===========================================================================
+class Flap : public Game {
+  static constexpr int BX = 2;          // Spalte der Herzen
+  static constexpr float GRAV = 15.0f;  // Felder/s^2
+  static constexpr float LIFT = -6.2f;  // Felder/s direkt nach dem Flattern (~1,3 Felder hoch)
+  struct Pipe { int8_t x, gap, h; };    // Luecke: Zeilen gap .. gap+h-1
+  Pipe pipes[4];
+  int np = 0;
+  float y[2] = {4, 5}, vy[2] = {0, 0};
+  bool alive[2] = {true, true}, flying[2] = {false, false};
+  int pts[2] = {0, 0}, flaps[2] = {0, 0};
+  uint32_t deadT[2] = {0, 0}, lastPhys = 0, lastScroll = 0, scrollMs = 300, endT = 0;
+  int lastGap = 3, sinceSpawn = 0;
+
+  int players() const { return humans == 2 ? 2 : 1; }
+  float base(int p) const { return p ? 5.0f : 4.0f; }
+  int cell(int p) const { return constrain((int)(y[p] + 0.5f), 0, GH - 1); }
+  void spawn() {
+    const int h = max(pts[0], pts[1]) < 10 ? 4 : 3;  // ab 10 Punkten engere Luecken
+    lastGap = constrain(lastGap + rnd(-3, 3), 1, GH - 1 - h);
+    if (np < 4) pipes[np++] = {(int8_t)(GW - 1), (int8_t)lastGap, (int8_t)h};
+  }
+  bool hitsPipe(int r) const {
+    for (int i = 0; i < np; i++)
+      if (pipes[i].x == BX && (r < pipes[i].gap || r >= pipes[i].gap + pipes[i].h)) return true;
+    return false;
+  }
+  void kill(int p) {
+    if (!alive[p]) return;
+    alive[p] = false;
+    deadT[p] = t;
+  }
+
+ public:
+  void start() override {
+    for (int p = 0; p < 2; p++) {
+      y[p] = base(p);
+      vy[p] = 0;
+      alive[p] = p < players();
+      flying[p] = false;
+    }
+    np = 0;
+    lastPhys = t;
+    lastScroll = t + 900;  // erste Roehre kommt nach ~1 s ins Bild
+    scrollMs = 300;
+    sinceSpawn = 99;
+  }
+  void key(uint8_t p, uint8_t k, bool down) override {
+    if (!down || p >= players() || !alive[p] || (k != K_A && k != K_B && k != K_UP)) return;
+    vy[p] = LIFT;
+    flying[p] = true;
+    flaps[p]++;
+  }
+  void tick() override {
+    if (endT) return;
+    const uint32_t dt = min<uint32_t>(t - lastPhys, 60);
+    lastPhys = t;
+    const float s = dt / 1000.0f;
+    const bool hover = t - startT < 1300;  // am Anfang schweben, bis man flattert
+    for (int p = 0; p < players(); p++) {
+      if (!alive[p]) continue;
+      if (hover && !flying[p]) { y[p] = base(p) + 0.35f * sinf((t - startT) / 230.0f); continue; }
+      vy[p] += GRAV * s;
+      y[p] += vy[p] * s;
+      if (y[p] < 0) { y[p] = 0; vy[p] = 0; }  // Decke: anstossen erlaubt
+      if (y[p] > GH - 0.5f) { y[p] = GH - 1; kill(p); continue; }  // Boden
+      if (hitsPipe(cell(p))) kill(p);
+    }
+    if ((int32_t)(t - lastScroll) >= (int32_t)scrollMs) {
+      lastScroll = t;
+      int n = 0;
+      for (int i = 0; i < np; i++) {
+        pipes[i].x--;
+        if (pipes[i].x == BX - 1)  // Luecke geschafft
+          for (int p = 0; p < players(); p++)
+            if (alive[p]) pts[p]++;
+        if (pipes[i].x == BX - 1) scrollMs = max<uint32_t>(150, scrollMs - 6);
+        if (pipes[i].x >= 0) pipes[n++] = pipes[i];
+      }
+      np = n;
+      if (++sinceSpawn >= 5) { spawn(); sinceSpawn = 0; }
+      for (int p = 0; p < players(); p++)
+        if (alive[p] && hitsPipe(cell(p))) kill(p);
+    }
+    bool anyAlive = false;
+    uint32_t lastDeath = 0;
+    for (int p = 0; p < players(); p++) {
+      anyAlive |= alive[p];
+      lastDeath = max(lastDeath, deadT[p]);
+    }
+    if (!anyAlive && t - lastDeath > 1300) endT = t;
+  }
+  void draw(Canvas& c) override {
+    for (int i = 0; i < np; i++)
+      for (int r = 0; r < GH; r++) {
+        const Pipe& pp = pipes[i];
+        if (r >= pp.gap && r < pp.gap + pp.h) continue;
+        const bool lip = r == pp.gap - 1 || r == pp.gap + pp.h;  // Rand an der Luecke heller
+        c.set(pp.x, r, lip ? CRGB(90, 255, 120) : CRGB(0, 150, 45));
+      }
+    for (int p = 0; p < players(); p++) {
+      CRGB col = P_COL[p];
+      if (!alive[p]) {
+        if (t - deadT[p] > 1300) continue;
+        col = ((t - deadT[p]) / 120) % 2 ? CRGB(255, 0, 0) : CRGB(255, 200, 0);
+      } else if (vy[p] < -2.5f) {
+        col += CRGB(70, 70, 70);  // kurz heller beim Flattern
+      }
+      if (p == 1 && alive[0] && cell(0) == cell(1)) c.add(BX, cell(p), col);
+      else c.set(BX, cell(p), col);
+    }
+    if (players() == 1) {
+      for (int k = 0; k < 4; k++) c.dots[k] = k < pts[0] % 5 ? P_COL[0] : CRGB::Black;
+    } else {
+      c.dots[0] = c.dots[1] = alive[0] ? P_COL[0] : CRGB::Black;
+      c.dots[2] = c.dots[3] = alive[1] ? P_COL[1] : CRGB::Black;
+    }
+  }
+  bool over() const override { return endT && t - endT > 100; }
+  int8_t winner() const override {
+    if (players() == 1) return -1;
+    if (deadT[0] != deadT[1]) return deadT[0] > deadT[1] ? 0 : 1;  // wer laenger fliegt
+    return pts[0] > pts[1] ? 0 : pts[1] > pts[0] ? 1 : 2;
+  }
+  int32_t score(uint8_t p) const override { return pts[p & 1]; }
+  int32_t bigNumber() const override { return pts[0]; }
+  int32_t hsValue(uint8_t p) const override { return p < players() ? pts[p] : -1; }
+  void live(char* b, size_t n) const override {
+    if (players() == 1) snprintf(b, n, "%d Lücken", pts[0]);
+    else snprintf(b, n, "%d : %d Lücken", pts[0], pts[1]);
+  }
+  void results(JsonArray r) const override {
+    if (players() == 1) {
+      row(r, "Lücken", String(pts[0]));
+      row(r, "Geflattert", String(flaps[0]) + "×");
+    } else {
+      row(r, "Lücken", String(pts[0]), String(pts[1]));
+      row(r, "Geflattert", String(flaps[0]) + "×", String(flaps[1]) + "×");
+    }
+    row(r, "Spielzeit", mmss(seconds()));
+    row(r, "Endtempo", String(1000.0f / scrollMs, 1) + " Felder/s");
+  }
+};
+
 }  // namespace
 
 Game* create(uint8_t id) {
@@ -1086,6 +1233,7 @@ Game* create(uint8_t id) {
     case 3: return new Tron();
     case 4: return new Connect4();
     case 5: return new Reaction();
+    case 6: return new Flap();
     default: return nullptr;
   }
 }

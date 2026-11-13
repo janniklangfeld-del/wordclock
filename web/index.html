@@ -148,7 +148,7 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;use
 @media (min-width:700px){.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cols .card{margin:0}}
 
 /* ---------- MJ Arcade: Spiele-Knopf ---------- */
-.wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom))}  /* Inhalt laesst sich immer ueber den Knopf scrollen */
+.wrap{padding-bottom:calc(176px + env(safe-area-inset-bottom))}  /* Inhalt laesst sich immer ueber den Knopf scrollen */
 #toast{bottom:calc(max(18px,env(safe-area-inset-bottom)) + 84px)}
 #arcBtn{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:25;width:68px;height:68px;
   border-radius:50%;border:0;padding:0;cursor:pointer;background:conic-gradient(from var(--spin,0deg),#ff2a8a,#7a5cff,#00e0c0,#ffd23f,#ff2a8a);
@@ -161,7 +161,14 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;use
 #arcBtn b i{font-style:normal;color:#00e0c0}
 #arcBtn:active{transform:scale(.92)}
 #arcBtn.hide{opacity:0;pointer-events:none;transform:scale(.6)}
-#arcBtn.ghost{opacity:.28;pointer-events:none}  /* beim Scrollen durchlaessig: verdeckt nie etwas dauerhaft */
+#arcBtn.ghost,#homeBtn.ghost{opacity:.28;pointer-events:none}  /* beim Scrollen durchlaessig: verdeckt nie etwas dauerhaft */
+/* "Zur Uhr": ueber dem Spiele-Knopf, beendet Spiel/Effekt/Laufschrift -> Uhrzeit */
+#homeBtn{position:fixed;right:calc(max(16px,env(safe-area-inset-right)) + 8px);bottom:calc(max(16px,env(safe-area-inset-bottom)) + 80px);z-index:25;width:52px;height:52px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.25);background:rgba(20,12,34,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;cursor:pointer;padding:0;
+  display:grid;place-items:center;box-shadow:0 8px 22px rgba(0,0,0,.4);transition:transform .2s,opacity .2s}
+#homeBtn svg{width:26px;height:26px}
+#homeBtn:active{transform:scale(.9)}
+#homeBtn.hide{opacity:0;pointer-events:none;transform:scale(.6)}
 #arcBtn.live:after{content:"";position:absolute;left:-2px;top:-2px;width:16px;height:16px;border-radius:50%;background:#3ddc84;border:2px solid #0a0614;box-shadow:0 0 10px #3ddc84}
 
 /* ---------- MJ Arcade: Overlay ---------- */
@@ -569,6 +576,7 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;use
   <footer id="footer">Mit ♥ für Maja gebaut</footer>
 </div>
 
+<button id="homeBtn" title="Zur Uhrzeit" aria-label="Zurück zur Uhrzeit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></button>
 <button id="arcBtn" title="Spiele" aria-label="Spiele öffnen"><img id="arcFace" alt=""><b>M<i>J</i></b></button>
 
 <div id="arcade" aria-label="MJ Arcade">
@@ -1001,8 +1009,10 @@ const GUI = {
     icon: ["...........", "...........", "...........", "....T......", "..bbbbbbb..", "..bbbbbbb..", "..bbbTbbb..", "..bbbPTbb..", "..bTPPTbb..", "..PPTPTPb.."] },
   reaktion: { t: "Reaktion", d: "Grün = drücken! Wer zu früh drückt, verliert die Runde.", pad: "big", unit: "ms im Schnitt", su: ["ms", "ms"], c: ["#ffd23f", "#3ddc84"],
     icon: ["...........", "....YYY....", "...Y...Y...", "..Y..Y..Y..", "..Y..YY.Y..", "..Y.....Y..", "...Y...Y...", "....YYY....", "...........", "..........."] },
+  flatter: { t: "Flatterherz", d: "Tippen = flattern. Flieg durch die Lücken. Zu zweit gewinnt, wer länger fliegt.", pad: "flap", unit: "Lücken", su: ["Lücke", "Lücken"], c: ["#ff1f8f", "#3ddc84"],
+    icon: ["......G...G", "......G...G", "......G....", "..P........", "..........G", "......G...G", "......G...G", "......G...G", "......G...G", "......G...G"] },
 };
-const MODES = { snake: ["1p"], tetris: ["1p", "2p", "bot"], pong: ["2p", "bot"], tron: ["2p", "bot"], vier: ["2p", "bot"], reaktion: ["1p", "2p"] };
+const MODES = { snake: ["1p"], tetris: ["1p", "2p", "bot"], pong: ["2p", "bot"], tron: ["2p", "bot"], vier: ["2p", "bot"], reaktion: ["1p", "2p"], flatter: ["1p", "2p"] };
 const MODE_TXT = { "1p": "🕹️ Allein", "2p": "👯 Zu zweit", bot: "🤖 Gegen MJ-Bot" };
 const ICOL = { G: "#00e628", W: "#dcffc8", R: "#ff140a", Y: "#ffc800", C: "#00dcff", B: "#003cff", O: "#ff6e00", P: "#ff1982", T: "#00d7b9", b: "#00001a" };
 const AR = { open: false, st: { ph: "idle", p: [{}, {}] }, you: -1, browse: false, rec: {}, total: 0, pressed: new Map(), framesOff: false, lastView: "", confettiFor: "" };
@@ -1140,16 +1150,25 @@ async function showInvite() {
 
 /* ---------- Ansichten ---------- */
 function arOpen() {
-  AR.open = true; $("#arcade").classList.add("on"); $("#arcBtn").classList.add("hide"); document.body.style.overflow = "hidden";
+  AR.open = true; $("#arcade").classList.add("on"); $("#arcBtn").classList.add("hide"); $("#homeBtn").classList.add("hide"); document.body.style.overflow = "hidden";
   history.pushState({ arcade: 1 }, ""); refreshRecords(); arRender(true);
 }
 function arClose(fromHistory) {
-  AR.open = false; $("#arcade").classList.remove("on"); $("#arcBtn").classList.remove("hide"); document.body.style.overflow = "";
+  AR.open = false; $("#arcade").classList.remove("on"); $("#arcBtn").classList.remove("hide"); $("#homeBtn").classList.remove("hide"); document.body.style.overflow = "";
   setFrames(true); releaseAll(); if (!fromHistory && history.state?.arcade) history.back();
 }
 window.addEventListener("popstate", () => { if (AR.open) arClose(true); });
 $("#arcBtn").onclick = arOpen;
-let ghostT; addEventListener("scroll", () => { $("#arcBtn").classList.add("ghost"); clearTimeout(ghostT); ghostT = setTimeout(() => $("#arcBtn").classList.remove("ghost"), 900); }, { passive: true });
+let ghostT; addEventListener("scroll", () => { $$("#arcBtn,#homeBtn").forEach(b => b.classList.add("ghost")); clearTimeout(ghostT); ghostT = setTimeout(() => $$("#arcBtn,#homeBtn").forEach(b => b.classList.remove("ghost")), 900); }, { passive: true });
+// Immer zurueck zur Uhrzeit: Spiel beenden (auch als Zuschauer), Effekt/Laufschrift aus, Uhr an
+$("#homeBtn").onclick = () => {
+  const running = ["count", "play", "pause"].includes(AR.st.ph);
+  if (running && !confirm("Laufendes Spiel beenden und die Uhrzeit zeigen?")) return;
+  if (AR.st.ph !== "idle") wsSend({ t: "g.home" });
+  const ch = {}; if (S.mode !== "clock") ch.mode = "clock"; if (!S.power) ch.power = true;
+  if (Object.keys(ch).length) set(ch);
+  toast("Die Uhr zeigt die Uhrzeit");
+};
 
 async function refreshRecords() {
   try { const r = DEMO ? demoRecords() : await api("/v1/games"); AR.rec = r.rec || {}; AR.total = AR.rec.total || 0; if (AR.open && arViewName() === "menu") arRender(true); } catch (e) {}
@@ -1293,6 +1312,7 @@ const PADS = {
   updown: `<div class="ar-ctl l-updown" id="arCtlIn"><button class="ar-k" data-k="0">▲</button><button class="ar-k" data-k="1">▼</button></div>`,
   lr: `<div class="ar-ctl l-lr" id="arCtlIn"><button class="ar-k" data-k="2">◀</button><button class="ar-k" data-k="3">▶</button><button class="ar-k acc" data-k="4">⬇<small>EINWERFEN</small></button></div>`,
   big: `<div class="ar-ctl l-big" id="arCtlIn"><button class="ar-k acc" data-k="4">JETZT!</button></div>`,
+  flap: `<div class="ar-ctl l-big" id="arCtlIn"><button class="ar-k acc" data-k="4">♥<small>FLATTERN</small></button></div>`,
 };
 function renderPad(full) {
   const st = AR.st, me = AR.you, g = GUI[st.g] || {};
@@ -1420,7 +1440,7 @@ function arOnGame(m) {
   const before = AR.st.ph; AR.st = m; AR.you = m.you ?? -1;
   if (AR.you >= 0) sessionStorage.setItem("wc_slot", AR.you); else if (m.ph === "idle") sessionStorage.removeItem("wc_slot");
   $("#arcBtn").classList.toggle("live", m.ph !== "idle");
-  if (m.ph === "idle" && before !== "idle") { AR.browse = false; refreshRecords(); }
+  if (m.ph === "idle" && before !== "idle") { if (before === "over" && AR.open && !AR.browse) arClose(); AR.browse = false; refreshRecords(); }
   if (m.ph === "over" && before !== "over") refreshRecords();
   if (m.ph === "lobby" && before !== "lobby") AR.browse = false;
   // Wer mitspielt und die Halle zu hat: bei Spielbeginn automatisch oeffnen
@@ -1437,11 +1457,12 @@ function demoLater(ms, fn) { DS.timers.push(setTimeout(() => { fn(); demoPush();
 function demoClear() { DS.timers.forEach(clearTimeout); DS.timers = []; }
 function demoCount() { DS.ph = "count"; DS.cd = 3; demoLater(1000, () => DS.cd = 2); demoLater(2000, () => DS.cd = 1);
   demoLater(3000, () => { DS.ph = "play"; DS.t0 = performance.now(); DS.score = [0, 0];
-    const tick = () => { if (DS.ph !== "play") return; DS.score[Math.random() < .55 ? 0 : 1] += DS.g === "snake" || DS.g === "tetris" ? 1 : (Math.random() < .5 ? 1 : 0); demoPush(); DS.timers.push(setTimeout(tick, 1500)); };
+    const tick = () => { if (DS.ph !== "play") return; DS.score[Math.random() < .55 ? 0 : 1] += DS.g === "snake" || DS.g === "tetris" || DS.g === "flatter" ? 1 : (Math.random() < .5 ? 1 : 0); demoPush(); DS.timers.push(setTimeout(tick, 1500)); };
     DS.timers.push(setTimeout(tick, 1500)); demoLater(12000, demoOver); }); }
 function demoOver() {
+  demoLater(15000, () => { if (DS.ph === "over") { DS.ph = "idle"; DS.g = null; DS.p = [{}, {}]; DS.you = -1; } });
   const two = DS.m !== "1p", w = two ? (DS.score[0] >= DS.score[1] ? 0 : 1) : -1; DS.ph = "over";
-  const nm = DS.p.map(p => p.n), hasHs = ["snake", "tetris", "reaktion"].includes(DS.g), lo = DS.g === "reaktion";
+  const nm = DS.p.map(p => p.n), hasHs = ["snake", "tetris", "reaktion", "flatter"].includes(DS.g), lo = DS.g === "reaktion";
   const mine = lo ? 287 : 7 + DS.score[0], rec = !two && !lo && mine > 14;
   DS.res = { winner: w, secs: 12, score: DS.score, big: two ? undefined : mine, record: rec, prev: 14,
     hs: hasHs ? { lo, v: rec ? mine : lo ? 241 : 14, n: rec ? nm[0] : "Jannik", p: two ? [lo ? 301 : 6, lo ? 259 : 9] : [mine, null], ...(rec ? { by: 0, prev: 14, prevN: "Jannik" } : {}) } : undefined,
@@ -1460,6 +1481,7 @@ function demoSrv(o) {
   else if (t === "g.leave") { DS.p[DS.you] = {}; DS.you = -1; }
   else if (t === "g.pause") { if (DS.ph === "play") { DS.ph = "pause"; DS.why = "Pause"; demoClear(); } else if (DS.ph === "pause") demoCount(); }
   else if (t === "g.again") { DS.ph = "lobby"; DS.res = null; DS.p.forEach(p => { if (!p.bot) p.r = false; }); }
+  else if (t === "g.home") { demoClear(); DS.ph = "idle"; DS.g = null; DS.p = [{}, {}]; DS.you = -1; }
   else if (t === "g.quit") { demoClear(); DS.ph = "idle"; DS.g = null; DS.p = [{}, {}]; DS.you = -1; }
   demoPush();
 }

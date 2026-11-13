@@ -42,6 +42,9 @@ const Info GAMES[] = {
     {"reaktion", "Reaktion", M_1P | M_2P, 2, false,
      {"...........", "....YYY....", "...Y...Y...", "..Y..Y..Y..", "..Y..YY.Y..", "..Y.....Y..", "...Y...Y...",
       "....YYY....", "...........", "..........."}},
+    {"flatter", "Flatterherz", M_1P | M_2P, 1, false,
+     {"......G...G", "......G...G", "......G....", "..P........", "..........G", "......G...G", "......G...G",
+      "......G...G", "......G...G", "......G...G"}},
 };
 constexpr int N_GAMES = sizeof(GAMES) / sizeof(GAMES[0]);
 #ifndef WEBSOCKETS_SERVER_CLIENT_MAX
@@ -439,8 +442,8 @@ void loop() {
       if (allPresent() && pauseReason == "Spieler fehlt") beginCount(true);
       if (now - lastActivity > 15UL * 60 * 1000) goIdle();
       break;
-    case OVER:
-      if (now - lastActivity > 5UL * 60 * 1000) goIdle();
+    case OVER:  // Ergebnis: 15 s ohne Aktion -> zurueck zur Uhrzeit
+      if (now - lastActivity > 15000) goIdle();
       break;
     default:
       break;
@@ -600,6 +603,10 @@ void onText(uint8_t client, JsonObjectConst m) {
   }
   if (!strcmp(t, "g.again")) {
     if (gameId >= 0 && (phase == OVER || phase == PAUSE)) openLobby(gameId, mode);
+    return;
+  }
+  if (!strcmp(t, "g.home")) {  // Knopf "Zur Uhr" auf der Webseite: immer, auch fuer Zuschauer
+    goIdle();
     return;
   }
   if (!strcmp(t, "g.quit")) {
