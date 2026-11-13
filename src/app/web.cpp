@@ -27,6 +27,8 @@ uint8_t frameBuf[2 + LED_COUNT * 3];
 bool wantFrames[WEBSOCKETS_SERVER_CLIENT_MAX];  // Controller schalten das Live-Bild ab
 uint32_t slowUntil[WEBSOCKETS_SERVER_CLIENT_MAX];  // langsames Handy (schwaches WLAN): nur 1 Bild/s
 uint32_t lastSentTo[WEBSOCKETS_SERVER_CLIENT_MAX];
+uint32_t connectedAt[WEBSOCKETS_SERVER_CLIENT_MAX];
+uint32_t lastRx[WEBSOCKETS_SERVER_CLIENT_MAX];  // letzte Nachricht vom Handy (sichtbare Seiten senden alle 5 s "hb")
 uint8_t lastFrame[2 + LED_COUNT * 3];
 uint32_t lastChange = 0;
 
@@ -117,6 +119,17 @@ void handleInfo() {
   d["update"]["latest"] = ota::latestKnownVersion();
   d["alexa"] = alexa::running();
   d["brightness"] = display::brightness();
+  // Offene Live-Verbindungen (zur Fehlersuche: wer belegt die Plaetze?)
+  d["wsMax"] = WEBSOCKETS_SERVER_CLIENT_MAX;
+  JsonArray wl = d["ws"].to<JsonArray>();
+  for (uint8_t c = 0; c < WEBSOCKETS_SERVER_CLIENT_MAX; c++) {
+    if (!ws.clientIsConnected(c)) continue;
+    JsonObject o = wl.add<JsonObject>();
+    o["n"] = c;
+    o["ip"] = ws.remoteIP(c).toString();
+    o["s"] = (millis() - connectedAt[c]) / 1000;
+    o["idle"] = (millis() - lastRx[c]) / 1000;
+  }
   sendJson(200, d);
 }
 
@@ -330,7 +343,12 @@ void setupRoutes() {
   ws.onEvent([](uint8_t num, WStype_t type, uint8_t* data, size_t len) {
     switch (type) {
       case WStype_CONNECTED: {
-        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) { wantFrames[num] = true; slowUntil[num] = 0; lastSentTo[num] = 0; }
+        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) {
+          wantFrames[num] = true;
+          slowUntil[num] = 0;
+          lastSentTo[num] = 0;
+          connectedAt[num] = lastRx[num] = millis();
+        }
         String s = settingsJson(true);
         ws.sendTXT(num, s);
         games::onConnect(num);
@@ -341,9 +359,11 @@ void setupRoutes() {
         games::onDisconnect(num);
         break;
       case WStype_BIN:  // Spieltaste: [2, Taste, gedrueckt]
+        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) lastRx[num] = millis();
         if (len >= 3 && data[0] == 2) games::onKey(num, data[1], data[2]);
         break;
       case WStype_TEXT: {
+        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) lastRx[num] = millis();
         JsonDocument d;
         if (deserializeJson(d, data, len) || !d.is<JsonObject>()) break;
         const char* t = d["t"] | "";
@@ -394,8 +414,23 @@ void loop() {
   ws.loop();
   // Live-Bild fuer die 3D-Ansicht: bis 10 Bilder/s, nur an Seiten, die zuschauen
   // (Controller im Spiel schalten es ab, damit nichts die Tasten aufhaelt)
-  // Nur geaenderte Bilder schicken (die Uhrzeit steht meist still), sonst 1x pro Sekunde.
+  // Immer einen Platz frei halten: sind (fast) alle belegt, fliegt die Verbindung raus, die am
+  // laengsten nichts gesendet hat (Tab im Hintergrund, Handy gesperrt). Sichtbare Seiten senden
+  // alle 5 s ein Lebenszeichen, Spieler in einer Partie bleiben also drin.
   const uint32_t now = millis();
+  static uint32_t lastEvict = 0;
+  if (ws.connectedClients() >= WEBSOCKETS_SERVER_CLIENT_MAX - 1 && now - lastEvict > 1000) {
+    lastEvict = now;
+    int oldest = -1;
+    for (uint8_t c = 0; c < WEBSOCKETS_SERVER_CLIENT_MAX; c++)
+      if (ws.clientIsConnected(c) && now - lastRx[c] > 15000 && (oldest < 0 || lastRx[c] < lastRx[oldest])) oldest = c;
+    if (oldest >= 0) {
+      Serial.printf("[web] Platz frei machen: Handy %d (still seit %lus)\n", oldest, (now - lastRx[oldest]) / 1000);
+      ws.disconnect(oldest);
+    }
+  }
+
+  // Nur geaenderte Bilder schicken (die Uhrzeit steht meist still), sonst 1x pro Sekunde.
   if (ws.connectedClients() > 0 && now - lastFrameSent >= 100) {  // max. 10 Bilder/s
     lastFrameSent = now;
     frameBuf[0] = 1;

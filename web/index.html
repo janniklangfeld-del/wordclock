@@ -36,6 +36,10 @@ header{display:flex;align-items:center;gap:12px;padding:6px 0 4px}
 .power svg{width:22px;height:22px}
 .power.on{background:linear-gradient(135deg,var(--accent),#ff4fa0);color:#140a05;border-color:transparent;box-shadow:0 6px 24px rgba(var(--glow),.45)}
 
+// Lebenszeichen: nur sichtbare Seiten -> die Uhr kann vergessene Tabs rauswerfen, wenn es eng wird
+setInterval(() => { if (!document.hidden && ws && ws.readyState === 1) ws.send('{"t":"hb"}'); }, 5000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !DEMO && (!ws || ws.readyState > 1)) { wsTries = 0; connectWs(); } });
+
 /* ---------- 3D-Uhr ---------- */
 .stage{position:relative;height:calc(var(--s)*1.18);display:grid;place-items:center;perspective:1300px;
   touch-action:pan-y;user-select:none;-webkit-user-select:none;margin-top:4px;overflow-x:clip;overflow-y:visible}
@@ -734,11 +738,17 @@ function toast(msg, err) { const t = $("#toast"); t.textContent = msg; t.classNa
 function live(on, text) { $("#liveDot").classList.toggle("live", on); $("#liveText").textContent = text; }
 
 let ws, lastFrameAt = 0;
+let wsTries = 0, wsWait = null;
 function connectWs() {
   if (DEMO) { live(true, "Demo"); setInterval(() => applyFrame(demoFrame()), 66); return; }
+  clearTimeout(wsWait); wsWait = null;
+  if (ws && ws.readyState <= 1) return;  // nie zwei Verbindungen aus einer Seite
   ws = new WebSocket(`ws://${location.hostname}:81/`); ws.binaryType = "arraybuffer";
-  ws.onopen = () => { live(true, "live verbunden"); arOnOpen(); arRender(true); };
-  ws.onclose = () => { live(false, "verbinde …"); if (AR.open) arRender(true); setTimeout(connectWs, 2000); };
+  ws.onopen = () => { wsTries = 0; live(true, "live verbunden"); arOnOpen(); arRender(true); };
+  ws.onclose = () => { live(false, "verbinde …"); if (AR.open) arRender(true);
+    // Tabs im Hintergrund verbinden sich erst wieder, wenn man sie anschaut; sonst wachsende, zufaellige Pause
+    if (document.hidden) return;
+    wsTries++; wsWait = setTimeout(connectWs, Math.min(8000, 700 * wsTries) + Math.random() * 800); };
   ws.onmessage = e => {
     if (typeof e.data === "string") { try { const m = JSON.parse(e.data); if (m.t === "settings") mergeSettings(m.s); else if (m.t === "game") arOnGame(m); } catch (x) {} return; }
     const u = new Uint8Array(e.data); if (u[0] === 1) applyFrame(u);
@@ -894,6 +904,7 @@ async function refreshInfo() {
     const rows = [["Firmware", i.fw], ["Uhrzeit", i.timeValid ? i.localTime.replace("T", " ") : "noch keine Internetzeit"], ["WLAN", i.ssid], ["Signal", i.rssi + " dBm"],
       ["Adresse", `${i.ip} · wordclock.local`], ["Laufzeit", `${d} T ${h} h ${m} min`], ["Freier Speicher", Math.round(i.heap / 1024) + " KB"],
       ["Update", i.update.result], ["Alexa", i.alexa ? "aktiv" : "aus"], ["Lichtsensor", i.sensor.found ? Math.round(i.sensor.lux) + " lx" : "nicht angeschlossen"]];
+    if (i.ws) rows.push(["Live-Verbindungen", `${i.ws.length} von ${i.wsMax}: ` + i.ws.map(c => `${c.ip} (${c.s} s${c.idle > 15 ? ", still " + c.idle + " s" : ""})`).join(" | ")]);
     $("#info").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${String(v).replace(/</g, "&lt;")}</dd>`).join("");
     $("#sensorState").textContent = i.sensor.found ? `BH1750 erkannt · ${Math.round(i.sensor.lux)} lx` : "kein Sensor angeschlossen";
   } catch (e) { $("#info").innerHTML = `<dt>Fehler</dt><dd>${e.message}</dd>`; }
