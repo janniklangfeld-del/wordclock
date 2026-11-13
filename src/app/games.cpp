@@ -330,7 +330,10 @@ void loop() {
   const uint32_t now = millis();
   if (phase == PLAY) gclock += now - lastReal;
   lastReal = now;
-  if (phase == IDLE) return;
+  if (phase == IDLE) {  // auch im Ruhezustand melden (z. B. "Spiel beendet" an alle Seiten)
+    if (dirty && now - lastSent > 60) broadcast();
+    return;
+  }
 
   switch (phase) {
     case LOBBY:
