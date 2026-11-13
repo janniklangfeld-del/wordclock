@@ -250,29 +250,41 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;use
 .ar-sc .vs{opacity:.4;font-size:14px}
 .ar-ib{width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff;font-size:18px;cursor:pointer;flex:none}
 .ar-live{text-align:center;font-size:13px;color:rgba(255,255,255,.7);margin:6px 0 0;min-height:18px}
-.ar-ctl{flex:1;display:grid;gap:12px;margin-top:10px;min-height:0}
-.ar-k{border:0;border-radius:24px;color:#fff;font:900 28px system-ui;display:grid;place-items:center;cursor:pointer;min-height:0;
-  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.05));box-shadow:inset 0 -6px 0 rgba(0,0,0,.35),inset 0 0 0 1.5px color-mix(in srgb,var(--me) 60%,transparent);
-  transition:transform .05s,background .05s}
+/* Tastenfeld = untere 3/4 des Bildschirms, lueckenlos: der sichtbare Abstand ist ein
+   durchsichtiger Rand, der noch zur Taste gehoert (kein Tippen ins Leere). */
+.ar-ctl{flex:none;height:75%;margin-top:auto;display:grid;gap:0;min-height:0;position:relative}
+.ar-k{border:5px solid transparent;background-clip:padding-box;border-radius:28px;color:#fff;font:900 30px system-ui;display:grid;place-items:center;align-content:center;cursor:pointer;min-height:0;min-width:0;padding:0;
+  background-color:rgba(255,255,255,.08);background-image:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0));box-shadow:inset 0 -6px 0 rgba(0,0,0,.35),inset 0 0 0 1.5px color-mix(in srgb,var(--me) 60%,transparent);
+  transition:transform .05s,background-color .05s}
 .ar-k small{display:block;font-size:11px;font-weight:800;letter-spacing:1px;opacity:.7;margin-top:2px}
-.ar-k.on{transform:translateY(3px) scale(.97);background:var(--me);color:#14081f;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3),0 0 34px var(--me)}
-.ar-k.acc{background:linear-gradient(180deg,color-mix(in srgb,var(--me) 85%,#fff),var(--me));color:#14081f}
-.l-dpad{grid-template:"a u b" 1fr "l c r" 1fr "d dn e" 1fr/1fr 1fr 1fr;aspect-ratio:1;max-height:100%;max-width:100%;margin:auto;width:min(92vw,62vh)}
-.l-dpad [data-k="0"]{grid-area:u}.l-dpad [data-k="1"]{grid-area:dn}.l-dpad [data-k="2"]{grid-area:l}.l-dpad [data-k="3"]{grid-area:r}
-.l-dpad .hub{grid-area:c;border-radius:50%;background:radial-gradient(color-mix(in srgb,var(--me) 50%,transparent),transparent 70%)}
+.ar-k.on{transform:scale(.97);background-color:var(--me);background-image:none;color:#14081f;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3),0 0 34px var(--me)}
+.ar-k.acc{background-color:var(--me);background-image:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0));color:#14081f}
+/* Steuerkreuz als vier Dreiecke ueber die ganze Flaeche (Treffer per Winkel, siehe keyAt) */
+.l-dpad{display:block}
+.l-dpad .ar-k{position:absolute;inset:0;border:0;border-radius:0;box-shadow:none;font-size:34px;padding:7%}
+.l-dpad [data-k="0"]{clip-path:polygon(6px 0,calc(100% - 6px) 0,50% calc(50% - 7px));align-content:start}
+.l-dpad [data-k="1"]{clip-path:polygon(6px 100%,calc(100% - 6px) 100%,50% calc(50% + 7px));align-content:end}
+.l-dpad [data-k="2"]{clip-path:polygon(0 6px,0 calc(100% - 6px),calc(50% - 7px) 50%);justify-items:start}
+.l-dpad [data-k="3"]{clip-path:polygon(100% 6px,100% calc(100% - 6px),calc(50% + 7px) 50%);justify-items:end}
+.l-dpad .hub{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px;border-radius:50%;pointer-events:none;background:radial-gradient(color-mix(in srgb,var(--me) 55%,transparent),transparent 70%)}
+.l-swipe{display:grid;place-items:center;border-radius:28px;border:2px dashed color-mix(in srgb,var(--me) 45%,transparent);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);text-align:center;font-weight:700}
+.l-swipe .arr{font:900 90px/1 system-ui;color:var(--me);opacity:0;transition:opacity .25s}
+.l-swipe .arr.on{opacity:1;transition:none}
 .l-tetris{grid-template:"a b" 1.15fr "l r" 1fr "d d" .8fr/1fr 1fr}
 .l-tetris [data-k="4"]{grid-area:a}.l-tetris [data-k="5"]{grid-area:b}.l-tetris [data-k="2"]{grid-area:l}.l-tetris [data-k="3"]{grid-area:r}.l-tetris [data-k="1"]{grid-area:d}
 .l-updown{grid-template-rows:1fr 1fr}
 .l-lr{grid-template:"l r" 1fr "a a" 1.1fr/1fr 1fr}
 .l-lr [data-k="2"]{grid-area:l}.l-lr [data-k="3"]{grid-area:r}.l-lr [data-k="4"]{grid-area:a}
-.l-big{place-items:center}
-.l-big .ar-k{width:min(78vw,56vh);aspect-ratio:1;border-radius:50%;font-size:34px}
+.l-big{grid-template:1fr/1fr}
+.l-big .ar-k{font-size:44px;border-radius:40px}
 @media (orientation:landscape) and (max-height:520px){
-  .l-tetris{grid-template:"l r . a" 1fr "d d . b" 1fr/1fr 1fr .3fr 1.2fr}
-  .l-updown{grid-template:"u . d" 1fr/1fr 1fr 1fr}.l-updown [data-k="0"]{grid-area:u}.l-updown [data-k="1"]{grid-area:d}
-  .l-lr{grid-template:"l r . a" 1fr/1fr 1fr .4fr 1.4fr}
-  .l-dpad{width:min(60vw,74vh)}
+  .l-tetris{grid-template:"l r a" 1fr "d d b" 1fr/1fr 1fr 1.2fr}
+  .l-updown{grid-template:"u d" 1fr/1fr 1fr}.l-updown [data-k="0"]{grid-area:u}.l-updown [data-k="1"]{grid-area:d}
+  .l-lr{grid-template:"l r a" 1fr/1fr 1fr 1.4fr}
 }
+.ar-seg{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin:14px 0 2px;font-size:13px;color:rgba(255,255,255,.7)}
+.ar-seg button{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;border-radius:999px;padding:9px 14px;font:700 14px system-ui;cursor:pointer}
+.ar-seg button.on{background:var(--me);border-color:var(--me);color:#14081f}
 .ar-msg{position:absolute;inset:0;display:none;place-items:center;text-align:center;background:rgba(10,6,20,.78);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2}
 .ar-msg.on{display:grid}
 .ar-cd{font:900 min(48vw,40vh)/1 "Arial Black",system-ui;color:var(--me);text-shadow:0 0 40px var(--me);animation:arcPop 1s ease-out both}
@@ -288,6 +300,14 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;use
 .ar-res h2{font:900 34px/1.05 "Arial Black",system-ui;margin:4px 0 4px;background:linear-gradient(90deg,var(--rc,#ff1f8f),#ffd23f);-webkit-background-clip:text;background-clip:text;color:transparent}
 .ar-res .cap{color:rgba(255,255,255,.75);margin:0 0 12px}
 .ar-res .bign{font:900 64px/1 "Arial Black",system-ui;margin:4px 0 2px}
+.ar-hs{margin:10px 0 4px;padding:12px 14px;border-radius:16px;text-align:left;background:linear-gradient(135deg,rgba(255,210,63,.14),rgba(255,31,143,.08));border:1px solid rgba(255,210,63,.35)}
+.ar-hs .t{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#ffd23f}
+.ar-hs .top{display:flex;align-items:baseline;gap:8px;margin:2px 0 6px;flex-wrap:wrap}
+.ar-hs .top b{font:900 26px/1.1 "Arial Black",system-ui}
+.ar-hs .top span{color:rgba(255,255,255,.8);font-weight:700}
+.ar-hs .r{display:flex;gap:10px;justify-content:space-between;align-items:baseline;padding-top:6px;border-top:1px solid rgba(255,255,255,.08);font-size:14px}
+.ar-hs .r span{color:rgba(255,255,255,.65);flex:none}
+.ar-hs .r b{text-align:right}
 .ar-tbl{width:100%;border-collapse:separate;border-spacing:0 6px;margin-top:6px;font-size:14px}
 .ar-tbl td,.ar-tbl th{padding:9px 12px;background:rgba(255,255,255,.06)}
 .ar-tbl th{background:none;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding-bottom:0}
@@ -969,17 +989,17 @@ const PH = {};  // vorhandene Fotos: Name -> URL
 const LOGO = $("#logoImg").src;
 const KEYS = { up: 0, down: 1, left: 2, right: 3, a: 4, b: 5 };
 const GUI = {
-  snake: { t: "Snake", d: "Äpfel futtern, länger werden, nicht in den Schwanz beißen.", pad: "dpad", unit: "Äpfel", c: ["#3ddc84", "#ff3b30"],
+  snake: { t: "Snake", d: "Äpfel futtern, länger werden, nicht in den Schwanz beißen.", pad: "dpad", unit: "Äpfel", su: ["Apfel", "Äpfel"], c: ["#3ddc84", "#ff3b30"],
     icon: ["...........", ".GGGGG.....", ".G...G.....", ".G...G..R..", ".G...GGGG..", ".G.........", ".GGGGGGGGW.", "...........", "...........", "..........."] },
-  tetris: { t: "Tetris", d: "Reihen füllen. Zu zweit schickst du dem anderen Müllzeilen.", pad: "tetris", unit: "Reihen", c: ["#00dcff", "#ffd23f"],
+  tetris: { t: "Tetris", d: "Reihen füllen. Zu zweit schickst du dem anderen Müllzeilen.", pad: "tetris", unit: "Reihen", su: ["Reihe", "Reihen"], c: ["#00dcff", "#ffd23f"],
     icon: ["....YY.....", "....YY.....", "...........", "........C..", "........C..", "........C..", "P.......C..", "PP....RR...", "PBBB.GRRGGO", "BBGGGGOOOOO"] },
   pong: { t: "Pong", d: "Der Klassiker. Wer zuerst 5 Punkte hat, gewinnt.", pad: "updown", c: ["#ff1f8f", "#00d7b9"],
     icon: ["...........", "...........", "P..........", "P.........T", "P....W....T", "..........T", "...........", "...........", "...........", "..........."] },
-  tron: { t: "Lichtrenner", d: "Zieh deine Lichtspur und lass den anderen crashen. Bis 3.", pad: "dpad", c: ["#ff1f8f", "#00d7b9"],
+  tron: { t: "T.R.O.N", d: "Zieh deine Lichtspur und lass den anderen crashen. Bis 3.", pad: "dpad", c: ["#ff1f8f", "#00d7b9"],
     icon: ["...........", ".PPPPP.....", ".....P.....", ".....P.....", ".....PW....", "...........", "....TTTTTT.", "....T......", "....T......", "..........."] },
   vier: { t: "Vier gewinnt", d: "Vier in einer Reihe – waagrecht, senkrecht oder schräg.", pad: "lr", c: ["#7a5cff", "#ff1f8f"],
     icon: ["...........", "...........", "...........", "....T......", "..bbbbbbb..", "..bbbbbbb..", "..bbbTbbb..", "..bbbPTbb..", "..bTPPTbb..", "..PPTPTPb.."] },
-  reaktion: { t: "Reaktion", d: "Grün = drücken! Wer zu früh drückt, verliert die Runde.", pad: "big", unit: "ms im Schnitt", c: ["#ffd23f", "#3ddc84"],
+  reaktion: { t: "Reaktion", d: "Grün = drücken! Wer zu früh drückt, verliert die Runde.", pad: "big", unit: "ms im Schnitt", su: ["ms", "ms"], c: ["#ffd23f", "#3ddc84"],
     icon: ["...........", "....YYY....", "...Y...Y...", "..Y..Y..Y..", "..Y..YY.Y..", "..Y.....Y..", "...Y...Y...", "....YYY....", "...........", "..........."] },
 };
 const MODES = { snake: ["1p"], tetris: ["1p", "2p", "bot"], pong: ["2p", "bot"], tron: ["2p", "bot"], vier: ["2p", "bot"], reaktion: ["1p", "2p"] };
@@ -1179,7 +1199,7 @@ function viewMenu() {
 }
 function fame() {
   const rows = Object.keys(GUI).filter(k => AR.rec[k]).map(k => { const r = AR.rec[k];
-    return `<div><b>${GUI[k].t}</b><span>${r.n} Spiele · ${Math.max(1, Math.round((r.s || 0) / 60))} min${r.hs !== undefined ? ` · Rekord ${r.hs} ${GUI[k].unit} (${esc(r.hsn)})` : ""}</span></div>`; });
+    return `<div><b>${GUI[k].t}</b><span>${r.n} Spiele · ${Math.max(1, Math.round((r.s || 0) / 60))} min${r.hs !== undefined ? ` · Rekord ${r.hs} ${GUI[k].unit} (${esc(r.hsn)})` : ""}${r.hs2 !== undefined ? ` · zu zweit ${r.hs2} ${GUI[k].unit} (${esc(r.hsn2)})` : ""}</span></div>`; });
   return rows.length ? `<div><b>Gespielt</b><span>${AR.total} Spiele insgesamt</span></div>` + rows.join("") : `<div><b>Noch leer</b><span>Das erste Spiel schreibt Geschichte ✨</span></div>`;
 }
 function slotCard(i) {
@@ -1200,6 +1220,7 @@ function viewLobby() {
   return `<div class="ar-top"><button class="ar-x" data-ar="browse" aria-label="Zurück">←</button><div class="ar-logo" style="font-size:20px">MJ ARCADE<small>${MODE_TXT[st.m] || ""}</small></div><button class="ar-x" data-ar="close">✕</button></div>
     <div class="ar-big">${esc(g.t)}</div><p class="ar-sub">${esc(g.d || "")}</p>
     <div class="ar-slots" style="${st.m === "1p" ? "grid-template-columns:1fr" : ""}">${slotCard(0)}${slotCard(1)}</div>
+    ${g.pad === "dpad" ? `<div class="ar-seg"><span>Steuerung:</span>${Object.entries(CTL_TXT).map(([k, t]) => `<button class="${ctlMode() === k ? "on" : ""}" data-ctl="${k}">${t}</button>`).join("")}</div>` : ""}
     ${me >= 0 ? `<button class="ar-go${ready ? " wait" : ""}" data-ar="ready">${ready ? "Warte auf die anderen …" : "Bereit! 🚀"}</button>`
       : free ? `<button class="ar-go" data-ar="joinAny">Mitspielen als ${esc(arName)}</button>` : `<button class="ar-go wait" disabled>Alle Plätze belegt – du schaust zu 👀</button>`}
     <div class="ar-row">${me >= 0 ? `<button class="ar-chip" data-ar="leave">Platz freigeben</button>` : ""}<button class="ar-chip" data-ar="quit">Zur Uhr zurück</button></div>
@@ -1215,16 +1236,48 @@ function viewOver() {
       cap = /^mj$/i.test(names[w]) ? "MJ gewinnt. Wie immer. 😎" : "Ein Küsschen für den Sieger 💋"; }
     else { img = "frech"; emo = "😜"; head = st.p[w]?.bot ? "MJ-Bot gewinnt" : "Verloren"; cap = st.p[w]?.bot ? "Der Bot hat von der Besten gelernt." : `${esc(names[w])} war schneller. Revanche?`; }
   } else if (w === 2) { head = "Unentschieden"; cap = "Zwei gleich gute – das schreit nach Revanche."; }
-  else if (r.record) { img = "bereit"; emo = "🏆"; head = "Neuer Rekord!"; cap = r.prev >= 0 ? `Alter Rekord: ${r.prev} ${g.unit || ""}` : "Der erste Eintrag in der Ruhmeshalle!"; party = true; rc = "#3ddc84"; }
+  else if (r.record) { img = "bereit"; emo = "🏆"; head = "Neuer Rekord!"; cap = r.prev >= 0 ? "Du bist jetzt die Nummer 1!" : "Der erste Eintrag in der Ruhmeshalle!"; party = true; rc = "#3ddc84"; }
+  if (r.record && (w === 0 || w === 1 || w === 2)) party = true;
   const two = (r.rows || []).some(x => x.length > 2);
   const tbl = `<table class="ar-tbl">${two ? `<tr><th></th><th style="color:var(--p0)">${esc(names[0])}</th><th style="color:var(--p1)">${esc(names[1])}</th></tr>` : ""}${(r.rows || []).map(x =>
     `<tr><td>${esc(x[0])}</td><td${two && x.length < 3 ? ' colspan="2"' : ""}>${esc(x[1])}</td>${x.length > 2 ? `<td>${esc(x[2])}</td>` : ""}</tr>`).join("")}</table>`;
   if (party && AR.confettiFor !== r.secs + st.g) { AR.confettiFor = r.secs + st.g; setTimeout(confetti, 50); }
   return `<div class="ar-top"><div class="ar-logo" style="font-size:20px">MJ ARCADE<small>${esc(g.t)}</small></div><button class="ar-x" data-ar="close">✕</button></div>
     <div class="ar-res" style="--rc:${rc}">${photoUrl(img) ? `<img src="${photoUrl(img)}" alt="">` : `<div class="emo">${emo}</div>`}
-      <h2>${head}</h2><p class="cap">${cap}</p>${r.big !== undefined ? `<div class="bign">${r.big}</div><p class="cap">${g.unit || ""}</p>` : ""}${tbl}</div>
+      <h2>${head}</h2><p class="cap">${cap}</p>${r.big !== undefined ? `<div class="bign">${r.big}</div><p class="cap">${g.unit || ""}</p>` : ""}${hsBox(st, r, g, names)}${tbl}</div>
     <button class="ar-go" data-ar="again">Nochmal! 🔁</button>
     <div class="ar-row"><button class="ar-chip" data-ar="browse">Anderes Spiel</button><button class="ar-chip" data-ar="quit">Zur Uhr zurück</button></div>`;
+}
+// Highscore nach jedem Spiel: Rekord, wer ihn hält und wie viel gefehlt hat
+function hsBox(st, r, g, names) {
+  const me = AR.you, who = i => i === me ? "Du" : esc(names[i]), out = [];
+  const n = (v, u) => `${v} ${u ? (v === 1 ? u[0] : u[1]) : ""}`.trim();
+  const rows = (vals, line) => { const idx = [0, 1].filter(i => vals?.[i] !== null && vals?.[i] !== undefined);
+    const mine = idx.includes(me) ? [me] : idx; return mine.map(i => `<div class="r"><span>${who(i)}</span><b>${line(i, vals[i])}</b></div>`).join(""); };
+  const h = r.hs;
+  if (h && h.v !== undefined) {
+    const u = g.su, lo = h.lo;
+    out.push(`<div class="ar-hs"><div class="t">🏆 Highscore${st.m !== "1p" && st.g === "tetris" ? " (zu zweit)" : ""}</div>
+      <div class="top"><b>${n(h.v, u)}</b><span>von ${esc(h.n)}</span></div>
+      ${rows(h.p, (i, v) => {
+        if (h.by === i) return h.prev !== undefined ? `🎉 Neuer Rekord! Vorher ${n(h.prev, u)} (${esc(h.prevN)})` : "🎉 Erster Rekord!";
+        const gap = lo ? v - h.v : h.v - v;
+        if (gap <= 0) return `${n(v, u)} – genau gleich, aber ${esc(h.n)} war zuerst da`;
+        return lo ? `${n(v, u)} · ${n(gap, u)} zu langsam` : `${n(v, u)} · ${n(gap, u)} gefehlt`;
+      })}</div>`);
+  }
+  const hw = r.hw;
+  if (hw && hw.v > 0) {
+    const s = ["Sieg", "Siege"];
+    out.push(`<div class="ar-hs"><div class="t">👑 Meiste Siege</div>
+      <div class="top"><b>${n(hw.v, s)}</b><span>${esc(hw.n)}</span></div>
+      ${rows(hw.p, (i, v) => {
+        if (names[i] === hw.n) return `${n(v, s)} · ganz vorne!`;
+        const gap = hw.v - v;
+        return gap <= 0 ? `${n(v, s)} · gleichauf – der nächste Sieg bringt die Spitze` : `${n(v, s)} · noch ${n(gap, s)} bis ${esc(hw.n)}`;
+      })}</div>`);
+  }
+  return out.join("");
 }
 function confetti() {
   const box = $("#arConf"), cols = ["#ff1f8f", "#00d7b9", "#ffd23f", "#7a5cff", "#3ddc84", "#fff"];
@@ -1234,7 +1287,8 @@ function confetti() {
 
 /* ---------- Controller ---------- */
 const PADS = {
-  dpad: `<div class="ar-ctl l-dpad" id="arCtlIn"><button class="ar-k" data-k="0">▲</button><button class="ar-k" data-k="2">◀</button><div class="hub"></div><button class="ar-k" data-k="3">▶</button><button class="ar-k" data-k="1">▼</button></div>`,
+  dpad: `<div class="ar-ctl l-dpad" id="arCtlIn"><button class="ar-k" data-k="0">▲</button><button class="ar-k" data-k="2">◀</button><button class="ar-k" data-k="3">▶</button><button class="ar-k" data-k="1">▼</button><div class="hub"></div></div>`,
+  swipe: `<div class="ar-ctl l-swipe" id="arCtlIn"><div><div class="arr" id="arSwArr">▲</div><div>Wische in die Richtung,<br>in die es gehen soll</div></div></div>`,
   tetris: `<div class="ar-ctl l-tetris" id="arCtlIn"><button class="ar-k acc" data-k="4">⟳<small>DREHEN</small></button><button class="ar-k" data-k="5">⤓<small>FALLEN</small></button><button class="ar-k" data-k="2">◀</button><button class="ar-k" data-k="3">▶</button><button class="ar-k" data-k="1">▼<small>SCHNELLER</small></button></div>`,
   updown: `<div class="ar-ctl l-updown" id="arCtlIn"><button class="ar-k" data-k="0">▲</button><button class="ar-k" data-k="1">▼</button></div>`,
   lr: `<div class="ar-ctl l-lr" id="arCtlIn"><button class="ar-k" data-k="2">◀</button><button class="ar-k" data-k="3">▶</button><button class="ar-k acc" data-k="4">⬇<small>EINWERFEN</small></button></div>`,
@@ -1242,7 +1296,8 @@ const PADS = {
 };
 function renderPad(full) {
   const st = AR.st, me = AR.you, g = GUI[st.g] || {};
-  if (full) { $("#arCtl").outerHTML = PADS[g.pad || "dpad"].replace('id="arCtlIn"', 'id="arCtl"'); AR.lastView = "pad"; }
+  if (full) { const pk = g.pad === "dpad" && ctlMode() === "swipe" ? "swipe" : g.pad || "dpad";
+    $("#arCtl").outerHTML = PADS[pk].replace('id="arCtlIn"', 'id="arCtl"'); AR.lastView = "pad"; }
   const p = st.p || [{}, {}], two = st.m !== "1p";
   $("#arScore").innerHTML = two ? `<div class="sd" style="color:var(--p0)"><span class="s">${p[0]?.s ?? 0}</span><span class="n">${esc(p[0]?.n)}</span></div><span class="vs">vs</span>
       <div class="sd" style="color:var(--p1)"><span class="s">${p[1]?.s ?? 0}</span><span class="n">${esc(p[1]?.n)}</span></div>`
@@ -1260,7 +1315,28 @@ function renderPad(full) {
   else { M.dataset.cd = ""; M.className = "ar-msg"; M.innerHTML = ""; }
 }
 // Ein Zeiger = eine Taste. Gleiten zwischen Tasten wechselt die Richtung (wie ein echtes Steuerkreuz).
-function keyAt(x, y) { const el = document.elementFromPoint(x, y); const b = el && el.closest && el.closest("#arCtl [data-k]"); return b ? +b.dataset.k : -1; }
+function keyAt(x, y) {
+  const c = $("#arCtl");
+  if (c && c.classList.contains("l-dpad")) {  // Steuerkreuz: Richtung nach Winkel zur Mitte, ganze Flaeche zaehlt
+    const r = c.getBoundingClientRect(); if (x < r.left || x > r.right || y < r.top || y > r.bottom) return -1;
+    const dx = (x - r.left) / r.width - .5, dy = (y - r.top) / r.height - .5;
+    return Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 2 : 3) : (dy < 0 ? 0 : 1);
+  }
+  // Rechteck jeder Taste inkl. durchsichtigem Rand und runden Ecken -> keine toten Stellen
+  for (const b of $$("#arCtl [data-k]")) { const r = b.getBoundingClientRect(); if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return +b.dataset.k; }
+  return -1;
+}
+// Snake / T.R.O.N: Wischen, Druecken oder beides (Standard)
+const CTL_TXT = { both: "Beides", tap: "Drücken", swipe: "Wischen" };
+function ctlMode() { let m = "both"; try { m = localStorage.getItem("wc_ctl") || "both"; } catch (e) {} return CTL_TXT[m] ? m : "both"; }
+function swipeOn() { return GUI[AR.st.g]?.pad === "dpad" && ctlMode() !== "tap"; }
+const SWIPE_PX = 22, TAP_WAIT = 90;  // ab 22 px Bewegung ist es ein Wisch; "Beides": Tippen zaehlt nach 90 ms oder beim Loslassen
+const SW = new Map();
+function tapKey(k) {
+  sendKey(k, true); sendKey(k, false); navigator.vibrate?.(9);
+  markKey(k, true); setTimeout(() => markKey(k, false), 130);
+  const a = $("#arSwArr"); if (a) { a.textContent = "▲▼◀▶"[k]; a.classList.add("on"); clearTimeout(a._t); a._t = setTimeout(() => a.classList.remove("on"), 160); }
+}
 function press(id, k) {
   const old = AR.pressed.get(id); if (old === k) return;
   if (old !== undefined && old >= 0) { if (![...AR.pressed].some(([i, v]) => i !== id && v === old)) { sendKey(old, false); markKey(old, false); } }
@@ -1271,9 +1347,34 @@ function markKey(k, on) { $$(`#arCtl [data-k="${k}"]`).forEach(b => b.classList.
 function releaseAll() { [...AR.pressed.keys()].forEach(id => press(id, -1)); AR.pressed.clear(); }
 (function setupPad() {
   const pad = $("#arPad");
-  pad.addEventListener("pointerdown", e => { const k = keyAt(e.clientX, e.clientY); if (k < 0) return; e.preventDefault(); press(e.pointerId, k); }, { passive: false });
-  pad.addEventListener("pointermove", e => { if (AR.pressed.has(e.pointerId)) press(e.pointerId, keyAt(e.clientX, e.clientY)); });
-  ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => pad.addEventListener(ev, e => press(e.pointerId, -1)));
+  pad.addEventListener("pointerdown", e => {
+    if (swipeOn() && !e.target.closest(".ar-bar,.ar-msg.on")) {  // Wischen: ueberall unter der Leiste
+      e.preventDefault();
+      const id = e.pointerId, s = { x: e.clientX, y: e.clientY, k: keyAt(e.clientX, e.clientY), done: false, held: false, last: -1 };
+      if (ctlMode() === "both" && s.k >= 0) s.timer = setTimeout(() => { if (!s.done) { s.done = s.held = true; press(id, s.k); } }, TAP_WAIT);
+      SW.set(id, s); return;
+    }
+    const k = keyAt(e.clientX, e.clientY); if (k < 0) return; e.preventDefault(); press(e.pointerId, k);
+  }, { passive: false });
+  pad.addEventListener("pointermove", e => {
+    const s = SW.get(e.pointerId);
+    if (s) {
+      const dx = e.clientX - s.x, dy = e.clientY - s.y;
+      if (Math.hypot(dx, dy) < SWIPE_PX) return;
+      clearTimeout(s.timer); s.done = true;
+      if (s.held) { press(e.pointerId, -1); s.held = false; }
+      const k = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 2 : 3) : (dy < 0 ? 0 : 1);
+      if (k !== s.last) { tapKey(k); s.last = k; }
+      s.x = e.clientX; s.y = e.clientY;  // weiterwischen = naechste Kurve
+      return;
+    }
+    if (AR.pressed.has(e.pointerId)) press(e.pointerId, keyAt(e.clientX, e.clientY));
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => pad.addEventListener(ev, e => {
+    const s = SW.get(e.pointerId);
+    if (s) { clearTimeout(s.timer); if (!s.done && s.k >= 0 && ev === "pointerup" && ctlMode() === "both") tapKey(s.k); SW.delete(e.pointerId); }
+    press(e.pointerId, -1);
+  }));
   pad.addEventListener("contextmenu", e => e.preventDefault());
   document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); setFrames(!document.hidden && !AR.open); });
   // Tastatur am PC: Pfeile, Leertaste = A, Enter = B
@@ -1286,7 +1387,8 @@ function releaseAll() { [...AR.pressed.keys()].forEach(id => press(id, -1)); AR.
 
 /* ---------- Klicks in der Spielhalle ---------- */
 $("#arcade").addEventListener("click", e => {
-  const b = e.target.closest("[data-ar],[data-open],[data-join]"); if (!b) return;
+  const b = e.target.closest("[data-ar],[data-open],[data-join],[data-ctl]"); if (!b) return;
+  if (b.dataset.ctl) { try { localStorage.setItem("wc_ctl", b.dataset.ctl); } catch (x) {} return arRender(true); }
   if (b.dataset.open) { AR.browse = false; sessionStorage.setItem("wc_slot", "0"); return wsSend({ t: "g.open", game: b.dataset.open, mode: b.dataset.mode, name: arName, id: DEV_ID }); }
   if (b.dataset.join !== undefined) { sessionStorage.setItem("wc_slot", b.dataset.join); return wsSend({ t: "g.join", slot: +b.dataset.join, name: arName, id: DEV_ID }); }
   const a = b.dataset.ar, st = AR.st;
@@ -1339,7 +1441,11 @@ function demoCount() { DS.ph = "count"; DS.cd = 3; demoLater(1000, () => DS.cd =
     DS.timers.push(setTimeout(tick, 1500)); demoLater(12000, demoOver); }); }
 function demoOver() {
   const two = DS.m !== "1p", w = two ? (DS.score[0] >= DS.score[1] ? 0 : 1) : -1; DS.ph = "over";
-  DS.res = { winner: w, secs: 12, score: DS.score, big: two ? undefined : 7 + DS.score[0], record: !two, prev: 14,
+  const nm = DS.p.map(p => p.n), hasHs = ["snake", "tetris", "reaktion"].includes(DS.g), lo = DS.g === "reaktion";
+  const mine = lo ? 287 : 7 + DS.score[0], rec = !two && !lo && mine > 14;
+  DS.res = { winner: w, secs: 12, score: DS.score, big: two ? undefined : mine, record: rec, prev: 14,
+    hs: hasHs ? { lo, v: rec ? mine : lo ? 241 : 14, n: rec ? nm[0] : "Jannik", p: two ? [lo ? 301 : 6, lo ? 259 : 9] : [mine, null], ...(rec ? { by: 0, prev: 14, prevN: "Jannik" } : {}) } : undefined,
+    hw: two ? { v: 12, n: "MJ", p: [nm[0] === "MJ" ? 12 : 4, nm[1] === "MJ-Bot" ? null : 9] } : undefined,
     rows: two ? [["Punkte", String(DS.score[0]), String(DS.score[1])], ["Treffer", "11", "9"], ["Längster Ballwechsel", "7"], ["Spielzeit", "0:12"]] : [["Äpfel", "21"], ["Länge", "24"], ["Spielzeit", "0:12"]] };
 }
 function demoCheck() { if (DS.ph === "lobby" && DS.p.every((p, i) => (i && DS.m === "1p") || p.r)) demoCount(); }

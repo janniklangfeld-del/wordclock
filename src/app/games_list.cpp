@@ -143,6 +143,7 @@ class Snake : public Game {
   }
   bool over() const override { return dead && t - deadT > 1600; }
   int32_t score(uint8_t) const override { return apples; }
+  int32_t hsValue(uint8_t p) const override { return p == 0 ? apples : -1; }
   void live(char* b, size_t n) const override { snprintf(b, n, "Länge %d", len); }
   void results(JsonArray r) const override {
     row(r, "Äpfel", String(apples));
@@ -509,6 +510,7 @@ class Tetris : public Game {
   int8_t winner() const override { return nb == 2 ? 1 - loser : -1; }
   int32_t score(uint8_t p) const override { return p < nb ? b[p].score : 0; }
   int32_t bigNumber() const override { return b[0].lines; }
+  int32_t hsValue(uint8_t p) const override { return p < nb && !(bot && p == 1) ? b[p].lines : -1; }
   void live(char* s, size_t n) const override {
     if (nb == 1) snprintf(s, n, "Level %d · %d Reihen", b[0].level, b[0].lines);
     else snprintf(s, n, "%d : %d Reihen", b[0].lines, b[1].lines);
@@ -659,7 +661,7 @@ class Pong : public Game {
 };
 
 // ===========================================================================
-// Tron / Lichtrenner (2 Spieler oder gegen MJ-Bot) – wer zuerst 3 Runden holt
+// T.R.O.N – Lichtrenner (2 Spieler oder gegen MJ-Bot) – wer zuerst 3 Runden holt
 // ===========================================================================
 class Tron : public Game {
   static constexpr int WIN = 3;
@@ -1050,6 +1052,8 @@ class Reaction : public Game {
   int8_t winner() const override { return humans == 2 ? (pts[0] > pts[1] ? 0 : 1) : -1; }
   int32_t score(uint8_t p) const override { return pts[p & 1]; }
   int32_t bigNumber() const override { return cnt[0] ? sum[0] / cnt[0] : 999; }
+  // Durchschnitt zaehlt ab 3 gueltigen Messungen (allein sind es immer 5)
+  int32_t hsValue(uint8_t p) const override { return p < humans && cnt[p] >= 3 ? (int32_t)(sum[p] / cnt[p]) : -1; }
   void live(char* s, size_t n) const override {
     if (humans == 1) snprintf(s, n, "Messung %d von 5", min(cnt[0] + 1, 5));
     else snprintf(s, n, "Runde %d · erster bis 5", rounds + 1);

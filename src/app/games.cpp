@@ -19,26 +19,27 @@ struct Info {
   const char* key;
   const char* title;
   uint8_t modes;
-  uint8_t rec;  // 0 nur Siege, 1 hoeher ist besser, 2 niedriger ist besser (Einzelspiel)
+  uint8_t rec;  // 0 nur Siege, 1 hoeher ist besser, 2 niedriger ist besser
+  bool sepVs;   // Highscore zu zweit / gegen Bot getrennt fuehren (Tetris: schmaleres Feld)
   const char* icon[GH];
 };
 const Info GAMES[] = {
-    {"snake", "Snake", M_1P, 1,
+    {"snake", "Snake", M_1P, 1, false,
      {"...........", ".GGGGG.....", ".G...G.....", ".G...G..R..", ".G...GGGG..", ".G.........", ".GGGGGGGGW.",
       "...........", "...........", "..........."}},
-    {"tetris", "Tetris", M_1P | M_2P | M_BOT, 1,
+    {"tetris", "Tetris", M_1P | M_2P | M_BOT, 1, true,
      {"....YY.....", "....YY.....", "...........", "........C..", "........C..", "........C..", "P.......C..",
       "PP....RR...", "PBBB.GRRGGO", "BBGGGGOOOOO"}},
-    {"pong", "Pong", M_2P | M_BOT, 0,
+    {"pong", "Pong", M_2P | M_BOT, 0, false,
      {"...........", "...........", "P..........", "P.........T", "P....W....T", "..........T", "...........",
       "...........", "...........", "..........."}},
-    {"tron", "Lichtrenner", M_2P | M_BOT, 0,
+    {"tron", "T.R.O.N", M_2P | M_BOT, 0, false,
      {"...........", ".PPPPP.....", ".....P.....", ".....P.....", ".....PW....", "...........", "....TTTTTT.",
       "....T......", "....T......", "..........."}},
-    {"vier", "Vier gewinnt", M_2P | M_BOT, 0,
+    {"vier", "Vier gewinnt", M_2P | M_BOT, 0, false,
      {"...........", "...........", "...........", "....T......", "..bbbbbbb..", "..bbbbbbb..", "..bbbTbbb..",
       "..bbbPTbb..", "..bTPPTbb..", "..PPTPTPb.."}},
-    {"reaktion", "Reaktion", M_1P | M_2P, 2,
+    {"reaktion", "Reaktion", M_1P | M_2P, 2, false,
      {"...........", "....YYY....", "...Y...Y...", "..Y..Y..Y..", "..Y..YY.Y..", "..Y.....Y..", "...Y...Y...",
       "....YYY....", "...........", "..........."}},
 };
@@ -148,22 +149,63 @@ void finish() {
   JsonObject g = rec[gi.key].is<JsonObject>() ? rec[gi.key].as<JsonObject>() : rec[gi.key].to<JsonObject>();
   g["n"] = (g["n"] | 0) + 1;
   g["s"] = (g["s"] | 0) + game->seconds();
-  if (mode == M_1P && gi.rec) {
-    const int32_t v = game->bigNumber();
-    r["big"] = v;
-    const bool has = g["hs"].is<int>();
-    const bool better = !has || (gi.rec == 1 ? v > (int32_t)g["hs"] : v < (int32_t)g["hs"]);
-    if (better && (gi.rec == 1 ? v > 0 : v < 999)) {
+  if (mode == M_1P) r["big"] = game->bigNumber();
+  // Highscore: jeder Mensch zaehlt (auch zu zweit). Rekord, Halter und eigene Werte gehen
+  // ans Handy, das daraus "wie viel hat gefehlt" berechnet.
+  if (gi.rec) {
+    const bool vs = gi.sepVs && mode != M_1P;
+    const char* kv = vs ? "hs2" : "hs";
+    const char* kn = vs ? "hsn2" : "hsn";
+    const bool lo = gi.rec == 2;
+    JsonObject h = r["hs"].to<JsonObject>();
+    h["lo"] = lo;
+    JsonArray hp = h["p"].to<JsonArray>();
+    int best = -1;
+    int32_t bv = 0;
+    for (int i = 0; i < 2; i++) {
+      const int32_t v = (i < needed() && slots[i].used && !slots[i].isBot) ? game->hsValue(i) : -1;
+      if (v < 0) { hp.add(nullptr); continue; }
+      hp.add(v);
+      if (best < 0 || (lo ? v < bv : v > bv)) { best = i; bv = v; }
+    }
+    const bool has = g[kv].is<int>();
+    const bool valid = best >= 0 && (lo ? bv < 999 : bv > 0);
+    if (valid && (!has || (lo ? bv < g[kv].as<int32_t>() : bv > g[kv].as<int32_t>()))) {
       r["record"] = true;
-      r["prev"] = has ? g["hs"].as<int32_t>() : -1;
-      g["hs"] = v;
-      g["hsn"] = slots[0].name;
+      r["prev"] = has ? g[kv].as<int32_t>() : -1;
+      h["by"] = best;
+      if (has) {
+        h["prev"] = g[kv].as<int32_t>();
+        h["prevN"] = String(g[kn] | "");
+      }
+      g[kv] = bv;
+      g[kn] = slots[best].name;
+    }
+    if (g[kv].is<int>()) {
+      h["v"] = g[kv].as<int32_t>();
+      h["n"] = String(g[kn] | "");
     }
   }
   if (w == 0 || w == 1) {
     JsonObject wins = g["w"].is<JsonObject>() ? g["w"].as<JsonObject>() : g["w"].to<JsonObject>();
     const String& n = slots[w].name;
     if (wins[n].is<int>() || wins.size() < 8) wins[n] = (wins[n] | 0) + 1;
+  }
+  // Meiste Siege (zu zweit / gegen Bot): Spitzenreiter und Stand der Spieler
+  if (mode != M_1P && g["w"].is<JsonObject>()) {
+    JsonObjectConst wins = g["w"].as<JsonObjectConst>();
+    String ln;
+    int lv = 0;
+    for (JsonPairConst e : wins)
+      if (e.value().as<int>() > lv) { lv = e.value().as<int>(); ln = e.key().c_str(); }
+    JsonObject hw = r["hw"].to<JsonObject>();
+    hw["v"] = lv;
+    hw["n"] = ln;
+    JsonArray p = hw["p"].to<JsonArray>();
+    for (int i = 0; i < 2; i++) {
+      if (slots[i].used && !slots[i].isBot) p.add(wins[slots[i].name] | 0);
+      else p.add(nullptr);
+    }
   }
   rec["total"] = (rec["total"] | 0) + 1;
   saveRecords();
