@@ -62,6 +62,10 @@ bool transActive = false;
 uint8_t transType = TR_FADE;
 uint16_t transDur = 1000;
 uint32_t transStart = 0, transSeed = 1;
+// Uebergangs-Uhr: zaehlt pro Bild hoechstens 40 ms weiter. Haengt die Hauptschleife kurz
+// (z. B. Handy verbindet sich bei schwachem WLAN), pausiert der Uebergang statt zu springen.
+uint32_t transElapsed = 0, transLastFrame = 0;
+uint32_t introDoneAt = 0;  // Ende der Begruessung: danach bis die Uhrzeit da ist dunkel bleiben
 uint8_t typeRank[CELLS];
 uint8_t typeCount = 0;
 LetterMask customMask;
@@ -244,6 +248,8 @@ void beginTransition(bool dotsOnly) {
     forceTrans = 255;
   }
   transStart = millis();
+  transElapsed = 0;
+  transLastFrame = transStart;
   transSeed = esp_random();
   transActive = transType != TR_NONE;
   typeCount = 0;
@@ -293,7 +299,10 @@ uint8_t targetBrightness(bool haveTime, const tm& t) {
 void renderStatus(uint32_t now) {
   uint32_t t = now - stateSince;
   CRGB c = CRGB::Black;
-  switch (current) {
+  // Direkt nach der Begruessung keine Statuspunkte: dunkel bleiben, bis die Uhrzeit da ist,
+  // dann blendet sich die Uhr weich ein. Portal (blau) und Fehler (rot) bleiben sichtbar.
+  const bool quiet = introDoneAt && now - introDoneAt < 60000 && current != SysState::Portal && current != SysState::Error;
+  switch (quiet ? SysState::Updating : current) {  // Updating = hier "nichts zeigen"
     case SysState::Booting: c = CRGB(40, 40, 40); break;
     case SysState::Connecting: c = (t / 300) % 2 ? CRGB(80, 60, 0) : CRGB::Black; break;
     case SysState::Portal: c = CRGB(0, 0, 40 + beatsin8(15, 0, 180)); break;
@@ -587,7 +596,11 @@ void loop() {
       memcpy(wordOf, nw, CELLS);
     }
 
-    float p = transActive ? (now - transStart) / (float)transDur : 1.0f;
+    if (transActive) {
+      transElapsed += min<uint32_t>(now - transLastFrame, 40);
+      transLastFrame = now;
+    }
+    float p = transActive ? transElapsed / (float)transDur : 1.0f;
     if (p >= 1.0f) transActive = false;
     if (!transActive) {
       renderFace(face, wordOf, leds, now);
@@ -618,6 +631,7 @@ void loop() {
       introSt.active = false;
       faceValid = false;
       forceTrans = TR_RANDOM;
+      introDoneAt = now;
       fill_solid(leds, LED_COUNT, CRGB::Black);
     }
   }
