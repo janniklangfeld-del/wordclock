@@ -59,11 +59,20 @@ class Game {
   virtual int32_t hsValue(uint8_t) const { return -1; }  // Wert fuer den Highscore (-1 = zaehlt nicht)
   virtual void live(char* buf, size_t n) const { buf[0] = 0; }  // Zeile fuer den Controller
   virtual void extra(JsonObject) const {}  // spielspezifischer Zustand fuers Handy (optional)
+  virtual void priv(uint8_t, JsonObject) const {}  // nur fuer das Handy dieses Spielers (z. B. eigene Schiffe)
+  virtual void input(uint8_t, JsonObjectConst) {}  // Eingabe mit Daten ("g.in"), z. B. Zielfeld
   virtual void results(JsonArray rows) const = 0;   // Statistik: [Bezeichnung, Wert1, Wert2?]
   uint32_t seconds() const { return (t - startT) / 1000; }
 };
 
 Game* create(uint8_t id);
+// games_more.cpp
+Game* newWort();
+Game* newTau();
+Game* newSee();
+Game* newHerz();
+Game* newMauer();
+Game* newLauf();
 
 // Hilfsfunktion fuer Statistik-Zeilen
 inline void row(JsonArray rows, const char* label, const String& a, const String& b = String()) {

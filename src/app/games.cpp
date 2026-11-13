@@ -45,6 +45,24 @@ const Info GAMES[] = {
     {"flatter", "Flatterherz", M_1P | M_2P, 1, false,
      {"......G...G", "......G...G", "......G....", "..P........", "..........G", "......G...G", "......G...G",
       "......G...G", "......G...G", "......G...G"}},
+    {"wort", "Wortblitz", M_1P | M_2P, 1, false,
+     {"...........", ".Y.....W...", "...........", "....Y......", "..........Y", "...........", ".W.........",
+      "......Y....", "...........", "...Y......."}},
+    {"tau", "Tauziehen", M_2P | M_BOT, 0, false,
+     {"...........", "...........", "...........", "P.........T", "PPPPPWTTTTT", "PPPPPWTTTTT", "P.........T",
+      "...........", "...........", "..........."}},
+    {"see", "Seeschlacht", M_2P | M_BOT, 0, false,
+     {"PPPPP.TTTTT", "...........", "bbbbb.bbObb", "bCbbb.bbbbb", "bbbRb.bCbbb", "bbbRb.bbbbb", "bbbbb.bbbOb",
+      "...........", "P.P.P.T.T.T", "..........."}},
+    {"herz", "Herzregen", M_1P | M_2P, 1, true,
+     {"..R........", "......R....", "...........", ".....C.....", "..R........", "........Y..", "...........",
+      "....R......", "...........", "...OOO....."}},
+    {"mauer", "Mauerbrecher", M_1P, 1, false,
+     {"...........", "RRRRRRRRRRR", "OOOOOOOOOOO", "YYYY..YYYYY", "GG.GGGGG.GG", "...........", "......W....",
+      "...........", "...........", "....WWW...."}},
+    {"lauf", "Hürdenlauf", M_1P | M_2P, 1, false,
+     {"...........", "...........", "...........", "...........", "...........", "...........", "...........",
+      "..P....O...", "..P....O..O", "GGGGGGGGGGG"}},
 };
 constexpr int N_GAMES = sizeof(GAMES) / sizeof(GAMES[0]);
 #ifndef WEBSOCKETS_SERVER_CLIENT_MAX
@@ -304,7 +322,14 @@ void broadcast() {
   // pro Handy "you" (eigener Platz) voranstellen
   for (uint8_t c = 0; c < MAX_CLIENTS; c++) {
     if (!web::clientConnected(c)) continue;
-    String m = String("{\"you\":") + slotOf(c) + "," + s.substring(1);
+    const int sl = slotOf(c);
+    String m = String("{\"you\":") + sl + ",";
+    if (sl >= 0 && game && (phase == PLAY || phase == PAUSE)) {  // private Daten nur an dieses Handy
+      JsonDocument pv;
+      game->priv(sl, pv.to<JsonObject>());
+      if (pv.size()) { String ps; serializeJson(pv, ps); m += "\"me\":" + ps + ","; }  // serializeJson ueberschreibt Strings
+    }
+    m += s.substring(1);
     web::sendTo(c, m);
   }
   lastSent = millis();
@@ -441,7 +466,9 @@ void loop() {
         String l = String(b) + game->score(0) + ":" + game->score(1);
         JsonDocument x;  // spielspezifischer Zustand zaehlt mit (z. B. Reaktion: wer haelt, Zeiten)
         game->extra(x.to<JsonObject>());
-        serializeJson(x, l);
+        String xs;
+        serializeJson(x, xs);  // eigener String: serializeJson ueberschreibt, haengt nicht an
+        l += xs;
         if (l != lastLive) { lastLive = l; dirty = true; }
       }
       break;
@@ -611,6 +638,10 @@ void onText(uint8_t client, JsonObjectConst m) {
   }
   if (!strcmp(t, "g.again")) {
     if (gameId >= 0 && (phase == OVER || phase == PAUSE)) openLobby(gameId, mode);
+    return;
+  }
+  if (!strcmp(t, "g.in")) {  // Eingabe mit Daten (z. B. Seeschlacht: Zielfeld)
+    if (phase == PLAY && me >= 0 && game) { game->t = gclock; game->input(me, m); }
     return;
   }
   if (!strcmp(t, "g.home")) {  // Knopf "Zur Uhr" auf der Webseite: immer, auch fuer Zuschauer

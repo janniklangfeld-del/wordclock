@@ -295,6 +295,32 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;use
   .l-updown{grid-template:"u d" 1fr/1fr 1fr}.l-updown [data-k="0"]{grid-area:u}.l-updown [data-k="1"]{grid-area:d}
   .l-lr{grid-template:"l r a" 1fr/1fr 1fr 1.4fr}
 }
+#arcade,#arcade *{touch-action:manipulation}  /* kein Doppeltipp-Zoom in der Spielhalle */
+#arcade .ar-pad,#arcade .ar-pad *{touch-action:none}
+.l-opt4{grid-template:1fr 1fr/1fr 1fr}
+.ar-k.wb b{font:900 clamp(20px,6.4vw,30px)/1.1 "Arial Black",system-ui;word-break:break-word;padding:0 6px}
+.ar-k.wb[data-st="ok"]{background-color:#3ddc84;background-image:none;color:#08210f}
+.ar-k.wb[data-st="bad"]{background-color:#8a1830;background-image:none}
+.ar-k.wb[data-st="dim"]{opacity:.35}
+.ar-k.tz .bar{display:block;position:relative;width:78%;height:16px;margin:22px auto 0;border-radius:9px;background:linear-gradient(90deg,var(--p0),var(--p0) 50%,var(--p1) 50%,var(--p1))}
+.ar-k.tz .bar i{position:absolute;top:-6px;left:50%;width:10px;height:28px;margin-left:-5px;border-radius:5px;background:#fff;box-shadow:0 0 12px #fff;transition:left .08s}
+.l-lr2{grid-template:1fr/1fr 1fr}
+.l-lr2 .ar-k{font-size:44px}
+.l-run{grid-template-rows:1.5fr 1fr}
+.l-sea{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.l-sea .sh{font:900 20px/1.2 system-ui}
+.l-sea .sg{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;width:min(86vw,46vh);aspect-ratio:1}
+.l-sea .sc{border:0;border-radius:9px;background:#0d1a3a;box-shadow:inset 0 0 0 1px rgba(120,160,255,.25);padding:0;position:relative}
+.l-sea button.sc{background:#16306a;cursor:pointer;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--me) 70%,transparent)}
+.l-sea button.sc:active{background:var(--me)}
+.l-sea .sc.ship{background:#8a93a8}
+.l-sea .sc.miss:after{content:"";position:absolute;inset:38%;border-radius:50%;background:#7aa8ff}
+.l-sea .sc.hit{background:#ff7a00}
+.l-sea .sc.sunk{background:#e0102a}
+.l-sea .sc.last{outline:3px solid #fff;outline-offset:-3px}
+.l-sea .sb{display:flex;gap:10px;align-items:center}
+.l-sea .sb .ar-go{width:auto;padding:14px 26px;margin:0}
+.l-sea .sf{font-size:13px;color:rgba(255,255,255,.7)}
 .ar-seg{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin:14px 0 2px;font-size:13px;color:rgba(255,255,255,.7)}
 .ar-seg button{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;border-radius:999px;padding:9px 14px;font:700 14px system-ui;cursor:pointer}
 .ar-seg button.on{background:var(--me);border-color:var(--me);color:#14081f}
@@ -1017,8 +1043,20 @@ const GUI = {
     icon: ["...........", "....YYY....", "...Y...Y...", "..Y..Y..Y..", "..Y..YY.Y..", "..Y.....Y..", "...Y...Y...", "....YYY....", "...........", "..........."] },
   flatter: { t: "Flatterherz", d: "Tippen = flattern. Flieg durch die Lücken. Zu zweit gewinnt, wer länger fliegt.", pad: "flap", unit: "Lücken", su: ["Lücke", "Lücken"], c: ["#ff1f8f", "#3ddc84"],
     icon: ["......G...G", "......G...G", "......G....", "..P........", "..........G", "......G...G", "......G...G", "......G...G", "......G...G", "......G...G"] },
+  wort: { t: "Wortblitz", d: "Buchstaben blitzen nacheinander im Raster der Uhr auf – welches Wort ist es? Früh erkannt = mehr Punkte.", pad: "opt4", unit: "Punkte", su: ["Punkt", "Punkte"], c: ["#ffd23f", "#ff1f8f"],
+    icon: ["...........", ".Y.....W...", "...........", "....Y......", "..........Y", "...........", ".W.........", "......Y....", "...........", "...Y......."] },
+  tau: { t: "Tauziehen", d: "Tippen, tippen, tippen! Zieh den Knoten auf deine Seite. Wer zuerst 2 Runden holt.", pad: "pull", c: ["#ff1f8f", "#00d7b9"],
+    icon: ["...........", "...........", "...........", "P.........T", "PPPPPWTTTTT", "PPPPPWTTTTT", "P.........T", "...........", "...........", "..........."] },
+  see: { t: "Seeschlacht", d: "Versenk die 3 Schiffe des anderen. Deine Flotte siehst nur du. Treffer = nochmal schießen.", pad: "sea", c: ["#00d7b9", "#7a5cff"],
+    icon: ["PPPPP.TTTTT", "...........", "bbbbb.bbObb", "bCbbb.bbbbb", "bbbRb.bCbbb", "bbbRb.bbbbb", "bbbbb.bbbOb", "...........", "P.P.P.T.T.T", "..........."] },
+  herz: { t: "Herzregen", d: "Fang die Herzen, Gold zählt 3. Vorsicht vor Blitzen! Zu zweit: wer in 60 s mehr fängt.", pad: "lr2", unit: "Punkte", su: ["Punkt", "Punkte"], c: ["#ff1f8f", "#ffd23f"],
+    icon: ["..R........", "......R....", "...........", ".....C.....", "..R........", "........Y..", "...........", "....R......", "...........", "...OOO....."] },
+  mauer: { t: "Mauerbrecher", d: "Halt den Ball mit dem Schläger im Spiel und räum die Mauer ab. 3 Leben, dann wird's schneller.", pad: "lr2", unit: "Punkte", su: ["Punkt", "Punkte"], c: ["#ff6e00", "#7a5cff"],
+    icon: ["...........", "RRRRRRRRRRR", "OOOOOOOOOOO", "YYYY..YYYYY", "GG.GGGGG.GG", "...........", "......W....", "...........", "...........", "....WWW...."] },
+  lauf: { t: "Hürdenlauf", d: "Spring über Hürden, duck dich unter Vögeln durch. Zu zweit auf zwei Bahnen – wer länger läuft.", pad: "run", unit: "Hürden", su: ["Hürde", "Hürden"], c: ["#3ddc84", "#ff6e00"],
+    icon: ["...........", "...........", "...........", "...........", "...........", "...........", "...........", "..P....O...", "..P....O..O", "GGGGGGGGGGG"] },
 };
-const MODES = { snake: ["1p"], tetris: ["1p", "2p", "bot"], pong: ["2p", "bot"], tron: ["2p", "bot"], vier: ["2p", "bot"], reaktion: ["1p", "2p"], flatter: ["1p", "2p"] };
+const MODES = { snake: ["1p"], tetris: ["1p", "2p", "bot"], pong: ["2p", "bot"], tron: ["2p", "bot"], vier: ["2p", "bot"], reaktion: ["1p", "2p"], flatter: ["1p", "2p"], wort: ["1p", "2p"], tau: ["2p", "bot"], see: ["2p", "bot"], herz: ["1p", "2p"], mauer: ["1p"], lauf: ["1p", "2p"] };
 const MODE_TXT = { "1p": "🕹️ Allein", "2p": "👯 Zu zweit", bot: "🤖 Gegen MJ-Bot" };
 const ICOL = { G: "#00e628", W: "#dcffc8", R: "#ff140a", Y: "#ffc800", C: "#00dcff", B: "#003cff", O: "#ff6e00", P: "#ff1982", T: "#00d7b9", b: "#00001a" };
 const AR = { open: false, st: { ph: "idle", p: [{}, {}] }, you: -1, browse: false, rec: {}, total: 0, pressed: new Map(), framesOff: false, lastView: "", confettiFor: "" };
@@ -1318,6 +1356,11 @@ const PADS = {
   updown: `<div class="ar-ctl l-updown" id="arCtlIn"><button class="ar-k" data-k="0">▲</button><button class="ar-k" data-k="1">▼</button></div>`,
   lr: `<div class="ar-ctl l-lr" id="arCtlIn"><button class="ar-k" data-k="2">◀</button><button class="ar-k" data-k="3">▶</button><button class="ar-k acc" data-k="4">⬇<small>EINWERFEN</small></button></div>`,
   big: `<div class="ar-ctl l-big" id="arCtlIn"><button class="ar-k acc rx" data-k="4"><b>HALTEN</b><small>Finger drauf lassen</small></button></div>`,
+  opt4: `<div class="ar-ctl l-opt4" id="arCtlIn">${[0, 1, 2, 3].map(k => `<button class="ar-k wb" data-k="${k}"><b>…</b></button>`).join("")}</div>`,
+  pull: `<div class="ar-ctl l-big" id="arCtlIn"><button class="ar-k acc rx tz" data-k="4"><b>ZIEH!</b><small>So schnell tippen, wie du kannst</small><i class="bar"><i></i></i></button></div>`,
+  lr2: `<div class="ar-ctl l-lr2" id="arCtlIn"><button class="ar-k" data-k="2">◀</button><button class="ar-k" data-k="3">▶</button></div>`,
+  run: `<div class="ar-ctl l-run" id="arCtlIn"><button class="ar-k acc" data-k="0">▲<small>SPRINGEN</small></button><button class="ar-k" data-k="1">▼<small>DUCKEN · halten</small></button></div>`,
+  sea: `<div class="ar-ctl l-sea" id="arCtlIn"></div>`,
   flap: `<div class="ar-ctl l-big" id="arCtlIn"><button class="ar-k acc" data-k="4">♥<small>FLATTERN</small></button></div>`,
 };
 function renderPad(full) {
@@ -1329,6 +1372,9 @@ function renderPad(full) {
       <div class="sd" style="color:var(--p1)"><span class="s">${p[1]?.s ?? 0}</span><span class="n">${esc(p[1]?.n)}</span></div>`
     : `<div class="sd" style="color:var(--me)"><span class="s">${p[0]?.s ?? 0}</span><span class="n">${esc(g.t)} · ${esc(p[0]?.n)}</span></div>`;
   if (st.g === "reaktion") rxRender(st, me);
+  else if (st.g === "wort") wbRender(st, me);
+  else if (st.g === "tau") tzRender(st, me);
+  else if (st.g === "see") seaRender(st, me);
   $("#arLive").textContent = (st.live || "") + (st.secs !== undefined ? ` · ${Math.floor(st.secs / 60)}:${String(st.secs % 60).padStart(2, "0")}` : "");
   $("#arPause").style.visibility = me >= 0 ? "" : "hidden";
   const M = $("#arMsg");
@@ -1362,6 +1408,45 @@ function rxRender(st, me) {
     if (had) small += `<br>Letzte Runde: ${t(i)}${two ? opp() : ""}`;
   }
   b.dataset.st = cls; b.innerHTML = `<b>${big}</b><small>${small}</small>`;
+}
+// Wortblitz: 4 Woerter; nach der Antwort gruen/rot
+function wbRender(st, me) {
+  const x = st.x; if (!x) return;
+  $$("#arCtl .wb").forEach((b, k) => {
+    const mine = me >= 0 && x.a[me] === k, other = [0, 1].some(i => i !== me && x.a[i] === k);
+    b.querySelector("b").textContent = x.opt[k] || "…";
+    b.dataset.st = x.st === "r" ? (k === x.ok ? "ok" : mine ? "bad" : "dim") : mine ? "bad" : other && st.m !== "1p" ? "dim" : me >= 0 && x.a[me] >= 0 ? "dim" : "";
+  });
+}
+// Tauziehen: Balken zeigt, wo der Knoten steht
+function tzRender(st, me) {
+  const b = $("#arCtl .tz"), x = st.x; if (!b || !x) return;
+  b.querySelector(".bar i").style.left = `${50 + x.pos}%`;
+  const lead = x.pos === 0 ? -1 : x.pos < 0 ? 0 : 1;
+  b.querySelector("small").textContent = x.st === "show" ? "Runde vorbei" : me < 0 ? "" : lead < 0 ? "So schnell tippen, wie du kannst" : lead === me ? "Du ziehst! Weiter so 💪" : "Schneller tippen!";
+}
+// Seeschlacht: eigene Flotte aufstellen, dann aufs gegnerische Meer zielen
+function seaRender(st, me) {
+  const c = $("#arCtl"), x = st.x; if (!c || !x || !c.classList.contains("l-sea")) return;
+  const i = me >= 0 ? me : 0, o = 1 - i, nm = j => esc(st.p[j]?.n || `Spieler ${j + 1}`), ships = st.me?.ships || [];
+  const grid = (sea, own, active) => `<div class="sg">${x.s[sea].map((v, k) => {
+    const last = x.ls === sea && x.lc === k && (x.st === "fly" || x.st === "res");
+    const cls = (v === 3 ? "sunk" : v === 2 ? "hit" : v === 1 ? "miss" : own && ships[k] ? "ship" : "") + (last ? " last" : "");
+    return active && !v ? `<button class="sc" data-sc="${k}"></button>` : `<div class="sc ${cls}"></div>`; }).join("")}</div>`;
+  let head, body = "", foot = "";
+  if (x.st === "place") {
+    head = x.rdy[i] ? (st.m === "bot" ? "Los geht's …" : `Warte auf ${nm(o)} …`) : "Deine Flotte – so aufstellen?";
+    body = grid(i, true, false);
+    foot = x.rdy[i] ? "" : `<div class="sb"><button class="ar-chip" data-sa="mix">🔀 Neu verteilen</button><button class="ar-go" data-sa="ok">✔ Fertig</button></div>`;
+  } else {
+    const shooter = x.turn, target = x.st === "aim" ? 1 - shooter : x.ls ?? 1 - shooter, mine = shooter === i;
+    const res = x.st === "res" ? ({ 1: "Wasser 💧", 2: "Treffer! 💥", 3: "Versenkt! 🔥" })[x.lr] : x.st === "fly" ? "Schuss …" : "";
+    head = res || (mine ? "Du bist dran – tipp ein Feld an!" : `${nm(shooter)} zielt …`);
+    body = grid(target, target === i, x.st === "aim" && mine && me >= 0);
+    foot = `<div class="sf">Deine Schiffe: ${x.left[i]} · ${nm(o)}: ${x.left[o]}${target === i ? " · <b>dein Meer</b>" : ` · Meer von ${nm(target)}`}</div>`;
+  }
+  const html = `<div class="sh">${head}</div>${body}${foot}`;
+  if (c._h !== html) { c._h = html; c.innerHTML = html; }
 }
 // Ein Zeiger = eine Taste. Gleiten zwischen Tasten wechselt die Richtung (wie ein echtes Steuerkreuz).
 function keyAt(x, y) {
@@ -1425,6 +1510,10 @@ function releaseAll() { [...AR.pressed.keys()].forEach(id => press(id, -1)); AR.
     press(e.pointerId, -1);
   }));
   pad.addEventListener("contextmenu", e => e.preventDefault());
+  // iOS: schnelles Doppeltippen (Tauziehen!) zoomt sonst die Seite. Nur auf Tasten/Flaechen,
+  // echte Knoepfe (Pause, Menue, Seeschlacht-Felder) bleiben klickbar.
+  pad.addEventListener("touchend", e => { if (!e.target.closest("button:not([data-k]),[data-sc],[data-sa],input")) e.preventDefault(); }, { passive: false });
+  ["gesturestart", "dblclick"].forEach(ev => $("#arcade").addEventListener(ev, e => e.preventDefault(), { passive: false }));
   document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); setFrames(!document.hidden && !AR.open); });
   // Tastatur am PC: Pfeile, Leertaste = A, Enter = B
   const KB = { ArrowUp: 0, ArrowDown: 1, ArrowLeft: 2, ArrowRight: 3, " ": 4, x: 4, Enter: 5, c: 5, w: 0, s: 1, a: 2, d: 3 };
@@ -1436,7 +1525,9 @@ function releaseAll() { [...AR.pressed.keys()].forEach(id => press(id, -1)); AR.
 
 /* ---------- Klicks in der Spielhalle ---------- */
 $("#arcade").addEventListener("click", e => {
-  const b = e.target.closest("[data-ar],[data-open],[data-join],[data-ctl]"); if (!b) return;
+  const b = e.target.closest("[data-ar],[data-open],[data-join],[data-ctl],[data-sc],[data-sa]"); if (!b) return;
+  if (b.dataset.sc !== undefined) return wsSend({ t: "g.in", a: "shot", c: +b.dataset.sc });
+  if (b.dataset.sa) return wsSend({ t: "g.in", a: b.dataset.sa });
   if (b.dataset.ctl) { try { localStorage.setItem("wc_ctl", b.dataset.ctl); } catch (x) {} return arRender(true); }
   if (b.dataset.open) { AR.browse = false; sessionStorage.setItem("wc_slot", "0"); return wsSend({ t: "g.open", game: b.dataset.open, mode: b.dataset.mode, name: arName, id: DEV_ID }); }
   if (b.dataset.join !== undefined) { sessionStorage.setItem("wc_slot", b.dataset.join); return wsSend({ t: "g.join", slot: +b.dataset.join, name: arName, id: DEV_ID }); }
@@ -1492,7 +1583,7 @@ function demoCount() { DS.ph = "count"; DS.cd = 3; demoLater(1000, () => DS.cd =
 function demoOver() {
   demoLater(15000, () => { if (DS.ph === "over") { DS.ph = "idle"; DS.g = null; DS.p = [{}, {}]; DS.you = -1; } });
   const two = DS.m !== "1p", w = two ? (DS.score[0] >= DS.score[1] ? 0 : 1) : -1; DS.ph = "over";
-  const nm = DS.p.map(p => p.n), hasHs = ["snake", "tetris", "reaktion", "flatter"].includes(DS.g), lo = DS.g === "reaktion";
+  const nm = DS.p.map(p => p.n), hasHs = ["snake", "tetris", "reaktion", "flatter", "wort", "herz", "mauer", "lauf"].includes(DS.g), lo = DS.g === "reaktion";
   const mine = lo ? 287 : 7 + DS.score[0], rec = !two && !lo && mine > 14;
   DS.res = { winner: w, secs: 12, score: DS.score, big: two ? undefined : mine, record: rec, prev: 14,
     hs: hasHs ? { lo, v: rec ? mine : lo ? 241 : 14, n: rec ? nm[0] : "Jannik", p: two ? [lo ? 301 : 6, lo ? 259 : 9] : [mine, null], ...(rec ? { by: 0, prev: 14, prevN: "Jannik" } : {}) } : undefined,

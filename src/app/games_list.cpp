@@ -1295,6 +1295,12 @@ Game* create(uint8_t id) {
     case 4: return new Connect4();
     case 5: return new Reaction();
     case 6: return new Flap();
+    case 7: return newWort();
+    case 8: return newTau();
+    case 9: return newSee();
+    case 10: return newHerz();
+    case 11: return newMauer();
+    case 12: return newLauf();
     default: return nullptr;
   }
 }
