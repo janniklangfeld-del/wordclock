@@ -975,6 +975,8 @@ const MODE_TXT = { "1p": "🕹️ Allein", "2p": "👯 Zu zweit", bot: "🤖 Geg
 const ICOL = { G: "#00e628", W: "#dcffc8", R: "#ff140a", Y: "#ffc800", C: "#00dcff", B: "#003cff", O: "#ff6e00", P: "#ff1982", T: "#00d7b9", b: "#00001a" };
 const AR = { open: false, st: { ph: "idle", p: [{}, {}] }, you: -1, browse: false, rec: {}, total: 0, pressed: new Map(), framesOff: false, lastView: "", confettiFor: "" };
 let arName = localStorage.getItem("wc_name") || "MJ";
+// Zufaellige Kennung dieses Geraets: nur dasselbe Handy darf seinen Platz zurueckholen
+const DEV_ID = (() => { let v = ""; try { v = localStorage.getItem("wc_id") || ""; if (!v) { v = Math.random().toString(36).slice(2, 12); localStorage.setItem("wc_id", v); } } catch (e) { v = Math.random().toString(36).slice(2, 12); } return v; })();
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function wsSend(o) {
@@ -1050,6 +1052,60 @@ function drawPreview(cv, key, t) {
 }
 (function animPreviews(t) { if (AR.open && !$("#arPad").classList.contains("on")) previews.forEach(([cv, k]) => cv.isConnected && drawPreview(cv, k, t)); requestAnimationFrame(animPreviews); })(0);
 
+/* ---------- Einladen per QR-Code ---------- */
+let clockIp = "";
+async function loadIp() { if (DEMO) return; try { clockIp = (await api("/v1/info")).ip || ""; } catch (e) {} }
+// Android kann ".local" oft nicht aufloesen -> IP-Adresse der Uhr verwenden
+function inviteUrl() { const h = clockIp && clockIp !== "0.0.0.0" ? clockIp : location.host || "wordclock.local"; return `http://${h}/#spiele`; }
+function qrMatrix(text) {
+  const data = [...new TextEncoder().encode(text)];
+  const V = data.length <= 42 ? 3 : data.length <= 62 ? 4 : 0; if (!V) return null;
+  // Version 3-M: 1 Block, 44 Daten + 26 ECC; Version 4-M: 2 Bloecke je 32 Daten + 18 ECC
+  const N = V * 4 + 17, blocks = V === 3 ? [[44, 26]] : [[32, 18], [32, 18]], cap = blocks.reduce((a, b) => a + b[0], 0);
+  const bits = []; const put = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push(v >>> i & 1); };
+  put(4, 4); put(data.length, 8); data.forEach(b => put(b, 8)); put(0, Math.min(4, cap * 8 - bits.length));
+  while (bits.length % 8) bits.push(0);
+  const cw = []; for (let i = 0; i < bits.length; i += 8) cw.push(parseInt(bits.slice(i, i + 8).join(""), 2));
+  for (let k = 0; cw.length < cap; k++) cw.push(k % 2 ? 0x11 : 0xEC);
+  const mul = (x, y) => { let z = 0; for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; } return z; };
+  const ecc = (d, deg) => { const div = Array(deg).fill(0); div[deg - 1] = 1; let root = 1;
+    for (let i = 0; i < deg; i++) { for (let j = 0; j < deg; j++) { div[j] = mul(div[j], root); if (j + 1 < deg) div[j] ^= div[j + 1]; } root = mul(root, 2); }
+    const r = Array(deg).fill(0); d.forEach(b => { const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => r[i] ^= mul(c, f)); }); return r; };
+  const dB = [], eB = []; let o = 0; blocks.forEach(([dn, en]) => { const d = cw.slice(o, o + dn); o += dn; dB.push(d); eB.push(ecc(d, en)); });
+  const all = []; for (let i = 0; i < Math.max(...dB.map(b => b.length)); i++) dB.forEach(b => i < b.length && all.push(b[i]));
+  for (let i = 0; i < eB[0].length; i++) eB.forEach(b => all.push(b[i]));
+  const M = [...Array(N)].map(() => Array(N).fill(false)), F = [...Array(N)].map(() => Array(N).fill(false));
+  const fn = (x, y, d) => { if (x >= 0 && y >= 0 && x < N && y < N) { M[y][x] = d; F[y][x] = true; } };
+  for (let i = 0; i < N; i++) { fn(6, i, i % 2 === 0); fn(i, 6, i % 2 === 0); }
+  [[3, 3], [N - 4, 3], [3, N - 4]].forEach(([cx, cy]) => { for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const d = Math.max(Math.abs(dx), Math.abs(dy)); fn(cx + dx, cy + dy, d !== 2 && d !== 4); } });
+  const a = N - 7; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) fn(a + dx, a + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+  const fmt = (() => { const d = 0 << 3 | 0; let r = d; for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537); return ((d << 10) | r) ^ 0x5412; })();  // M, Maske 0
+  const fb = i => (fmt >>> i & 1) === 1;
+  for (let i = 0; i <= 5; i++) fn(8, i, fb(i)); fn(8, 7, fb(6)); fn(8, 8, fb(7)); fn(7, 8, fb(8)); for (let i = 9; i < 15; i++) fn(14 - i, 8, fb(i));
+  for (let i = 0; i < 8; i++) fn(N - 1 - i, 8, fb(i)); for (let i = 8; i < 15; i++) fn(8, N - 15 + i, fb(i)); fn(8, N - 8, true);
+  let bi = 0;
+  for (let right = N - 1; right >= 1; right -= 2) { if (right === 6) right = 5;
+    for (let v = 0; v < N; v++) for (let j = 0; j < 2; j++) { const x = right - j, up = ((right + 1) & 2) === 0, y = up ? N - 1 - v : v;
+      if (!F[y][x] && bi < all.length * 8) { M[y][x] = (all[bi >>> 3] >>> (7 - (bi & 7)) & 1) === 1; bi++; }
+      if (!F[y][x] && (x + y) % 2 === 0) M[y][x] = !M[y][x]; } }
+  return M;
+}
+function drawQr(cv, text) {
+  const M = qrMatrix(text); if (!M) return false; const n = M.length, q = 4, sc = Math.floor(cv.width / (n + 2 * q)), off = (cv.width - sc * n) / 2, g = cv.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height); g.fillStyle = "#14081f";
+  M.forEach((row, y) => row.forEach((d, x) => d && g.fillRect(off + x * sc, off + y * sc, sc, sc))); return true;
+}
+async function showInvite() {
+  await loadIp(); $("#arInvite")?.remove();
+  const url = inviteUrl(), box = document.createElement("div"); box.id = "arInvite"; box.className = "ar-msg on"; box.style.zIndex = 5;
+  box.innerHTML = `<div style="max-width:320px;padding:20px"><h2>Mitspieler einladen</h2><p>Zweites Handy ins selbe WLAN, dann mit der Kamera scannen:</p>
+    <canvas width="264" height="264" style="width:240px;height:240px;border-radius:18px;box-shadow:0 0 40px rgba(255,31,143,.45)"></canvas>
+    <p style="margin-top:12px;font:800 16px system-ui;color:#fff;user-select:all">${esc(url.replace("/#spiele", ""))}</p>
+    <p>Dort auf den MJ-Knopf tippen und „Mitspielen“ wählen. Einen anderen Namen als „MJ“ eintragen.</p>
+    <button class="ar-go" data-ar="inviteClose" style="padding:14px">Fertig</button></div>`;
+  $("#arcade").appendChild(box); drawQr(box.querySelector("canvas"), url);
+}
+
 /* ---------- Ansichten ---------- */
 function arOpen() {
   AR.open = true; $("#arcade").classList.add("on"); $("#arcBtn").classList.add("hide"); document.body.style.overflow = "hidden";
@@ -1084,7 +1140,7 @@ function arRender(force) {
   const v = arViewName(), st = AR.st, me = AR.you;
   document.getElementById("arcade").style.setProperty("--me", me === 1 ? "var(--p1)" : "var(--p0)");
   const pad = v === "pad"; $("#arPad").classList.toggle("on", pad); $("#arScroll").style.display = pad ? "none" : "";
-  setFrames(!(pad && me >= 0));  // Controller: kein Live-Bild, damit nichts die Tasten aufhaelt
+  setFrames(false);  // Spielhalle verdeckt die Uhr: kein Live-Bild, spart WLAN fuer die Tasten
   if (!pad) releaseAll();
   if (pad) return renderPad(force || AR.lastView !== "pad");
   const key = v + "|" + JSON.stringify([st.ph, st.g, st.m, st.p, me, AR.browse, st.res && st.res.secs, Object.keys(PH).length, AR.total]);
@@ -1135,7 +1191,8 @@ function viewLobby() {
     ${me >= 0 ? `<button class="ar-go${ready ? " wait" : ""}" data-ar="ready">${ready ? "Warte auf die anderen …" : "Bereit! 🚀"}</button>`
       : free ? `<button class="ar-go" data-ar="joinAny">Mitspielen als ${esc(arName)}</button>` : `<button class="ar-go wait" disabled>Alle Plätze belegt – du schaust zu 👀</button>`}
     <div class="ar-row">${me >= 0 ? `<button class="ar-chip" data-ar="leave">Platz freigeben</button>` : ""}<button class="ar-chip" data-ar="quit">Zur Uhr zurück</button></div>
-    <div class="ar-tip">${st.m === "2p" ? "Zweites Handy: wordclock.local öffnen → MJ-Knopf unten rechts → mitspielen." : "Wenn alle bereit sind, zählt die Uhr 3 – 2 – 1 herunter. Schau auf die Uhr!"}</div>`;
+    ${st.m === "2p" ? `<button class="ar-go" style="background:linear-gradient(90deg,var(--p0),var(--p1));color:#fff;margin-top:12px" data-ar="invite">📲 Mitspieler einladen (QR-Code)</button>` : ""}
+    <div class="ar-tip">${st.m === "2p" ? `Zweites Handy ins selbe WLAN, QR-Code scannen – oder ${esc(inviteUrl().replace("/#spiele", ""))} öffnen → MJ-Knopf → mitspielen.` : "Wenn alle bereit sind, zählt die Uhr 3 – 2 – 1 herunter. Schau auf die Uhr!"}</div>`;
 }
 function viewOver() {
   const st = AR.st, r = st.res || {}, g = GUI[st.g] || { t: st.g }, me = AR.you, w = r.winner ?? -1, names = [st.p[0]?.n || "Spieler 1", st.p[1]?.n || "Spieler 2"];
@@ -1206,7 +1263,7 @@ function releaseAll() { [...AR.pressed.keys()].forEach(id => press(id, -1)); AR.
   pad.addEventListener("pointermove", e => { if (AR.pressed.has(e.pointerId)) press(e.pointerId, keyAt(e.clientX, e.clientY)); });
   ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => pad.addEventListener(ev, e => press(e.pointerId, -1)));
   pad.addEventListener("contextmenu", e => e.preventDefault());
-  document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); setFrames(!document.hidden && !AR.open); });
   // Tastatur am PC: Pfeile, Leertaste = A, Enter = B
   const KB = { ArrowUp: 0, ArrowDown: 1, ArrowLeft: 2, ArrowRight: 3, " ": 4, x: 4, Enter: 5, c: 5, w: 0, s: 1, a: 2, d: 3 };
   addEventListener("keydown", e => { if (!AR.open || !pad.classList.contains("on") || !(e.key in KB) || e.repeat) return; e.preventDefault(); press("kb" + e.key, KB[e.key]); });
@@ -1218,16 +1275,18 @@ function releaseAll() { [...AR.pressed.keys()].forEach(id => press(id, -1)); AR.
 /* ---------- Klicks in der Spielhalle ---------- */
 $("#arcade").addEventListener("click", e => {
   const b = e.target.closest("[data-ar],[data-open],[data-join]"); if (!b) return;
-  if (b.dataset.open) { AR.browse = false; sessionStorage.setItem("wc_slot", "0"); return wsSend({ t: "g.open", game: b.dataset.open, mode: b.dataset.mode, name: arName }); }
-  if (b.dataset.join !== undefined) { sessionStorage.setItem("wc_slot", b.dataset.join); return wsSend({ t: "g.join", slot: +b.dataset.join, name: arName }); }
+  if (b.dataset.open) { AR.browse = false; sessionStorage.setItem("wc_slot", "0"); return wsSend({ t: "g.open", game: b.dataset.open, mode: b.dataset.mode, name: arName, id: DEV_ID }); }
+  if (b.dataset.join !== undefined) { sessionStorage.setItem("wc_slot", b.dataset.join); return wsSend({ t: "g.join", slot: +b.dataset.join, name: arName, id: DEV_ID }); }
   const a = b.dataset.ar, st = AR.st;
   if (a === "reload") location.reload();
+  else if (a === "invite") showInvite();
+  else if (a === "inviteClose") $("#arInvite").remove();
   else if (a === "close") arClose();
   else if (a === "browse") { AR.browse = true; arRender(true); }
   else if (a === "toGame") { AR.browse = false; arRender(true); }
   else if (a === "nameMJ") { arName = "MJ"; localStorage.setItem("wc_name", "MJ"); arRender(true); }
   else if (a === "ready") wsSend({ t: "g.ready", on: !(st.p[AR.you]?.r) });
-  else if (a === "joinAny") wsSend({ t: "g.join", slot: -1, name: arName });
+  else if (a === "joinAny") wsSend({ t: "g.join", slot: -1, name: arName, id: DEV_ID });
   else if (a === "leave") { sessionStorage.removeItem("wc_slot"); wsSend({ t: "g.leave" }); }
   else if (a === "quit") { wsSend({ t: "g.quit" }); AR.browse = false; }
   else if (a === "again") wsSend({ t: "g.again" });
@@ -1237,10 +1296,11 @@ $("#arcade").addEventListener("click", e => {
 /* ---------- Nachrichten der Uhr ---------- */
 function arOnOpen() {
   AR.framesOff = false;
+  if (AR.open || document.hidden) setFrames(false);
   wsSend({ t: "g.hello" });
   // Nach Verbindungsabbruch denselben Platz wieder einnehmen
   const s = sessionStorage.getItem("wc_slot");
-  if (s !== null && AR.st.ph !== "idle" && AR.st.ph !== "lobby") wsSend({ t: "g.join", slot: +s, name: arName });
+  if (s !== null && AR.st.ph !== "idle" && AR.st.ph !== "lobby") wsSend({ t: "g.join", slot: +s, name: arName, id: DEV_ID });
 }
 function arOnGame(m) {
   const before = AR.st.ph; AR.st = m; AR.you = m.you ?? -1;
@@ -1292,7 +1352,7 @@ function demoSrv(o) {
   buildControls();
   try { L = await api("/v1/layout"); S = { ...S, ...(await api("/v1/settings")) }; }
   catch (e) { toast("Uhr nicht erreichbar", true); L = demoLayout(); S = { ...DEFAULTS, ...S }; }
-  buildClock(); refreshControls(); refreshInfo(); connectWs(); loadPhotos();
+  buildClock(); refreshControls(); refreshInfo(); connectWs(); loadPhotos(); loadIp();
   if (location.hash === "#test") showTestCard();
   if (location.hash === "#spiele") arOpen();
 })();

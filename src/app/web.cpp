@@ -370,7 +370,7 @@ void begin() {
     if (!fsOk) Serial.println("[web] LittleFS fehlt - keine Fotos");
     setupRoutes();
     ws.begin();
-    ws.enableHeartbeat(4000, 3000, 2);  // weggelegte Handys schnell erkennen -> Spiel pausiert
+    ws.enableHeartbeat(3000, 2500, 2);  // weggelegte Handys schnell erkennen -> Spiel pausiert
     routesReady = true;
   }
   if (!listening) {
@@ -392,11 +392,11 @@ void loop() {
   if (!routesReady) return;
   if (listening) http.handleClient();
   ws.loop();
-  // Live-Bild fuer die 3D-Ansicht: ~15 Bilder/s, nur an Seiten, die zuschauen
+  // Live-Bild fuer die 3D-Ansicht: bis 10 Bilder/s, nur an Seiten, die zuschauen
   // (Controller im Spiel schalten es ab, damit nichts die Tasten aufhaelt)
   // Nur geaenderte Bilder schicken (die Uhrzeit steht meist still), sonst 1x pro Sekunde.
   const uint32_t now = millis();
-  if (ws.connectedClients() > 0 && now - lastFrameSent >= 66) {
+  if (ws.connectedClients() > 0 && now - lastFrameSent >= 100) {  // max. 10 Bilder/s
     lastFrameSent = now;
     frameBuf[0] = 1;
     frameBuf[1] = display::brightness();

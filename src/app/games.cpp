@@ -43,12 +43,16 @@ const Info GAMES[] = {
       "....YYY....", "...........", "..........."}},
 };
 constexpr int N_GAMES = sizeof(GAMES) / sizeof(GAMES[0]);
-constexpr int MAX_CLIENTS = 5;
+#ifndef WEBSOCKETS_SERVER_CLIENT_MAX
+#define WEBSOCKETS_SERVER_CLIENT_MAX 5
+#endif
+constexpr int MAX_CLIENTS = WEBSOCKETS_SERVER_CLIENT_MAX;
 
 struct Slot {
   bool used = false, ready = false, isBot = false;
   int8_t client = -1;
   String name;
+  String dev;  // zufaellige Geraete-Kennung der Webseite (localStorage)
 };
 
 Phase phase = IDLE;
@@ -85,6 +89,17 @@ int slotOf(uint8_t client) {
   for (int i = 0; i < 2; i++)
     if (slots[i].used && !slots[i].isBot && slots[i].client == client) return i;
   return -1;
+}
+
+String cleanName(String n) {
+  n.trim();
+  return n.substring(0, 14);
+}
+// Zwei Spieler mit gleichem Namen (z. B. beide "MJ") -> der zweite heisst "MJ 2"
+String uniqueName(int slot, const String& n) {
+  const Slot& o = slots[1 - slot];
+  if (o.used && o.name.equalsIgnoreCase(n)) return n.substring(0, 12) + " 2";
+  return n;
 }
 
 void setPhase(Phase p) {
@@ -480,15 +495,15 @@ void onText(uint8_t client, JsonObjectConst m) {
     if (!(GAMES[id].modes & md)) md = GAMES[id].modes & M_1P ? M_1P : GAMES[id].modes & M_BOT ? M_BOT : M_2P;
     openLobby(id, md);
     me = slotOf(client);
-    String n = m["name"] | "";
-    n.trim();
-    n = n.substring(0, 14);
-    // wer oeffnet, spielt mit (auch wenn der Platz noch vom selben Namen aus einem anderen Tab belegt ist)
-    if (me < 0 && (!slots[0].used || slots[0].client < 0 || (n.length() && slots[0].name.equalsIgnoreCase(n)))) {
+    const String n = cleanName(m["name"] | "");
+    const String dev = m["id"] | "";
+    // wer oeffnet, spielt mit (auch wenn der Platz noch vom selben Geraet aus einem anderen Tab belegt ist)
+    if (me < 0 && (!slots[0].used || slots[0].client < 0 || (dev.length() && slots[0].dev == dev))) {
       slots[0] = Slot();
       slots[0].used = true;
       slots[0].client = client;
-      slots[0].name = n.length() ? n : String("Spieler 1");
+      slots[0].dev = dev;
+      slots[0].name = uniqueName(0, n.length() ? n : String("Spieler 1"));
     }
     return;
   }
@@ -496,18 +511,17 @@ void onText(uint8_t client, JsonObjectConst m) {
 
   if (!strcmp(t, "g.join")) {
     int want = m["slot"] | -1;
-    String n = m["name"] | "";
-    n.trim();
-    n = n.substring(0, 14);
-    // frei, verwaist oder vom selben Namen belegt (gleiche Person, anderer Tab/Handy -> Platz uebernehmen)
+    const String n = cleanName(m["name"] | "");
+    const String dev = m["id"] | "";
+    // frei, verwaist oder vom selben Geraet belegt (zweiter Tab / Seite neu geladen)
     auto freeFor = [&](int i) {
       return i < needed() && !slots[i].isBot &&
-             (!slots[i].used || slots[i].client < 0 || (n.length() && slots[i].name.equalsIgnoreCase(n)));
+             (!slots[i].used || slots[i].client < 0 || (dev.length() && slots[i].dev == dev));
     };
     if (want < 0 || want > 1 || !freeFor(want)) {
       want = -1;
-      for (int i = 0; i < needed(); i++)  // gleicher Name zuerst (Wiederkommen nach Abbruch)
-        if (freeFor(i) && slots[i].used && slots[i].name.equalsIgnoreCase(n)) want = i;
+      for (int i = 0; i < needed(); i++)  // eigener alter Platz zuerst (Wiederkommen nach Abbruch)
+        if (freeFor(i) && slots[i].used && ((dev.length() && slots[i].dev == dev) || slots[i].name == n)) want = i;
       for (int i = 0; i < needed() && want < 0; i++)
         if (freeFor(i)) want = i;
     }
@@ -517,10 +531,11 @@ void onText(uint8_t client, JsonObjectConst m) {
       else slots[me].client = -1;
     }
     Slot& s = slots[want];
-    const bool rejoin = s.used && s.client < 0 && phase != LOBBY;
+    const bool rejoin = s.used && phase != LOBBY;
     s.used = true;
     s.client = client;
-    if (!rejoin || n.length()) s.name = n.length() ? n : String("Spieler ") + (want + 1);
+    s.dev = dev;
+    if (!rejoin) s.name = uniqueName(want, n.length() ? n : String("Spieler ") + (want + 1));
     if (phase == LOBBY) s.ready = false;
     return;
   }
