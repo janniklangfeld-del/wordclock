@@ -12,7 +12,7 @@ namespace {
 WiFiManager wm;
 WiFiManagerParameter paramAdminPw("adminpw", "Admin-Passwort (fuer Updates, leer = unveraendert)", "", 32);
 
-constexpr uint32_t LOST_BEFORE_PORTAL_MS = 5UL * 60 * 1000;
+constexpr uint32_t LOST_BEFORE_PORTAL_MS = 3UL * 60 * 1000;
 constexpr uint32_t BUTTON_HOLD_MS = 5000;
 
 bool wasOnline = false;
@@ -123,7 +123,7 @@ void loop() {
       Serial.println("[net] WLAN verloren, versuche Reconnect");
       display::setState(SysState::Connecting);
     } else if (!portal && millis() - offlineSince > LOST_BEFORE_PORTAL_MS) {
-      Serial.println("[net] seit 5 min offline -> Portal zusaetzlich oeffnen");
+      Serial.println("[net] seit 3 min offline -> Portal zusaetzlich oeffnen");
       openPortal();
       portalForOutage = true;
     }

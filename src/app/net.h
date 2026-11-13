@@ -3,7 +3,7 @@
 
 // WLAN-Verwaltung – die Uhr ist IMMER neu einrichtbar:
 //   * Keine/ungueltige Zugangsdaten  -> Portal "Majas-Wordclock" startet sofort
-//   * WLAN laenger als 5 min weg      -> Portal oeffnet zusaetzlich (Uhr versucht
+//   * WLAN laenger als 3 min weg      -> Portal oeffnet zusaetzlich (Uhr versucht
 //                                       parallel weiter, das alte WLAN zu erreichen)
 //   * BOOT-Taste 5 s halten           -> Portal
 //   * Weboberflaeche "WLAN aendern"   -> Portal

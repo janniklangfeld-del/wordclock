@@ -17,7 +17,7 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Envs: `ledtest` (src/ledtest), `wordclock` (src/app), `wordclock_ota` (lokales ArduinoOTA).
 - pio unter Windows: `$env:USERPROFILE\.platformio\penv\Scripts\pio.exe`
 - Internet-OTA: Uhr fragt alle 6 h `github.com/<repo>/releases/latest` ab (302 → Tag) und lädt firmware.bin. Öffentliches Repo, kein Token. TLS über certs/github_roots.pem. Release = Tag `vX.Y.Z` → .github/workflows/firmware.yml.
-- WLAN-Portal „Majas-Wordclock“: ohne Zugangsdaten, nach 5 min WLAN-Ausfall, BOOT 5 s, Web-Button.
+- WLAN-Portal „Majas-Wordclock“: ohne Zugangsdaten, nach 3 min WLAN-Ausfall, BOOT 5 s, Web-Button.
 - Libs (env wordclock): ArduinoJson 7.2.1, WebSockets 2.6.1 (Port 81, Live-Bild), Espalexa 2.7.0 (Alexa als Hue-Lampe, `/api` reserviert).
 - Webseite: `web/index.html` (eine Datei, offline), `scripts/embed_web.py` → `src/app/web_index.h` (generiert, nicht im Git). Vorschau: `index.html?demo`. Überblick: docs/SOFTWARE.md.
 - Fernzugriff: über das WireGuard-VPN von Majas FRITZ!Box (Glasfaser, ggf. DS-Lite → IPv6), Uhr dann unter http://wordclock.fritz.box. Keine Portfreigabe. Anleitung: docs/FERNZUGRIFF.md. Noch nicht eingerichtet (braucht Majas FRITZ!Box).
