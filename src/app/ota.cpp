@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include "display.h"
+#include "games.h"
 #include "net.h"
 #include "settings.h"
 
@@ -123,6 +124,7 @@ void begin() { setupArduinoOta(); }
 
 void loop() {
   ArduinoOTA.handle();
+  if (games::busy()) return;  // HTTPS-Abfrage blockiert 1-3 s -> nicht waehrend eines Spiels
   uint32_t now = millis();
   bool due = settings.autoUpdate &&
              ((!checkedOnce && now > FIRST_CHECK_DELAY_MS) || (checkedOnce && now - lastCheck > CHECK_INTERVAL_MS));

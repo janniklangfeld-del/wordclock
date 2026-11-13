@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Arduino.h>
 class WebServer;
 
 // Weboberflaeche unter http://wordclock.local (bzw. IP), Port 80.
@@ -18,4 +19,6 @@ bool running();
 void loop();
 void notifySettings();  // geaenderte Einstellungen an alle offenen Seiten
 WebServer* server();
+bool sendTo(uint8_t client, const String& text);  // WebSocket-Text an ein Handy
+bool clientConnected(uint8_t client);
 }  // namespace web

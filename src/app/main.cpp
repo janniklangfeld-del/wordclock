@@ -8,6 +8,7 @@
 #include "alexa.h"
 #include "app.h"
 #include "display.h"
+#include "games.h"
 #include "light.h"
 #include "net.h"
 #include "ota.h"
@@ -37,6 +38,7 @@ void setup() {
   display::setState(SysState::Booting);
   display::loop();
   light::begin();
+  games::begin();
 
   // Begruessung abspielen, bevor der (bis zu 20 s blockierende) WLAN-Aufbau startet
   while (display::introRunning()) {
@@ -53,8 +55,11 @@ void loop() {
   web::loop();
   alexa::loop();
   ota::loop();
-  light::loop();
-  settings.loop();
+  games::loop();
+  if (!games::busy()) {  // im Spiel nichts Blockierendes (Lichtsensor, Flash schreiben)
+    light::loop();
+    settings.loop();
+  }
   display::loop();
   delay(1);
 }

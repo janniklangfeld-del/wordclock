@@ -1,6 +1,7 @@
 #include "display.h"
 #include <time.h>
 #include "clockface.h"
+#include "games.h"
 #include "hardware.h"
 #include "intro.h"
 #include "light.h"
@@ -545,6 +546,17 @@ void loop() {
       FastLED.show();
       return;
     }
+  }
+
+  // MJ Arcade: das Spiel hat die Anzeige
+  if (games::active()) {
+    introSt.active = false;
+    games::render(leds, now);
+    faceValid = false;  // danach baut sich die Uhr neu auf
+    briNow = briOut = games::brightness();
+    FastLED.setBrightness(briOut);
+    FastLED.show();
+    return;
   }
 
   tm t;

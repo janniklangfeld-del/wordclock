@@ -8,3 +8,4 @@ secrets.h
 __pycache__/
 src/app/web_index.h
 .claude/launch.json
+private/

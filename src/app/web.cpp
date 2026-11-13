@@ -1,5 +1,6 @@
 #include "web.h"
 #include <ArduinoJson.h>
+#include <LittleFS.h>
 #include <Update.h>
 #include <WebServer.h>
 #include <WebSocketsServer.h>
@@ -8,6 +9,7 @@
 #include "app.h"
 #include "clockface.h"
 #include "display.h"
+#include "games.h"
 #include "hardware.h"
 #include "light.h"
 #include "net.h"
@@ -22,6 +24,20 @@ bool routesReady = false;
 bool listening = false;
 uint32_t lastFrameSent = 0;
 uint8_t frameBuf[2 + LED_COUNT * 3];
+bool wantFrames[WEBSOCKETS_SERVER_CLIENT_MAX];  // Controller schalten das Live-Bild ab
+
+// Fotos fuer die Webseite liegen im Flash der Uhr (LittleFS), nicht im (oeffentlichen) Repo.
+const char* const PHOTOS[] = {"gesicht", "bereit", "kuss", "muetze", "frech"};
+constexpr size_t PHOTO_MAX = 48 * 1024;
+bool fsOk = false;
+File upFile;
+bool upTooBig = false;
+String photoPath(const String& n) { return "/" + n + ".img"; }
+bool photoName(const String& n) {
+  for (auto p : PHOTOS)
+    if (n == p) return true;
+  return false;
+}
 
 void sendJson(int code, const JsonDocument& doc) {
   String s;
@@ -154,6 +170,37 @@ void handleTest() {
   sendOk();
 }
 
+void handlePhotoList() {
+  JsonDocument d;
+  d.to<JsonObject>();
+  for (auto p : PHOTOS) {
+    String f = photoPath(p);
+    if (fsOk && LittleFS.exists(f)) {
+      File h = LittleFS.open(f, "r");
+      d[p] = h.size();  // Groesse dient als Version
+      h.close();
+    }
+  }
+  if (fsOk) d["_free"] = LittleFS.totalBytes() - LittleFS.usedBytes();
+  sendJson(200, d);
+}
+
+void servePhoto(const char* name) {
+  String f = photoPath(name);
+  if (!fsOk || !LittleFS.exists(f)) {
+    http.send(404, "text/plain", "kein Foto");
+    return;
+  }
+  File h = LittleFS.open(f, "r");
+  uint8_t m[4] = {0};
+  h.read(m, 4);
+  h.seek(0);
+  const char* type = m[0] == 0xFF ? "image/jpeg" : m[0] == 0x89 ? "image/png" : "image/webp";
+  http.sendHeader("Cache-Control", "max-age=31536000");  // Webseite haengt ?v=Groesse an
+  http.streamFile(h, type);
+  h.close();
+}
+
 void setupRoutes() {
   http.on("/", HTTP_GET, handleIndex);
   http.on("/index.html", HTTP_GET, handleIndex);
@@ -178,6 +225,55 @@ void setupRoutes() {
     ESP.restart();
   });
   http.on("/v1/password", HTTP_POST, handlePassword);
+  http.on("/v1/games", HTTP_GET, [] {
+    JsonDocument d;
+    games::recordsJson(d.to<JsonObject>());
+    sendJson(200, d);
+  });
+  http.on("/v1/photos", HTTP_GET, handlePhotoList);
+  for (auto p : PHOTOS) http.on(String("/photo/") + p, HTTP_GET, [p] { servePhoto(p); });
+  http.on("/v1/photo/del", HTTP_POST, [] {
+    if (!authOk()) return;
+    String n = http.arg("n");
+    if (!photoName(n)) {
+      http.send(400, "application/json", "{\"error\":\"name\"}");
+      return;
+    }
+    LittleFS.remove(photoPath(n));
+    sendOk();
+  });
+  // Foto hochladen: POST /v1/photo?n=gesicht (multipart; die Webseite verkleinert vorher)
+  http.on(
+      "/v1/photo", HTTP_POST,
+      [] {
+        if (!authOk()) return;
+        const String n = http.arg("n");
+        if (!fsOk || !photoName(n)) {
+          http.send(400, "application/json", "{\"error\":\"Foto-Speicher\"}");
+          return;
+        }
+        if (upTooBig) {
+          LittleFS.remove("/up.tmp");
+          http.send(413, "application/json", "{\"error\":\"Foto zu gross oder Speicher voll\"}");
+          return;
+        }
+        LittleFS.remove(photoPath(n));
+        LittleFS.rename("/up.tmp", photoPath(n));
+        sendOk();
+      },
+      [] {
+        if (!fsOk || !http.authenticate("admin", settings.adminPassword.c_str())) return;
+        HTTPUpload& up = http.upload();
+        if (up.status == UPLOAD_FILE_START) {
+          upTooBig = false;
+          upFile = LittleFS.open("/up.tmp", "w");
+        } else if (up.status == UPLOAD_FILE_WRITE) {
+          if (up.totalSize > PHOTO_MAX) upTooBig = true;
+          if (upFile && !upTooBig && upFile.write(up.buf, up.currentSize) != up.currentSize) upTooBig = true;
+        } else if (up.status == UPLOAD_FILE_END || up.status == UPLOAD_FILE_ABORTED) {
+          if (upFile) upFile.close();
+        }
+      });
 
   // Firmware-Datei hochladen (aus GitHub Release oder .pio/build/wordclock/firmware.bin)
   http.on(
@@ -211,21 +307,50 @@ void setupRoutes() {
     http.send(404, "text/plain", "nicht gefunden");
   });
 
-  ws.onEvent([](uint8_t num, WStype_t type, uint8_t*, size_t) {
-    if (type == WStype_CONNECTED) {
-      String s = settingsJson(true);
-      ws.sendTXT(num, s);
+  ws.onEvent([](uint8_t num, WStype_t type, uint8_t* data, size_t len) {
+    switch (type) {
+      case WStype_CONNECTED: {
+        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) wantFrames[num] = true;
+        String s = settingsJson(true);
+        ws.sendTXT(num, s);
+        games::onConnect(num);
+        break;
+      }
+      case WStype_DISCONNECTED:
+        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) wantFrames[num] = true;
+        games::onDisconnect(num);
+        break;
+      case WStype_BIN:  // Spieltaste: [2, Taste, gedrueckt]
+        if (len >= 3 && data[0] == 2) games::onKey(num, data[1], data[2]);
+        break;
+      case WStype_TEXT: {
+        JsonDocument d;
+        if (deserializeJson(d, data, len) || !d.is<JsonObject>()) break;
+        const char* t = d["t"] | "";
+        if (!strcmp(t, "frames")) {
+          if (num < WEBSOCKETS_SERVER_CLIENT_MAX) wantFrames[num] = d["on"] | true;
+        } else if (!strncmp(t, "g.", 2)) {
+          games::onText(num, d.as<JsonObjectConst>());
+        }
+        break;
+      }
+      default:
+        break;
     }
   });
 }
+
 }  // namespace
 
 namespace web {
 
 void begin() {
   if (!routesReady) {
+    fsOk = LittleFS.begin(true);
+    if (!fsOk) Serial.println("[web] LittleFS fehlt - keine Fotos");
     setupRoutes();
     ws.begin();
+    ws.enableHeartbeat(4000, 3000, 2);  // weggelegte Handys schnell erkennen -> Spiel pausiert
     routesReady = true;
   }
   if (!listening) {
@@ -247,13 +372,15 @@ void loop() {
   if (!routesReady) return;
   if (listening) http.handleClient();
   ws.loop();
-  // Live-Bild fuer die 3D-Ansicht: ~15 Bilder/s, nur wenn jemand zuschaut
+  // Live-Bild fuer die 3D-Ansicht: ~15 Bilder/s, nur an Seiten, die zuschauen
+  // (Controller im Spiel schalten es ab, damit nichts die Tasten aufhaelt)
   if (ws.connectedClients() > 0 && millis() - lastFrameSent >= 66) {
     lastFrameSent = millis();
     frameBuf[0] = 1;
     frameBuf[1] = display::brightness();
     memcpy(frameBuf + 2, display::frame(), LED_COUNT * 3);
-    ws.broadcastBIN(frameBuf, sizeof(frameBuf));
+    for (uint8_t c = 0; c < WEBSOCKETS_SERVER_CLIENT_MAX; c++)
+      if (wantFrames[c] && ws.clientIsConnected(c)) ws.sendBIN(c, frameBuf, sizeof(frameBuf));
   }
 }
 
@@ -264,5 +391,13 @@ void notifySettings() {
 }
 
 WebServer* server() { return &http; }
+
+bool sendTo(uint8_t client, const String& text) {
+  if (!routesReady) return false;
+  String t = text;
+  return ws.sendTXT(client, t);
+}
+
+bool clientConnected(uint8_t client) { return routesReady && ws.clientIsConnected(client); }
 
 }  // namespace web
