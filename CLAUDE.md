@@ -46,5 +46,6 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Erledigt (11.11., Code auf main, noch nicht auf der Uhr): Begrüßung jetzt „HAPPY BIRTHDAY MAJA“ (auf der Uhr gesetzt), Eigener Text wahlweise als Laufschrift (customStyle/scrollText/scrollSpeed), Webseite ohne seitliches Verschieben (Leuchtkreis hinter der Uhr ragte raus), Schalter wieder 50 px (`.row label` gab flex:1).
 - Release v1.0.2 (11.11.): Laufschrift, „HAPPY BIRTHDAY MAJA“, Webseiten-Fixes. Uhr hat sich selbst darauf aktualisiert (nach Neustart, Auto-Check).
 - Erledigt (11.11., auf main, noch kein Release): Majas Foto statt „W“ links oben + Favicon. Quelle web/maja.jpg (128 px, 4 KB), als data-URI in web/index.html eingebettet. Release v1.0.3, Uhr per „Jetzt nach Update suchen“ aktualisiert (44 s), läuft mit 1.0.3. Begrüßungstext auf der Uhr auf „HAPPY BIRTHDAY MAJA“ gesetzt.
-- Offen: Begrüßung auf echten LEDs prüfen (Lesbarkeit/Tempo) – LEDs aktuell nicht angeschlossen.
-- Offen: auf der Hardware testen (Uhrzeit-Mapping, Webseite/Live-Ansicht, Alexa). Majas Geburtstag eintragen (Default aus, 01.01.).
+- Erledigt (13.11.): Einspeisung an 3 Punkten gelötet, Holzrahmen gebaut, Software auf der fertigen Uhr getestet – funktioniert.
+- 13.11.: Übergabe bei Maja. WLAN wird dort über das Portal „Majas-Wordclock“ eingerichtet (Uhr findet das alte WLAN nicht → Portal öffnet nach ~20 s automatisch). Zugangsdaten NIE ins Repo (öffentlich). Danach Alexa dort neu suchen lassen.
+- Offen: Fernzugriff an Majas FRITZ!Box einrichten (docs/FERNZUGRIFF.md). Admin-Passwort ändern. Majas Geburtstag eintragen (Default aus, 01.01.).
