@@ -8,6 +8,7 @@
 #include "games.h"
 #include "net.h"
 #include "settings.h"
+#include "sys.h"
 
 // Root-Zertifikate fuer github.com / *.githubusercontent.com (certs/github_roots.pem,
 // per board_build.embed_txtfiles eingebettet). CI prueft, dass sie noch passen.
@@ -100,7 +101,9 @@ void checkAndUpdate(bool manual) {
   httpUpdate.onProgress([](int done, int total) {
     if (total > 0) display::setProgress(done * 100 / total);
   });
+  sys::pauseWatchdog();  // Download dauert ggf. laenger als das Zeitlimit
   t_httpUpdate_return r = httpUpdate.update(client, url);
+  sys::resumeWatchdog();
   // Bei Erfolg startet der ESP32 neu und kommt hier nicht an.
   result = "Update fehlgeschlagen: " + httpUpdate.getLastErrorString();
   Serial.println("[ota] " + result);
@@ -110,7 +113,10 @@ void checkAndUpdate(bool manual) {
 void setupArduinoOta() {
   ArduinoOTA.setHostname(net::HOSTNAME);
   ArduinoOTA.setPassword(settings.adminPassword.c_str());
-  ArduinoOTA.onStart([] { display::setState(SysState::Updating); });
+  ArduinoOTA.onStart([] {
+    sys::pauseWatchdog();
+    display::setState(SysState::Updating);
+  });
   ArduinoOTA.onProgress([](unsigned done, unsigned total) { display::setProgress(done * 100 / total); });
   ArduinoOTA.onError([](ota_error_t) { display::setState(SysState::Error); });
   ArduinoOTA.setMdnsEnabled(false);  // mDNS macht net.cpp

@@ -15,6 +15,7 @@
 #include "net.h"
 #include "ota.h"
 #include "settings.h"
+#include "sys.h"
 #include "web_index.h"
 
 namespace {
@@ -119,6 +120,9 @@ void handleInfo() {
   d["update"]["latest"] = ota::latestKnownVersion();
   d["alexa"] = alexa::running();
   d["brightness"] = display::brightness();
+  d["reset"] = sys::resetReason();
+  d["boots"] = sys::boots();
+  d["crashes"] = sys::crashes();
   // Offene Live-Verbindungen (zur Fehlersuche: wer belegt die Plaetze?)
   d["wsMax"] = WEBSOCKETS_SERVER_CLIENT_MAX;
   JsonArray wl = d["ws"].to<JsonArray>();
@@ -324,6 +328,7 @@ void setupRoutes() {
         if (!http.authenticate("admin", settings.adminPassword.c_str())) return;
         HTTPUpload& up = http.upload();
         if (up.status == UPLOAD_FILE_START) {
+          sys::pauseWatchdog();
           display::setState(SysState::Updating);
           Update.begin(UPDATE_SIZE_UNKNOWN);
         } else if (up.status == UPLOAD_FILE_WRITE) {
@@ -331,7 +336,10 @@ void setupRoutes() {
           if (up.totalSize) display::setProgress(min<size_t>(99, up.totalSize * 100 / 1400000));
         } else if (up.status == UPLOAD_FILE_END) {
           Update.end(true);
-          if (Update.hasError()) display::setState(SysState::Error);
+          if (Update.hasError()) {
+            display::setState(SysState::Error);
+            sys::resumeWatchdog();
+          }
         }
       });
 

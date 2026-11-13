@@ -13,6 +13,7 @@
 #include "net.h"
 #include "ota.h"
 #include "settings.h"
+#include "sys.h"
 #include "web.h"
 
 namespace app {
@@ -33,6 +34,7 @@ void setup() {
   delay(200);
   Serial.printf("\n=== Majas Wordclock %s (Repo: %s) ===\n", FW_VERSION, GITHUB_REPO);
 
+  sys::begin();  // Neustart-Grund merken, Wachhund an
   settings.load();
   display::begin();
   display::setState(SysState::Booting);
@@ -43,6 +45,7 @@ void setup() {
   // Begruessung abspielen, bevor der (bis zu 20 s blockierende) WLAN-Aufbau startet
   while (display::introRunning()) {
     display::loop();
+    sys::feed();
     delay(1);
   }
 
@@ -51,6 +54,7 @@ void setup() {
 }
 
 void loop() {
+  sys::feed();
   net::loop();
   web::loop();
   alexa::loop();
