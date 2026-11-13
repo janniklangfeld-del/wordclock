@@ -25,6 +25,26 @@ bool listening = false;
 uint32_t lastFrameSent = 0;
 uint8_t frameBuf[2 + LED_COUNT * 3];
 bool wantFrames[WEBSOCKETS_SERVER_CLIENT_MAX];  // Controller schalten das Live-Bild ab
+uint32_t slowUntil[WEBSOCKETS_SERVER_CLIENT_MAX];  // langsames Handy (schwaches WLAN): nur 1 Bild/s
+uint32_t lastSentTo[WEBSOCKETS_SERVER_CLIENT_MAX];
+uint8_t lastFrame[2 + LED_COUNT * 3];
+uint32_t lastChange = 0;
+
+// Senden blockiert, bis das Handy die Daten abnimmt (max. WEBSOCKETS_TCP_TIMEOUT).
+// Langsame Handys werden gebremst, bei Fehler getrennt (Datenstrom waere sonst kaputt,
+// die Seite verbindet sich von selbst neu).
+bool sendChecked(uint8_t c, bool bin, uint8_t* data, size_t len) {
+  const uint32_t t0 = millis();
+  const bool ok = bin ? ws.sendBIN(c, data, len) : ws.sendTXT(c, data, len);
+  const uint32_t dt = millis() - t0;
+  if (!ok) {
+    Serial.printf("[web] Handy %u haengt -> trennen\n", c);
+    ws.disconnect(c);
+    return false;
+  }
+  if (dt > 60 && c < WEBSOCKETS_SERVER_CLIENT_MAX) slowUntil[c] = millis() + 5000;
+  return true;
+}
 
 // Fotos fuer die Webseite liegen im Flash der Uhr (LittleFS), nicht im (oeffentlichen) Repo.
 const char* const PHOTOS[] = {"gesicht", "bereit", "kuss", "muetze", "frech"};
@@ -310,7 +330,7 @@ void setupRoutes() {
   ws.onEvent([](uint8_t num, WStype_t type, uint8_t* data, size_t len) {
     switch (type) {
       case WStype_CONNECTED: {
-        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) wantFrames[num] = true;
+        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) { wantFrames[num] = true; slowUntil[num] = 0; lastSentTo[num] = 0; }
         String s = settingsJson(true);
         ws.sendTXT(num, s);
         games::onConnect(num);
@@ -374,13 +394,23 @@ void loop() {
   ws.loop();
   // Live-Bild fuer die 3D-Ansicht: ~15 Bilder/s, nur an Seiten, die zuschauen
   // (Controller im Spiel schalten es ab, damit nichts die Tasten aufhaelt)
-  if (ws.connectedClients() > 0 && millis() - lastFrameSent >= 66) {
-    lastFrameSent = millis();
+  // Nur geaenderte Bilder schicken (die Uhrzeit steht meist still), sonst 1x pro Sekunde.
+  const uint32_t now = millis();
+  if (ws.connectedClients() > 0 && now - lastFrameSent >= 66) {
+    lastFrameSent = now;
     frameBuf[0] = 1;
     frameBuf[1] = display::brightness();
     memcpy(frameBuf + 2, display::frame(), LED_COUNT * 3);
-    for (uint8_t c = 0; c < WEBSOCKETS_SERVER_CLIENT_MAX; c++)
-      if (wantFrames[c] && ws.clientIsConnected(c)) ws.sendBIN(c, frameBuf, sizeof(frameBuf));
+    const bool changed = memcmp(frameBuf, lastFrame, sizeof(frameBuf)) != 0;
+    if (changed) { memcpy(lastFrame, frameBuf, sizeof(frameBuf)); lastChange = now; }
+    for (uint8_t c = 0; c < WEBSOCKETS_SERVER_CLIENT_MAX; c++) {
+      if (!wantFrames[c] || !ws.clientIsConnected(c)) continue;
+      const uint32_t minGap = now < slowUntil[c] ? 1000 : (changed ? 0 : 1000);
+      if (now - lastSentTo[c] < minGap) continue;
+      if (!changed && lastSentTo[c] > lastChange && now - lastSentTo[c] < 1000) continue;
+      lastSentTo[c] = now;
+      sendChecked(c, true, frameBuf, sizeof(frameBuf));
+    }
   }
 }
 
@@ -394,8 +424,7 @@ WebServer* server() { return &http; }
 
 bool sendTo(uint8_t client, const String& text) {
   if (!routesReady) return false;
-  String t = text;
-  return ws.sendTXT(client, t);
+  return sendChecked(client, false, (uint8_t*)text.c_str(), text.length());
 }
 
 bool clientConnected(uint8_t client) { return routesReady && ws.clientIsConnected(client); }

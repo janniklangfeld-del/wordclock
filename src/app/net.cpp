@@ -25,6 +25,9 @@ constexpr uint32_t MANUAL_PORTAL_MAX_MS = 10UL * 60 * 1000;
 void onOnline() {
   wasOnline = true;
   offlineSince = 0;
+  // WLAN-Stromsparen aus: der ESP32 hoert sonst nur alle ~100 ms ins WLAN. Das macht Spiele
+  // zaeh und laesst bei schwachem Signal die Sendepuffer volllaufen (Uhr ruckelt).
+  WiFi.setSleep(false);
   Serial.printf("[net] online: %s  IP %s  RSSI %d dBm\n", WiFi.SSID().c_str(),
                 WiFi.localIP().toString().c_str(), WiFi.RSSI());
   MDNS.end();

@@ -60,6 +60,7 @@ bool resumeAfterCount = false;
 uint32_t phaseT = 0, lastActivity = 0;
 uint32_t gclock = 0, lastReal = 0;  // Spielzeit (steht in der Pause still)
 String pauseReason;
+uint32_t emptySince = 0;  // Lobby ohne verbundene Spieler seit
 
 struct Ev { uint8_t p, k, down; };
 Ev evq[32];
@@ -88,8 +89,7 @@ int slotOf(uint8_t client) {
 
 void setPhase(Phase p) {
   if (p == phase) return;
-  if (phase == IDLE && p != IDLE) WiFi.setSleep(false);  // WLAN-Stromsparen aus: ~100 ms weniger Verzoegerung
-  if (p == IDLE) WiFi.setSleep(true);
+  emptySince = 0;
   phase = p;
   phaseT = millis();
   lastActivity = phaseT;
@@ -340,7 +340,13 @@ void loop() {
           if (slots[i].used && !slots[i].ready) ready = false;
         if (ready) beginCount(false);
       }
-      if (now - lastActivity > 10UL * 60 * 1000) goIdle();
+      {
+        bool anyone = false;
+        for (auto& s : slots) anyone |= s.used && !s.isBot && s.client >= 0;
+        if (anyone) emptySince = 0;
+        else if (!emptySince) emptySince = now;
+        if ((emptySince && now - emptySince > 30000) || now - lastActivity > 10UL * 60 * 1000) goIdle();
+      }
       break;
     case COUNT:
       if (!allPresent()) { pause("Spieler fehlt"); break; }
@@ -471,12 +477,15 @@ void onText(uint8_t client, JsonObjectConst m) {
     if (!(GAMES[id].modes & md)) md = GAMES[id].modes & M_1P ? M_1P : GAMES[id].modes & M_BOT ? M_BOT : M_2P;
     openLobby(id, md);
     me = slotOf(client);
-    if (me < 0 && !slots[0].used) {  // wer oeffnet, spielt mit
+    String n = m["name"] | "";
+    n.trim();
+    n = n.substring(0, 14);
+    // wer oeffnet, spielt mit (auch wenn der Platz noch vom selben Namen aus einem anderen Tab belegt ist)
+    if (me < 0 && (!slots[0].used || slots[0].client < 0 || (n.length() && slots[0].name.equalsIgnoreCase(n)))) {
+      slots[0] = Slot();
       slots[0].used = true;
       slots[0].client = client;
-      String n = m["name"] | "";
-      n.trim();
-      slots[0].name = n.length() ? n.substring(0, 14) : String("Spieler 1");
+      slots[0].name = n.length() ? n : String("Spieler 1");
     }
     return;
   }
@@ -487,11 +496,15 @@ void onText(uint8_t client, JsonObjectConst m) {
     String n = m["name"] | "";
     n.trim();
     n = n.substring(0, 14);
-    auto freeFor = [&](int i) { return i < needed() && !slots[i].isBot && (!slots[i].used || slots[i].client < 0); };
+    // frei, verwaist oder vom selben Namen belegt (gleiche Person, anderer Tab/Handy -> Platz uebernehmen)
+    auto freeFor = [&](int i) {
+      return i < needed() && !slots[i].isBot &&
+             (!slots[i].used || slots[i].client < 0 || (n.length() && slots[i].name.equalsIgnoreCase(n)));
+    };
     if (want < 0 || want > 1 || !freeFor(want)) {
       want = -1;
       for (int i = 0; i < needed(); i++)  // gleicher Name zuerst (Wiederkommen nach Abbruch)
-        if (freeFor(i) && slots[i].used && slots[i].name == n) want = i;
+        if (freeFor(i) && slots[i].used && slots[i].name.equalsIgnoreCase(n)) want = i;
       for (int i = 0; i < needed() && want < 0; i++)
         if (freeFor(i)) want = i;
     }

@@ -737,10 +737,10 @@ let ws, lastFrameAt = 0;
 function connectWs() {
   if (DEMO) { live(true, "Demo"); setInterval(() => applyFrame(demoFrame()), 66); return; }
   ws = new WebSocket(`ws://${location.hostname}:81/`); ws.binaryType = "arraybuffer";
-  ws.onopen = () => { live(true, "live verbunden"); arcOnOpen(); };
-  ws.onclose = () => { live(false, "verbinde …"); setTimeout(connectWs, 2000); };
+  ws.onopen = () => { live(true, "live verbunden"); arOnOpen(); arRender(true); };
+  ws.onclose = () => { live(false, "verbinde …"); if (AR.open) arRender(true); setTimeout(connectWs, 2000); };
   ws.onmessage = e => {
-    if (typeof e.data === "string") { try { const m = JSON.parse(e.data); if (m.t === "settings") mergeSettings(m.s); else if (m.t === "game") arcOnGame(m); } catch (x) {} return; }
+    if (typeof e.data === "string") { try { const m = JSON.parse(e.data); if (m.t === "settings") mergeSettings(m.s); else if (m.t === "game") arOnGame(m); } catch (x) {} return; }
     const u = new Uint8Array(e.data); if (u[0] === 1) applyFrame(u);
   };
 }
@@ -977,7 +977,11 @@ const AR = { open: false, st: { ph: "idle", p: [{}, {}] }, you: -1, browse: fals
 let arName = localStorage.getItem("wc_name") || "MJ";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-function wsSend(o) { if (DEMO) return demoSrv(o); if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); }
+function wsSend(o) {
+  if (DEMO) return demoSrv(o);
+  if (ws && ws.readyState === 1) return ws.send(JSON.stringify(o));
+  if (o.t !== "frames" && o.t !== "g.hello") toast("Keine Live-Verbindung zur Uhr – Seite neu laden (gleiches WLAN?)", true);
+}
 function sendKey(k, down) {
   if (DEMO) return;
   if (ws && ws.readyState === 1) ws.send(new Uint8Array([2, k, down ? 1 : 0]));
@@ -1097,6 +1101,7 @@ function viewMenu() {
   <div class="ar-hero">${photoUrl("bereit") ? `<img src="${photoUrl("bereit")}" alt="">` : `<div class="ar-av" style="--pc:#ff1f8f;width:110px;height:110px;margin-bottom:20px"><img src="${photoUrl("gesicht") || LOGO}" alt=""></div>`}
     <div class="ar-bubble">${greet}, ${esc(arName)}! Bereit für 'ne Runde?<small>Such dir ein Spiel aus – gespielt wird auf der Uhr.</small></div></div>
   <label class="ar-name"><span>Du spielst als</span><input id="arNameIn" maxlength="14" value="${esc(arName)}" autocomplete="off"><button class="ar-chip" data-ar="nameMJ" type="button">MJ</button></label>
+  ${!DEMO && !(ws && ws.readyState === 1) ? `<div class="ar-run" style="border-color:rgba(255,93,108,.6);background:rgba(255,93,108,.12)"><span>🔴</span><b>Keine Live-Verbindung zur Uhr</b><span class="ar-chip" data-ar="reload">Neu laden</span></div>` : ""}
   ${running ? `<div class="ar-run" data-ar="toGame"><span>🟢</span><b>Läuft gerade: ${esc(GUI[st.g]?.t || st.g)}</b><span class="ar-chip">${AR.you >= 0 ? "Zurück" : "Mitmachen / Zuschauen"}</span></div>` : ""}
   <div class="ar-grid">${Object.keys(GUI).map(k => { const g = GUI[k];
     return `<div class="ar-card" style="--c1:${g.c[0]};--c2:${g.c[1]}"><canvas data-g="${k}"></canvas><h4>${g.t}</h4><p>${g.d}</p><div class="rec">${recLine(k)}</div>
@@ -1216,7 +1221,8 @@ $("#arcade").addEventListener("click", e => {
   if (b.dataset.open) { AR.browse = false; sessionStorage.setItem("wc_slot", "0"); return wsSend({ t: "g.open", game: b.dataset.open, mode: b.dataset.mode, name: arName }); }
   if (b.dataset.join !== undefined) { sessionStorage.setItem("wc_slot", b.dataset.join); return wsSend({ t: "g.join", slot: +b.dataset.join, name: arName }); }
   const a = b.dataset.ar, st = AR.st;
-  if (a === "close") arClose();
+  if (a === "reload") location.reload();
+  else if (a === "close") arClose();
   else if (a === "browse") { AR.browse = true; arRender(true); }
   else if (a === "toGame") { AR.browse = false; arRender(true); }
   else if (a === "nameMJ") { arName = "MJ"; localStorage.setItem("wc_name", "MJ"); arRender(true); }
