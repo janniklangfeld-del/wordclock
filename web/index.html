@@ -284,6 +284,12 @@ footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:26px;use
 .l-lr [data-k="2"]{grid-area:l}.l-lr [data-k="3"]{grid-area:r}.l-lr [data-k="4"]{grid-area:a}
 .l-big{grid-template:1fr/1fr}
 .l-big .ar-k{font-size:44px;border-radius:40px}
+.ar-k.rx{text-align:center;padding:16px}
+.ar-k.rx b{display:block;font:900 52px/1.05 "Arial Black",system-ui}
+.ar-k.rx small{font-size:15px;letter-spacing:0;line-height:1.35;opacity:.85;margin-top:10px}
+.ar-k.rx[data-st="wait"]{background-color:#3a0d18;background-image:none;color:#fff}
+.ar-k.rx[data-st="go"]{background-color:#3ddc84;background-image:none;color:#08210f}
+.ar-k.rx[data-st="bad"]{background-color:#5a1020;background-image:none;color:#fff}
 @media (orientation:landscape) and (max-height:520px){
   .l-tetris{grid-template:"l r a" 1fr "d d b" 1fr/1fr 1fr 1.2fr}
   .l-updown{grid-template:"u d" 1fr/1fr 1fr}.l-updown [data-k="0"]{grid-area:u}.l-updown [data-k="1"]{grid-area:d}
@@ -1007,7 +1013,7 @@ const GUI = {
     icon: ["...........", ".PPPPP.....", ".....P.....", ".....P.....", ".....PW....", "...........", "....TTTTTT.", "....T......", "....T......", "..........."] },
   vier: { t: "Vier gewinnt", d: "Vier in einer Reihe – waagrecht, senkrecht oder schräg.", pad: "lr", c: ["#7a5cff", "#ff1f8f"],
     icon: ["...........", "...........", "...........", "....T......", "..bbbbbbb..", "..bbbbbbb..", "..bbbTbbb..", "..bbbPTbb..", "..bTPPTbb..", "..PPTPTPb.."] },
-  reaktion: { t: "Reaktion", d: "Grün = drücken! Wer zu früh drückt, verliert die Runde.", pad: "big", unit: "ms im Schnitt", su: ["ms", "ms"], c: ["#ffd23f", "#3ddc84"],
+  reaktion: { t: "Reaktion", d: "Knopf gedrückt halten – bei Grün loslassen! Wer zu früh loslässt, verliert die Runde.", pad: "big", unit: "ms im Schnitt", su: ["ms", "ms"], c: ["#ffd23f", "#3ddc84"],
     icon: ["...........", "....YYY....", "...Y...Y...", "..Y..Y..Y..", "..Y..YY.Y..", "..Y.....Y..", "...Y...Y...", "....YYY....", "...........", "..........."] },
   flatter: { t: "Flatterherz", d: "Tippen = flattern. Flieg durch die Lücken. Zu zweit gewinnt, wer länger fliegt.", pad: "flap", unit: "Lücken", su: ["Lücke", "Lücken"], c: ["#ff1f8f", "#3ddc84"],
     icon: ["......G...G", "......G...G", "......G....", "..P........", "..........G", "......G...G", "......G...G", "......G...G", "......G...G", "......G...G"] },
@@ -1311,7 +1317,7 @@ const PADS = {
   tetris: `<div class="ar-ctl l-tetris" id="arCtlIn"><button class="ar-k acc" data-k="4">⟳<small>DREHEN</small></button><button class="ar-k" data-k="5">⤓<small>FALLEN</small></button><button class="ar-k" data-k="2">◀</button><button class="ar-k" data-k="3">▶</button><button class="ar-k" data-k="1">▼<small>SCHNELLER</small></button></div>`,
   updown: `<div class="ar-ctl l-updown" id="arCtlIn"><button class="ar-k" data-k="0">▲</button><button class="ar-k" data-k="1">▼</button></div>`,
   lr: `<div class="ar-ctl l-lr" id="arCtlIn"><button class="ar-k" data-k="2">◀</button><button class="ar-k" data-k="3">▶</button><button class="ar-k acc" data-k="4">⬇<small>EINWERFEN</small></button></div>`,
-  big: `<div class="ar-ctl l-big" id="arCtlIn"><button class="ar-k acc" data-k="4">JETZT!</button></div>`,
+  big: `<div class="ar-ctl l-big" id="arCtlIn"><button class="ar-k acc rx" data-k="4"><b>HALTEN</b><small>Finger drauf lassen</small></button></div>`,
   flap: `<div class="ar-ctl l-big" id="arCtlIn"><button class="ar-k acc" data-k="4">♥<small>FLATTERN</small></button></div>`,
 };
 function renderPad(full) {
@@ -1322,6 +1328,7 @@ function renderPad(full) {
   $("#arScore").innerHTML = two ? `<div class="sd" style="color:var(--p0)"><span class="s">${p[0]?.s ?? 0}</span><span class="n">${esc(p[0]?.n)}</span></div><span class="vs">vs</span>
       <div class="sd" style="color:var(--p1)"><span class="s">${p[1]?.s ?? 0}</span><span class="n">${esc(p[1]?.n)}</span></div>`
     : `<div class="sd" style="color:var(--me)"><span class="s">${p[0]?.s ?? 0}</span><span class="n">${esc(g.t)} · ${esc(p[0]?.n)}</span></div>`;
+  if (st.g === "reaktion") rxRender(st, me);
   $("#arLive").textContent = (st.live || "") + (st.secs !== undefined ? ` · ${Math.floor(st.secs / 60)}:${String(st.secs % 60).padStart(2, "0")}` : "");
   $("#arPause").style.visibility = me >= 0 ? "" : "hidden";
   const M = $("#arMsg");
@@ -1333,6 +1340,28 @@ function renderPad(full) {
       <div class="ar-row"><button class="ar-chip" data-ar="quit">Spiel beenden</button></div></div>`; }
   else if (me < 0) { M.dataset.cd = ""; M.className = "ar-msg on"; M.innerHTML = `<div><h2>Du schaust zu 👀</h2><p>Das Spiel läuft auf der Uhr.</p><div class="ar-row"><button class="ar-chip" data-ar="browse">Spiele</button><button class="ar-chip" data-ar="close">Schließen</button></div></div>`; }
   else { M.dataset.cd = ""; M.className = "ar-msg"; M.innerHTML = ""; }
+}
+// Reaktion: Knopf zeigt, was zu tun ist, und nach jeder Runde die eigene Zeit
+function rxRender(st, me) {
+  const b = $("#arCtl .rx"), x = st.x; if (!b || !x) return;
+  const two = st.m !== "1p", i = me >= 0 ? me : 0, o = 1 - i, nm = j => esc(st.p[j]?.n || `Spieler ${j + 1}`);
+  const t = j => x.f[j] ? "zu früh!" : x.f[1 - j] ? "–" : x.ms[j] >= 0 ? `${x.ms[j]} ms` : "verpasst";
+  const had = x.ms.some(v => v >= 0) || x.f.some(v => v);
+  // Gegnerzeit nur, wenn gemessen wurde (bei Fehlstart des einen bricht die Runde ab)
+  const opp = () => x.f[o] ? ` · ${nm(o)}: zu früh!` : x.f[i] ? "" : ` · ${nm(o)}: ${t(o)}`;
+  let big, small, cls = "";
+  if (x.st === "show") {
+    big = x.f[i] ? "Zu früh!" : two && x.f[o] ? "Fehlstart!" : x.ms[i] >= 0 ? `${x.ms[i]} ms` : "Zu langsam";
+    small = two ? (x.w === i ? "🏆 Punkt für dich!" : x.w === o ? `Punkt für ${nm(o)}` : "Gleichstand – kein Punkt") + opp() : x.f[i] ? "Erst bei Grün loslassen" : x.ms[i] < 0 ? "Bei Grün schneller loslassen" : x.ms[i] < 250 ? "Blitzschnell! ⚡" : x.ms[i] < 350 ? "Gut!" : "Geht schneller 😉";
+    cls = x.f[i] || (x.ms[i] < 0 && !(two && x.f[o])) ? "bad" : "res";
+  } else if (x.st === "go") { big = "LOS!"; small = "Loslassen!"; cls = "go"; }
+  else if (x.st === "wait") { big = "Halten …"; small = "Gleich wird's grün – nicht loslassen!"; cls = "wait"; }
+  else {
+    const mine = x.h[i]; big = mine ? "Halten …" : "HALTEN";
+    small = mine && two && !x.h[o] ? `Warte auf ${nm(o)}` : mine ? "Gleich geht's los" : "Finger auf den Knopf und gedrückt halten";
+    if (had) small += `<br>Letzte Runde: ${t(i)}${two ? opp() : ""}`;
+  }
+  b.dataset.st = cls; b.innerHTML = `<b>${big}</b><small>${small}</small>`;
 }
 // Ein Zeiger = eine Taste. Gleiten zwischen Tasten wechselt die Richtung (wie ein echtes Steuerkreuz).
 function keyAt(x, y) {
@@ -1438,6 +1467,7 @@ function arOnOpen() {
 }
 function arOnGame(m) {
   const before = AR.st.ph; AR.st = m; AR.you = m.you ?? -1;
+  if (m.ph === "play" && before !== "play" && m.g === "reaktion") new Set(AR.pressed.values()).forEach(k => k >= 0 && sendKey(k, true));
   if (AR.you >= 0) sessionStorage.setItem("wc_slot", AR.you); else if (m.ph === "idle") sessionStorage.removeItem("wc_slot");
   $("#arcBtn").classList.toggle("live", m.ph !== "idle");
   if (m.ph === "idle" && before !== "idle") { if (before === "over" && AR.open && !AR.browse) arClose(); AR.browse = false; refreshRecords(); }

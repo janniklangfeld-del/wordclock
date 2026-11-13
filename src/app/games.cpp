@@ -293,6 +293,9 @@ void broadcast() {
     game->live(b, sizeof(b));
     d["live"] = b;
     d["secs"] = game->seconds();
+    JsonObject x = d["x"].to<JsonObject>();
+    game->extra(x);
+    if (x.size() == 0) d.remove("x");
   }
   if (phase == OVER) d["res"] = resultDoc.as<JsonObjectConst>();
   if (gameId >= 0) d["rec"] = rec[GAMES[gameId].key];
@@ -430,10 +433,15 @@ void loop() {
       game->t = gclock;
       game->tick();
       if (game->over()) { finish(); break; }
-      if (now - lastSent > 250) {  // Live-Zeile nur bei Aenderung schicken
+      static uint32_t lastCheck = 0;
+      if (now - lastSent > 120 && now - lastCheck >= 30) {  // Live-Zeile nur bei Aenderung schicken (max. alle 30 ms pruefen)
+        lastCheck = now;
         char b[48];
         game->live(b, sizeof(b));
         String l = String(b) + game->score(0) + ":" + game->score(1);
+        JsonDocument x;  // spielspezifischer Zustand zaehlt mit (z. B. Reaktion: wer haelt, Zeiten)
+        game->extra(x.to<JsonObject>());
+        serializeJson(x, l);
         if (l != lastLive) { lastLive = l; dirty = true; }
       }
       break;

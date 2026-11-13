@@ -58,6 +58,7 @@ class Game {
   virtual int32_t bigNumber() const { return score(0); }  // Endstand auf der Uhr (Einzelspiel)
   virtual int32_t hsValue(uint8_t) const { return -1; }  // Wert fuer den Highscore (-1 = zaehlt nicht)
   virtual void live(char* buf, size_t n) const { buf[0] = 0; }  // Zeile fuer den Controller
+  virtual void extra(JsonObject) const {}  // spielspezifischer Zustand fuers Handy (optional)
   virtual void results(JsonArray rows) const = 0;   // Statistik: [Bezeichnung, Wert1, Wert2?]
   uint32_t seconds() const { return (t - startT) / 1000; }
 };

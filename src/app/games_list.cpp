@@ -973,104 +973,165 @@ class Connect4 : public Game {
 };
 
 // ===========================================================================
-// Reaktion: Einzeln (5 Messungen) oder Duell (bis 5 Punkte)
+// Reaktion: Einzeln (5 Messungen) oder Duell (bis 5 Punkte).
+// Alle halten den Knopf gedrueckt -> zufaellige Wartezeit -> GRUEN -> wer schneller
+// loslaesst, gewinnt. Zu frueh loslassen = Runde verloren. Gemessen wird jeder.
 // ===========================================================================
 class Reaction : public Game {
-  enum { WAIT, GO, SHOW } ph = WAIT;
-  uint32_t goAt = 0, phT = 0;
-  int pts[2] = {0, 0}, rounds = 0, fouls[2] = {0, 0};
-  uint32_t best[2] = {9999, 9999}, sum[2] = {0, 0}, worst = 0;
-  int cnt[2] = {0, 0};
+  enum { ARM, WAIT, GO, SHOW } ph = ARM;
+  static constexpr uint32_t SLOW = 1500;  // nicht losgelassen -> verpasst
+  bool held[2] = {false, false};
+  uint32_t goAt = 0, phT = 0, endT = 0;
+  int32_t rel[2] = {-1, -1};     // Loslass-Zeit dieser Runde (ms nach dem Signal)
+  int32_t lastMs[2] = {-1, -1};  // letzte Runde fuers Handy (-1 = keine Zeit)
+  bool lastFoul[2] = {false, false};
   int8_t lastWin = -1;
-  bool lastFoul = false;
-  uint32_t lastMs = 0, endT = 0;
-  int target() const { return humans == 2 ? 5 : 5; }
+  int pts[2] = {0, 0}, rounds = 0, fouls[2] = {0, 0}, cnt[2] = {0, 0}, misses[2] = {0, 0};
+  uint32_t best[2] = {9999, 9999}, sum[2] = {0, 0}, worst = 0;
 
-  void next() {
-    ph = WAIT;
-    phT = t;
-    goAt = t + rnd(1600, 4800);
+  int n() const { return humans == 2 ? 2 : 1; }
+  bool allHeld() const {
+    for (int p = 0; p < n(); p++)
+      if (!held[p]) return false;
+    return true;
   }
-  void finishRound(int8_t w, bool foul, uint32_t ms) {
+  void show(int8_t w) {
     lastWin = w;
-    lastFoul = foul;
-    lastMs = ms;
     ph = SHOW;
     phT = t;
     rounds++;
   }
-
- public:
-  void start() override { next(); }
-  void key(uint8_t p, uint8_t k, bool down) override {
-    if (!down || p >= humans || endT || (k != K_A && k != K_B)) return;
-    if (ph == WAIT) {  // zu frueh!
-      fouls[p]++;
-      if (humans == 2) pts[1 - p]++;
-      finishRound(humans == 2 ? 1 - p : -1, true, 0);
-    } else if (ph == GO) {
-      const uint32_t ms = t - goAt;
-      best[p] = min(best[p], ms);
+  void foul(int p) {
+    fouls[p]++;
+    for (int q = 0; q < 2; q++) { lastMs[q] = -1; lastFoul[q] = q == p; }
+    if (n() == 2) pts[1 - p]++;
+    show(n() == 2 ? 1 - p : -1);
+  }
+  void evaluate() {
+    int8_t w = -1;
+    int32_t bestMs = 0;
+    bool tie = false;
+    for (int p = 0; p < n(); p++) {
+      lastFoul[p] = false;
+      const int32_t ms = rel[p];
+      lastMs[p] = ms;
+      if (ms < 0) { misses[p]++; continue; }
+      best[p] = min(best[p], (uint32_t)ms);
       sum[p] += ms;
       cnt[p]++;
-      worst = max(worst, ms);
-      pts[p]++;
-      finishRound(p, false, ms);
+      worst = max(worst, (uint32_t)ms);
+      if (w < 0 || ms < bestMs) { w = p; bestMs = ms; tie = false; }
+      else if (ms == bestMs) tie = true;
+    }
+    if (tie) w = -1;
+    if (n() == 2 && w >= 0) pts[w]++;
+    show(n() == 2 ? w : -1);
+  }
+  void border(Canvas& c, int x0, int x1, CRGB col) {
+    for (int x = x0; x <= x1; x++) { c.set(x, 0, col); c.set(x, GH - 1, col); }
+    for (int y = 0; y < GH; y++) { c.set(x0, y, col); c.set(x1, y, col); }
+  }
+
+ public:
+  void start() override { ph = ARM; phT = t; }
+  void key(uint8_t p, uint8_t k, bool down) override {
+    if (p >= n() || endT || (k != K_A && k != K_B)) return;
+    held[p] = down;
+    if (down) return;
+    if (ph == WAIT) foul(p);  // zu frueh losgelassen
+    else if (ph == GO && rel[p] < 0) {
+      rel[p] = t - goAt;
+      bool all = true;
+      for (int q = 0; q < n(); q++) all &= rel[q] >= 0;
+      if (all) evaluate();
     }
   }
   void tick() override {
     if (endT) return;
-    if (ph == WAIT && t >= goAt) { ph = GO; phT = t; }
-    if (ph == GO && t - goAt > 3000) finishRound(-1, true, 0);  // keiner hat gedrueckt
-    if (ph == SHOW && t - phT > 1700) {
-      if ((humans == 2 && (pts[0] >= 5 || pts[1] >= 5)) || (humans == 1 && cnt[0] >= target())) endT = t;
-      else next();
+    switch (ph) {
+      case ARM:  // alle muessen halten, dann geht's los
+        if (allHeld() && t - phT > 300) { ph = WAIT; phT = t; goAt = t + rnd(1500, 4500); }
+        break;
+      case WAIT:
+        if (t >= goAt) { ph = GO; phT = t; rel[0] = rel[1] = -1; }
+        break;
+      case GO:
+        if (t - goAt > SLOW) evaluate();
+        break;
+      case SHOW:
+        if (t - phT > 1800) {
+          if ((n() == 2 && (pts[0] >= 5 || pts[1] >= 5)) || (n() == 1 && cnt[0] >= 5)) endT = t;
+          else { ph = ARM; phT = t; }
+        }
+        break;
     }
   }
   void draw(Canvas& c) override {
-    if (ph == WAIT) {
-      const uint8_t v = beatsin8(30, 10, 45);
-      for (int x = 0; x < GW; x++) { c.set(x, 0, CRGB(v, v, v)); c.set(x, GH - 1, CRGB(v, v, v)); }
-      for (int y = 0; y < GH; y++) { c.set(0, y, CRGB(v, v, v)); c.set(GW - 1, y, CRGB(v, v, v)); }
-      if (humans == 2) for (int k = 0; k < 4; k++) c.dots[k] = k < 2 ? P_COL[0] : P_COL[1];
+    if (ph == ARM) {  // Rahmen: wer haelt, leuchtet hell; sonst pulsiert er
+      const uint8_t v = beatsin8(40, 15, 70);
+      if (n() == 1) border(c, 0, GW - 1, held[0] ? CRGB(150, 150, 150) : CRGB(v, v, v));
+      else
+        for (int p = 0; p < 2; p++) {
+          CRGB col = P_COL[p];
+          col.nscale8_video(held[p] ? 255 : v);
+          border(c, p ? 6 : 0, p ? GW - 1 : 4, col);
+          c.dots[p * 2] = c.dots[p * 2 + 1] = held[p] ? P_COL[p] : CRGB::Black;
+        }
+    } else if (ph == WAIT) {
+      border(c, 0, GW - 1, CRGB(60, 10, 10));
+      if (n() == 2) for (int k = 0; k < 4; k++) c.dots[k] = P_COL[k / 2];
     } else if (ph == GO) {
       for (int y = 0; y < GH; y++) for (int x = 0; x < GW; x++) c.set(x, y, CRGB(40, 255, 60));
-    } else {
-      if (lastFoul && lastWin < 0 && humans == 1) {
-        for (int y = 0; y < GH; y++) for (int x = 0; x < GW; x++) c.set(x, y, ((t - phT) / 120) % 2 ? CRGB(120, 0, 0) : CRGB::Black);
-      } else if (humans == 1) {
-        c.number(min<uint32_t>(lastMs, 999), 2, lastMs < 250 ? CRGB(40, 255, 60) : lastMs < 350 ? CRGB(255, 200, 0) : CRGB(255, 60, 0));
-      } else if (lastWin >= 0) {
-        if (t - phT < 800) {
-          for (int y = 0; y < GH; y++) for (int x = 0; x < GW; x++) c.set(x, y, P_COL[lastWin]);
-          if (lastFoul) for (int x = 0; x < GW; x++) c.set(x, (t / 80) % GH, CRGB::Red);
-        } else c.score(pts[0], pts[1]);
+    } else if (n() == 1) {
+      const int32_t ms = lastMs[0];
+      if (lastFoul[0] || ms < 0) {  // zu frueh (rot) oder verpasst (orange)
+        const CRGB f = lastFoul[0] ? CRGB(140, 0, 0) : CRGB(150, 60, 0);
+        for (int y = 0; y < GH; y++) for (int x = 0; x < GW; x++) c.set(x, y, ((t - phT) / 120) % 2 ? f : CRGB::Black);
+      } else {
+        c.number(min<int32_t>(ms, 999), 2, ms < 250 ? CRGB(40, 255, 60) : ms < 350 ? CRGB(255, 200, 0) : CRGB(255, 60, 0));
       }
+    } else if (lastWin >= 0 && t - phT < 800) {
+      for (int y = 0; y < GH; y++) for (int x = 0; x < GW; x++) c.set(x, y, P_COL[lastWin]);
+      if (lastFoul[1 - lastWin]) for (int x = 0; x < GW; x++) c.set(x, (t / 80) % GH, CRGB::Red);
+    } else {
+      c.score(pts[0], pts[1]);
     }
   }
   bool over() const override { return endT && t - endT > 200; }
-  int8_t winner() const override { return humans == 2 ? (pts[0] > pts[1] ? 0 : 1) : -1; }
+  int8_t winner() const override { return n() == 2 ? (pts[0] > pts[1] ? 0 : 1) : -1; }
   int32_t score(uint8_t p) const override { return pts[p & 1]; }
   int32_t bigNumber() const override { return cnt[0] ? sum[0] / cnt[0] : 999; }
   // Durchschnitt zaehlt ab 3 gueltigen Messungen (allein sind es immer 5)
   int32_t hsValue(uint8_t p) const override { return p < humans && cnt[p] >= 3 ? (int32_t)(sum[p] / cnt[p]) : -1; }
-  void live(char* s, size_t n) const override {
-    if (humans == 1) snprintf(s, n, "Messung %d von 5", min(cnt[0] + 1, 5));
-    else snprintf(s, n, "Runde %d · erster bis 5", rounds + 1);
+  void live(char* s, size_t len) const override {
+    if (n() == 1) snprintf(s, len, "Messung %d von 5", min(cnt[0] + 1, 5));
+    else snprintf(s, len, "Runde %d · erster bis 5", rounds + 1);
+  }
+  // Fuers Handy: Zustand, wer haelt, Zeiten der letzten Runde
+  void extra(JsonObject o) const override {
+    static const char* const ST[] = {"arm", "wait", "go", "show"};
+    o["st"] = ST[ph];
+    o["w"] = lastWin;
+    for (int p = 0; p < 2; p++) {
+      o["h"].add(held[p]);
+      o["ms"].add(lastMs[p]);
+      o["f"].add(lastFoul[p]);
+    }
   }
   void results(JsonArray r) const override {
     auto avg = [&](int p) { return cnt[p] ? String(sum[p] / cnt[p]) + " ms" : String("–"); };
     auto bst = [&](int p) { return cnt[p] ? String(best[p]) + " ms" : String("–"); };
-    if (humans == 1) {
+    if (n() == 1) {
       row(r, "Durchschnitt", avg(0));
       row(r, "Schnellste", bst(0));
       row(r, "Langsamste", String(worst) + " ms");
-      row(r, "Zu früh gedrückt", String(fouls[0]));
+      row(r, "Zu früh losgelassen", String(fouls[0]));
     } else {
       row(r, "Punkte", String(pts[0]), String(pts[1]));
       row(r, "Schnellste", bst(0), bst(1));
       row(r, "Durchschnitt", avg(0), avg(1));
       row(r, "Zu früh", String(fouls[0]), String(fouls[1]));
+      row(r, "Verpasst", String(misses[0]), String(misses[1]));
     }
     row(r, "Hinweis", "inkl. WLAN-Weg (~10–30 ms)");
   }
