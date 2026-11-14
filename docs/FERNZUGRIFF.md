@@ -46,6 +46,7 @@ Alles geht wie zu Hause: Einstellungen, Laufschrift (Anzeige → Eigener Text �
 
 ## Hinweise
 
+- **Adressbereich:** Hat dein eigenes WLAN zu Hause denselben Bereich wie Majas Box (beide `192.168.178.x`, FRITZ!Box-Standard), kommt das Handy über VPN aus deinem WLAN nicht an die Uhr – es sucht 192.168.178.43 dann bei dir. Abhilfe: VPN per Mobilfunk nutzen (WLAN aus), oder in einer der beiden Boxen den Bereich ändern (Heimnetz → Netzwerk → Netzwerkeinstellungen → IPv4-Einstellungen, z. B. 192.168.179.1). Ändert man Majas Box, bekommt die Uhr eine neue IP.
 - Über das VPN ist **nichts im Internet offen** – nur Geräte mit dem Schlüssel kommen ins Heimnetz. Deshalb ist keine Portfreigabe und kein zusätzlicher Login an der Uhr nötig.
 - Der VPN-Zugang erlaubt dir Zugriff auf **Majas ganzes Heimnetz** – mit ihr absprechen. Zugang jederzeit in der FRITZ!Box unter VPN (WireGuard) löschbar.
 - Admin-Passwort der Uhr (Standard `wordclock`) trotzdem ändern: System → Wartung → Admin-Passwort.

@@ -320,6 +320,7 @@ void broadcast() {
   String s;
   serializeJson(d, s);
   // pro Handy "you" (eigener Platz) voranstellen
+  bool missed = false;
   for (uint8_t c = 0; c < MAX_CLIENTS; c++) {
     if (!web::clientConnected(c)) continue;
     const int sl = slotOf(c);
@@ -330,10 +331,10 @@ void broadcast() {
       if (pv.size()) { String ps; serializeJson(pv, ps); m += "\"me\":" + ps + ","; }  // serializeJson ueberschreibt Strings
     }
     m += s.substring(1);
-    web::sendTo(c, m);
+    if (!web::sendTo(c, m)) missed = true;  // Handy im Rueckstand -> gleich nochmal versuchen
   }
   lastSent = millis();
-  dirty = false;
+  dirty = missed;
 }
 
 void drawIcon(Canvas& c, const Info& gi, uint32_t now) {

@@ -44,7 +44,7 @@ print(f"Spielnachrichten an A in {dt:.1f} s: {len(A.msgs)-n0}; Seitenabrufe waeh
       f"max {max(ok)*1000:.0f} ms, Mittel {sum(ok)/len(ok)*1000:.0f} ms")
 
 # B "sperrt das Handy": antwortet nicht mehr auf Pings, sendet nichts
-B.pong = False; t0 = time.time()
+B.pong = B.hb = False; t0 = time.time()
 m = A.wait(lambda m: m.get("t") == "game" and m.get("ph") == "pause" and time.time() > t0, 20)
 print(f"Pause nach Wegfall von B: {m and m.get('why')} nach {time.time()-t0:.1f} s")
 B.close()

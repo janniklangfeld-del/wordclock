@@ -2,8 +2,9 @@
 import base64, json, os, socket, struct, sys, threading, time
 
 class WS:
-    def __init__(self, host, pong=True, name=""):
-        self.name, self.pong, self.msgs, self.frames, self.closed = name, pong, [], 0, False
+    def __init__(self, host, pong=True, name="", hb=True):
+        # hb: wie die Webseite alle 3 s {"t":"hb"} senden (ohne gilt das Handy nach 12 s als weg)
+        self.name, self.pong, self.hb, self.msgs, self.frames, self.closed = name, pong, hb, [], 0, False
         t0 = time.time()
         self.s = socket.create_connection((host, 80), timeout=10)
         key = base64.b64encode(os.urandom(16)).decode()
@@ -20,6 +21,14 @@ class WS:
         self.s.settimeout(None)
         self.lock = threading.Lock()
         threading.Thread(target=self.reader, daemon=True).start()
+        threading.Thread(target=self.beat, daemon=True).start()
+
+    def beat(self):
+        while not self.closed:
+            time.sleep(3)
+            if self.hb and not self.closed:
+                try: self.text({"t": "hb"})
+                except Exception: pass
 
     def _send(self, op, data):
         hdr = bytes([0x80 | op])

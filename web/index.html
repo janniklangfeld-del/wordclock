@@ -37,7 +37,7 @@ header{display:flex;align-items:center;gap:12px;padding:6px 0 4px}
 .power.on{background:linear-gradient(135deg,var(--accent),#ff4fa0);color:#140a05;border-color:transparent;box-shadow:0 6px 24px rgba(var(--glow),.45)}
 
 // Lebenszeichen: nur sichtbare Seiten -> die Uhr kann vergessene Tabs rauswerfen, wenn es eng wird
-setInterval(() => { if (!document.hidden && ws && ws.readyState === 1) ws.send('{"t":"hb"}'); }, 5000);
+setInterval(() => { if (!document.hidden && ws && ws.readyState === 1) ws.send('{"t":"hb"}'); }, 3000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && !DEMO && (!ws || ws.readyState > 1)) { wsTries = 0; connectWs(); } });
 
 /* ---------- 3D-Uhr ---------- */
@@ -804,19 +804,26 @@ async function api(path, { method = "GET", body, auth = false } = {}) {
 function toast(msg, err) { const t = $("#toast"); t.textContent = msg; t.className = "show" + (err ? " err" : ""); clearTimeout(t._h); t._h = setTimeout(() => t.className = "", 2600); }
 function live(on, text) { $("#liveDot").classList.toggle("live", on); $("#liveText").textContent = text; }
 
-let ws, lastFrameAt = 0;
+let ws, lastFrameAt = 0, wsRx = 0;
 let wsTries = 0, wsWait = null;
+// Die Uhr meldet sich alle 3 s. Kommt 10 s nichts, ist die Verbindung tot (iPhone merkt das oft
+// lange nicht) -> sofort neu verbinden statt "rausgeflogen" zu bleiben.
+setInterval(() => {
+  if (DEMO || document.hidden || !ws || ws.readyState !== 1 || Date.now() - wsRx < 10000) return;
+  const old = ws; ws = null; old.onclose = old.onmessage = null; try { old.close(); } catch (e) {}
+  live(false, "verbinde …"); connectWs();
+}, 2000);
 function connectWs() {
   if (DEMO) { live(true, "Demo"); setInterval(() => applyFrame(demoFrame()), 66); return; }
   clearTimeout(wsWait); wsWait = null;
   if (ws && ws.readyState <= 1) return;  // nie zwei Verbindungen aus einer Seite
   ws = new WebSocket(`ws://${location.host}/ws`); ws.binaryType = "arraybuffer";
-  ws.onopen = () => { wsTries = 0; live(true, "live verbunden"); arOnOpen(); arRender(true); };
+  ws.onopen = () => { wsTries = 0; wsRx = Date.now(); live(true, "live verbunden"); arOnOpen(); arRender(true); };
   ws.onclose = () => { live(false, "verbinde …"); if (AR.open) arRender(true);
     // Tabs im Hintergrund verbinden sich erst wieder, wenn man sie anschaut; sonst wachsende, zufaellige Pause
     if (document.hidden) return;
     wsTries++; wsWait = setTimeout(connectWs, Math.min(8000, 700 * wsTries) + Math.random() * 800); };
-  ws.onmessage = e => {
+  ws.onmessage = e => { wsRx = Date.now();
     if (typeof e.data === "string") { try { const m = JSON.parse(e.data); if (m.t === "settings") mergeSettings(m.s); else if (m.t === "game") arOnGame(m); } catch (x) {} return; }
     const u = new Uint8Array(e.data); if (u[0] === 1) applyFrame(u);
   };

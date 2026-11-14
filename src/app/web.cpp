@@ -35,8 +35,8 @@ namespace {
 constexpr uint8_t MAXC = WEBSOCKETS_SERVER_CLIENT_MAX;  // Plaetze (Handys/Seiten) fuer Spiele
 constexpr uint32_t LOCK_WAIT_MS = 3000;   // < Task-Wachhund (5 s) des Webserver-Tasks
 constexpr uint32_t PING_MS = 3000;        // Lebenszeichen an jedes Handy ...
-constexpr uint32_t DEAD_MS = 9000;        // ... ohne Antwort so lange -> gilt als weg (Spiel pausiert)
-constexpr uint32_t STILL_MS = 7000;       // sichtbare Seiten senden alle 5 s "hb"; stiller = Hintergrund-Tab, darf Platz raeumen
+constexpr uint32_t DEAD_MS = 12000;       // ... nichts vom Handy so lange -> gilt als weg (Spiel pausiert)
+constexpr uint32_t STILL_MS = 7000;       // sichtbare Seiten senden alle 3 s "hb"; stiller = Hintergrund-Tab, darf Platz raeumen
 constexpr size_t WS_MSG_MAX = 1024;
 
 AsyncWebServer http(80);
@@ -92,7 +92,13 @@ void pushEv(EvType t, uint32_t id, uint32_t ip, const uint8_t* data, size_t len)
 void onWsEvent(AsyncWebSocket*, AsyncWebSocketClient* c, AwsEventType type, void* arg, uint8_t* data, size_t len) {
   switch (type) {
     case WS_EVT_CONNECT:
-      c->setCloseClientOnQueueFull(true);  // 32 Nachrichten im Rueckstand -> Handy ist weg
+      // Volle Warteschlange: Nachricht verwerfen statt Handy trennen (Live-Bild fuellte sie
+      // sonst bis zum Anschlag, die naechste Spielnachricht warf das Handy raus).
+      c->setCloseClientOnQueueFull(false);
+      if (c->client()) {
+        c->client()->setAckTimeout(20000);  // kurze WLAN-Aussetzer (iPhone-Stromsparen) nicht gleich trennen
+        c->client()->setNoDelay(true);
+      }
       pushEv(EV_CONNECT, c->id(), (uint32_t)c->remoteIP(), nullptr, 0);
       break;
     case WS_EVT_DISCONNECT:
@@ -132,8 +138,16 @@ String settingsJson(bool wrapped) {
   return s;
 }
 
-void dropSlot(int s, bool closeSocket) {
+// Letzte Trennungen mit Grund (fuer /v1/info, Fehlersuche "Spieler fliegt raus")
+struct Drop { uint32_t at, ip, dur; uint8_t q; const char* why; };
+Drop drops[8];
+uint8_t dropN = 0;
+
+void dropSlot(int s, bool closeSocket, const char* why) {
   const uint32_t id = cl[s].id;
+  AsyncWebSocketClient* wc = ws.client(id);
+  drops[dropN % 8] = {millis(), cl[s].ip, millis() - cl[s].connectedAt, (uint8_t)(wc ? wc->queueLen() : 255), why};
+  dropN++;
   cl[s] = Client();
   if (closeSocket) ws.close(id);
   games::onDisconnect(s);
@@ -156,7 +170,7 @@ void handleEv(Ev& e) {
           ws.close(e.id, 1013, "voll");
           break;
         }
-        dropSlot(oldest, true);
+        dropSlot(oldest, true, "voll");
         s = oldest;
       }
       cl[s].id = e.id;
@@ -168,7 +182,7 @@ void handleEv(Ev& e) {
       break;
     }
     case EV_DISCONNECT:
-      if (s >= 0) dropSlot(s, false);
+      if (s >= 0) dropSlot(s, false, "zu");  // vom Handy/Netz/Timeout geschlossen
       break;
     case EV_PONG:
       if (s >= 0) cl[s].lastAlive = now;
@@ -298,6 +312,19 @@ void handleInfo(AsyncWebServerRequest* r) {
     o["ip"] = IPAddress(cl[c].ip).toString();
     o["s"] = (ms - cl[c].connectedAt) / 1000;
     o["idle"] = (ms - cl[c].lastRx) / 1000;
+    AsyncWebSocketClient* wc = ws.client(cl[c].id);
+    o["q"] = wc ? (int)wc->queueLen() : -1;
+    o["tx"] = wc && wc->client() ? (int)wc->client()->space() : -1;
+  }
+  JsonArray dl = d["drops"].to<JsonArray>();
+  for (uint8_t k = 0; k < 8 && k < dropN; k++) {
+    const Drop& x = drops[(dropN - 1 - k) % 8];
+    JsonObject o = dl.add<JsonObject>();
+    o["ago"] = (ms - x.at) / 1000;
+    o["ip"] = IPAddress(x.ip).toString();
+    o["s"] = x.dur / 1000;
+    o["q"] = x.q;
+    o["why"] = x.why;
   }
   sendJson(r, 200, d);
 }
@@ -557,7 +584,9 @@ void sendFrames(uint32_t now) {
     if (now - c.lastSentTo < minGap) continue;
     if (!changed && c.lastSentTo > lastChange && now - c.lastSentTo < 1000) continue;
     // Handy kommt nicht hinterher (schwaches WLAN): Bild auslassen statt stauen
-    if (!ws.availableForWrite(c.id)) {
+    // Bilder nur, wenn kaum etwas wartet -> Spiel- und Einstellungsnachrichten haben immer Platz.
+    AsyncWebSocketClient* wc = ws.client(c.id);
+    if (!wc || wc->queueLen() > 2) {
       c.slowUntil = now + 3000;
       continue;
     }
@@ -600,7 +629,7 @@ bool running() { return listening; }
 
 void loop() {
   if (!routesReady) return;
-  const uint32_t now = millis();
+  uint32_t now = millis();
   if (restartAt && (int32_t)(now - restartAt) >= 0) {
     Serial.println("[web] Neustart");
     delay(100);
@@ -612,6 +641,9 @@ void loop() {
     handleEv(e);
     free(e.data);
   }
+  // Zeit NACH den Ereignissen neu lesen: handleEv stempelt mit millis(); ein aelteres "now"
+  // ergaebe now - lastRx < 0 -> Ueberlauf -> Handy galt als ewig still und flog raus.
+  now = millis();
 
   // Lebenszeichen: Browser antworten auf Pings selbst (auch ohne Tastendruck). Gesperrte
   // oder weggelegte Handys antworten nicht mehr -> Platz frei, Spiel pausiert.
@@ -621,10 +653,13 @@ void loop() {
       if (!cl[s].id) continue;
       if (now - cl[s].lastAlive > DEAD_MS) {
         Serial.printf("[web] Handy %d antwortet nicht mehr -> trennen\n", s);
-        dropSlot(s, true);
+        dropSlot(s, true, "stumm");
         continue;
       }
-      ws.ping(cl[s].id);
+      // Kein ws.ping(): Ping-Frames bringen die Ack-Zaehlung von ESPAsyncWebServer 3.9.6
+      // durcheinander -> Nachrichten bleiben fuer immer in der Warteschlange haengen
+      // (Handy bekam nichts mehr, flog bei 32 raus). Lebenszeichen der Seite: "hb" alle 3 s.
+      web::sendTo(s, "{\"t\":\"p\"}");  // Lebenszeichen fuer die Seite (Pings sieht JavaScript nicht)
     }
   }
 
@@ -639,7 +674,7 @@ void loop() {
       if (cl[s].id && now - cl[s].lastRx > STILL_MS && (oldest < 0 || cl[s].lastRx < cl[oldest].lastRx)) oldest = s;
     if (oldest >= 0) {
       Serial.printf("[web] Platz frei machen: Handy %d (still seit %lus)\n", oldest, (now - cl[oldest].lastRx) / 1000);
-      dropSlot(oldest, true);
+      dropSlot(oldest, true, "platz");
     }
   }
 
@@ -655,15 +690,17 @@ void loop() {
 void notifySettings() {
   if (!routesReady) return;
   const String s = settingsJson(true);
-  for (auto& c : cl)
-    if (c.id) ws.text(c.id, s);
+  for (int i = 0; i < MAXC; i++)
+    if (cl[i].id) web::sendTo(i, s);
 }
 
 AsyncWebServer* server() { return &http; }
 
 bool sendTo(uint8_t client, const String& text) {
   if (!routesReady || client >= MAXC || !cl[client].id) return false;
-  return ws.text(cl[client].id, text);
+  AsyncWebSocketClient* wc = ws.client(cl[client].id);
+  if (!wc || wc->queueLen() >= WS_MAX_QUEUED_MESSAGES - 2) return false;  // Rueckstand: spaeter nochmal
+  return wc->text(text);
 }
 
 bool clientConnected(uint8_t client) { return routesReady && client < MAXC && cl[client].id != 0; }
