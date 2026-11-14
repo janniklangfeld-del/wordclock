@@ -68,3 +68,9 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - 14.11.: Uhr hat in Majas FRITZ!Box feste IP 192.168.178.43.
 - Erledigt (14.11.): Fernzugriff per WireGuard (Majas FRITZ!Box), vom iPhone über LTE getestet.
 - Offen: Admin-Passwort ändern. Majas Geburtstag eintragen (Default aus, 01.01.).
+- 14.11.: Nutzer: Verbindung jetzt zuverlässiger. Wenn die Seite mal nicht lädt: am iPhone WLAN aus/an, kurz warten, nochmal – dann geht es (Ursache offen, vermutlich WLAN/ARP-Seite).
+
+## Backlog (vom Nutzer, noch nicht umsetzen ohne Auftrag)
+- Pong: stehen sich die Schläger schräg gegenüber, prallt der Ball endlos hin und her und wird immer schneller, ohne dass sich jemand bewegen muss → Abprallwinkel variieren / Endlos-Schleife aufbrechen.
+- Neues „Verloren“-Foto (vom Nutzer über die Webseite hochgeladen, liegt auf der Uhr) hat schwarzen Hintergrund → freistellen/transparent machen. Foto privat: nur private/fotos bzw. Uhr, NIE ins Repo.
+- Eigener Text als Laufschrift: Tempo-Regler (scrollSpeed) wirkt nicht.
