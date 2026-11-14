@@ -34,8 +34,8 @@ Von unterwegs: über das WireGuard-VPN der FRITZ!Box, siehe [FERNZUGRIFF.md](FER
 | `settings.*` | Alle Einstellungen, JSON im NVS, verzögertes Speichern |
 | `clockface.*` | Buchstabenmatrix, Uhrzeit → Wörter, Buchstabe → LED-Index (Schlange, Start oben links) |
 | `display.*` | Renderer mit 50 Bildern/s: Uhrzeit, Farben, Effekte, Übergänge, Nachtmodus, Helligkeit, Statusanzeige |
-| `web.*` | HTTP-Server (Port 80, REST unter `/v1/…`), WebSocket (Port 81) für das Live-Bild |
-| `web.cpp` → `PoolServer` | Ersetzt `WebServer::handleClient`: nimmt alle Verbindungen sofort an (4 Plätze) und bedient die, auf der eine Anfrage liegt; leere fliegen nach 5 s raus. Grund: der Standard-Server wartete pro Verbindung bis 5 s auf die Anfrage – Safari öffnet leere Vorrats-Verbindungen → Seite lud am iPhone endlos (gemessen: 4 leere Verbindungen = 20 s, jetzt 0,2 s). Espalexa ruft weiter die Basisversion auf; was die annimmt, wird übernommen. |
+| `web.*` | Asynchroner Webserver (ESPAsyncWebServer, eigener Task): Seite, REST unter `/v1/…` und WebSocket `/ws` (Live-Bild, Spiel-Controller) alle auf Port 80 |
+| `web.cpp` → Sperre + Warteschlange | Gemeinsame Daten gehören der Hauptschleife; sie hält `web::lock()` während jedes Durchlaufs. REST-Anfragen holen sich die Sperre (max. 3 s, sonst 503), Seite und Fotos brauchen keine und kommen immer sofort. WebSocket-Ereignisse landen in einer Warteschlange und werden in `web::loop()` verarbeitet (keine Sperre im WebSocket-Teil → kein Verklemmen). Ping alle 3 s, ohne Antwort 9 s → Handy gilt als weg. Langsame Handys bekommen Live-Bilder ausgelassen statt die Uhr aufzuhalten. Ersetzt seit 1.4.0 PoolServer, `netfix.cpp` und die WebSockets-Bibliothek (Port 81). Tests: `scripts/test/`. |
 | `alexa.*` | Espalexa-Gerät, synchron mit den Einstellungen |
 | `intro.*` | Pixelschrift 5×7 für die Begrüßung (A–Z, ÄÖÜ, 0–9, ! - ., Herz mit `<3`) |
 | `games.*` | MJ Arcade: Plätze, Lobby, Countdown, Pause, Ergebnis, Rekorde (NVS „games“) |
@@ -64,7 +64,7 @@ Die Webseite liegt in `web/index.html` (eine Datei, keine externen Quellen, funk
 | GET | `/v1/games` | Spieleliste, Rekorde, aktueller Stand | nein |
 | GET | `/v1/photos`, `/photo/<name>` | Vorhandene Fotos (Größe = Version), Foto ausliefern | nein |
 | POST | `/v1/photo?n=<name>`, `/v1/photo/del?n=<name>` | Foto hochladen (multipart, max. 48 KB) / löschen | ja |
-| WS | `:81` | Binär `[1, Helligkeit, 224×RGB]` ~15/s, Text `{"t":"settings"}` bei Änderungen | – |
+| WS | `/ws` | Binär `[1, Helligkeit, 224×RGB]` ~15/s, Text `{"t":"settings"}` bei Änderungen | – |
 
 WebSocket für Spiele: Text `{"t":"g.open|g.join|g.leave|g.ready|g.pause|g.again|g.quit|g.hello", …}`, `{"t":"frames","on":false}` (Live-Bild für diesen Client aus), binär `[2, Taste, gedrückt]` mit Taste 0 hoch, 1 runter, 2 links, 3 rechts, 4 A, 5 B. Antwort `{"t":"game","you":Platz,…}` bei jeder Änderung.
 

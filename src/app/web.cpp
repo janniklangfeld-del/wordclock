@@ -1,10 +1,12 @@
 #include "web.h"
 #include <ArduinoJson.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <Update.h>
-#include <WebServer.h>
-#include <WebSocketsServer.h>
 #include <WiFi.h>
+#include <freertos/queue.h>
+#include <freertos/semphr.h>
 #include "alexa.h"
 #include "app.h"
 #include "clockface.h"
@@ -18,123 +20,103 @@
 #include "sys.h"
 #include "web_index.h"
 
+// Asynchroner Webserver (ESPAsyncWebServer): Netzwerk laeuft in einem eigenen Task, die
+// Hauptschleife (LEDs, Spiele) wartet nie auf ein langsames Handy und ein beschaeftigtes
+// Handy blockiert nie die anderen. Seite, REST und WebSocket (/ws) teilen sich Port 80.
+//
+// Gemeinsame Daten (Einstellungen, Anzeige, Spiele) gehoeren der Hauptschleife. Sie haelt
+// dafuer eine Sperre (web::lock), die sie nur zwischen zwei Durchlaeufen kurz freigibt:
+//   - REST-Anfragen, die diese Daten anfassen, holen sich die Sperre (max. 3 s, sonst 503).
+//   - WebSocket-Nachrichten werden nur in eine Warteschlange gelegt und in web::loop()
+//     (Hauptschleife) verarbeitet. Der WebSocket-Teil nimmt die Sperre nie -> kein Verklemmen.
+//   - Seite und Fotos brauchen keine Sperre und kommen daher immer sofort.
+
 namespace {
-// Der eingebaute WebServer nimmt eine Verbindung an und wartet dann bis zu 5 s, ob darauf eine
-// Anfrage kommt – erst danach ist die naechste dran. Safari (iPhone) oeffnet vorsorglich mehrere
-// leere Verbindungen; jede blockierte den Server 5 s, die Seite lud am Handy endlos.
-// Hier werden alle Verbindungen sofort angenommen und die bedient, auf der wirklich eine Anfrage
-// liegt. Leere fliegen nach 5 s raus (bzw. die aelteste, wenn alle Plaetze belegt sind).
-class PoolServer : public WebServer {
-  static constexpr uint8_t N = 4;
-  static constexpr uint32_t IDLE_MS = 5000;
-  WiFiClient pool[N];
-  uint32_t since[N] = {};
+constexpr uint8_t MAXC = WEBSOCKETS_SERVER_CLIENT_MAX;  // Plaetze (Handys/Seiten) fuer Spiele
+constexpr uint32_t LOCK_WAIT_MS = 3000;   // < Task-Wachhund (5 s) des Webserver-Tasks
+constexpr uint32_t PING_MS = 3000;        // Lebenszeichen an jedes Handy ...
+constexpr uint32_t DEAD_MS = 9000;        // ... ohne Antwort so lange -> gilt als weg (Spiel pausiert)
+constexpr uint32_t STILL_MS = 7000;       // sichtbare Seiten senden alle 5 s "hb"; stiller = Hintergrund-Tab, darf Platz raeumen
+constexpr size_t WS_MSG_MAX = 1024;
 
-  void add(WiFiClient c, uint32_t t) {
-    int slot = -1, oldest = 0;
-    for (int i = 0; i < N; i++) {
-      if (!pool[i]) { slot = i; break; }
-      if (since[i] < since[oldest]) oldest = i;
-    }
-    if (slot < 0) { pool[oldest].stop(); slot = oldest; }  // voll: aelteste leere Verbindung weg
-    pool[slot] = c;
-    since[slot] = t;
-  }
-
- public:
-  using WebServer::WebServer;
-  // Ersetzt WebServer::handleClient (nicht virtuell). Espalexa ruft ueber WebServer* weiterhin
-  // die Basisversion auf; nimmt die eine Verbindung an, wird sie hier gleich uebernommen.
-  void serve() {
-    if (_currentStatus != HC_NONE) {
-      if (_currentClient.connected() || _currentClient.available()) add(_currentClient, _statusChange);
-      _currentClient = WiFiClient();
-      _currentStatus = HC_NONE;
-    }
-    for (uint8_t k = 0; k < 8; k++) {
-      WiFiClient c = _server.available();
-      if (!c) break;
-      add(c, millis());
-    }
-    const uint32_t now = millis();
-    for (int i = 0; i < N; i++) {
-      if (!pool[i] && !pool[i].available()) { pool[i] = WiFiClient(); continue; }  // Socket freigeben
-      if (pool[i].available()) {
-        _currentClient = pool[i];
-        pool[i] = WiFiClient();
-        _currentStatus = HC_WAIT_READ;
-        _statusChange = now;
-        WebServer::handleClient();  // liest, beantwortet und schliesst die Anfrage
-        if (_currentStatus != HC_NONE) {  // sollte nicht vorkommen: nicht haengen lassen
-          _currentClient.stop();
-          _currentClient = WiFiClient();
-          _currentStatus = HC_NONE;
-        }
-      } else if (!pool[i].connected() || now - since[i] > IDLE_MS) {
-        pool[i].stop();
-        pool[i] = WiFiClient();
-      }
-    }
-  }
-};
-
-PoolServer http(80);
-WebSocketsServer ws(81);
+AsyncWebServer http(80);
+AsyncWebSocket ws("/ws");
+SemaphoreHandle_t mtx = nullptr;
+QueueHandle_t evq = nullptr;
 bool routesReady = false;
 bool listening = false;
-uint32_t lastFrameSent = 0;
+volatile uint32_t restartAt = 0;
+
+SemaphoreHandle_t mutex() {
+  if (!mtx) mtx = xSemaphoreCreateRecursiveMutex();
+  return mtx;
+}
+
+// ---------- WebSocket: Ereignisse aus dem Webserver-Task -> Hauptschleife ----------
+enum EvType : uint8_t { EV_CONNECT, EV_DISCONNECT, EV_TEXT, EV_BIN, EV_PONG };
+struct Ev {
+  EvType type;
+  uint32_t id;
+  uint32_t ip;
+  uint16_t len;
+  uint8_t* data;  // malloc, gibt die Hauptschleife frei
+};
+
+struct Client {
+  uint32_t id = 0;  // 0 = frei
+  uint32_t ip = 0;
+  uint32_t connectedAt = 0, lastRx = 0, lastAlive = 0, lastSentTo = 0, slowUntil = 0;
+  bool wantFrames = true;
+};
+Client cl[MAXC];  // gehoert der Hauptschleife
+
+uint32_t lastFrameSent = 0, lastPing = 0, lastEvict = 0, lastChange = 0;
 uint8_t frameBuf[2 + LED_COUNT * 3];
-bool wantFrames[WEBSOCKETS_SERVER_CLIENT_MAX];  // Controller schalten das Live-Bild ab
-uint32_t slowUntil[WEBSOCKETS_SERVER_CLIENT_MAX];  // langsames Handy (schwaches WLAN): nur 1 Bild/s
-uint32_t lastSentTo[WEBSOCKETS_SERVER_CLIENT_MAX];
-uint32_t connectedAt[WEBSOCKETS_SERVER_CLIENT_MAX];
-uint32_t lastRx[WEBSOCKETS_SERVER_CLIENT_MAX];  // letzte Nachricht vom Handy (sichtbare Seiten senden alle 5 s "hb")
 uint8_t lastFrame[2 + LED_COUNT * 3];
-uint32_t lastChange = 0;
 
-// Senden blockiert, bis das Handy die Daten abnimmt (max. WEBSOCKETS_TCP_TIMEOUT).
-// Langsame Handys werden gebremst, bei Fehler getrennt (Datenstrom waere sonst kaputt,
-// die Seite verbindet sich von selbst neu).
-bool sendChecked(uint8_t c, bool bin, uint8_t* data, size_t len) {
-  const uint32_t t0 = millis();
-  const bool ok = bin ? ws.sendBIN(c, data, len) : ws.sendTXT(c, data, len);
-  const uint32_t dt = millis() - t0;
-  if (!ok) {
-    Serial.printf("[web] Handy %u haengt -> trennen\n", c);
-    ws.disconnect(c);
-    return false;
+void pushEv(EvType t, uint32_t id, uint32_t ip, const uint8_t* data, size_t len) {
+  Ev e{t, id, ip, 0, nullptr};
+  if (data && len) {
+    if (len > WS_MSG_MAX) return;
+    e.data = (uint8_t*)malloc(len + 1);
+    if (!e.data) return;
+    memcpy(e.data, data, len);
+    e.data[len] = 0;
+    e.len = len;
   }
-  if (dt > 60 && c < WEBSOCKETS_SERVER_CLIENT_MAX) slowUntil[c] = millis() + 5000;
-  return true;
+  // Verbinden/Trennen darf nicht verloren gehen, Tasten/Text notfalls schon
+  const TickType_t wait = (t == EV_CONNECT || t == EV_DISCONNECT) ? pdMS_TO_TICKS(200) : 0;
+  if (xQueueSend(evq, &e, wait) != pdTRUE) free(e.data);
 }
 
-// Fotos fuer die Webseite liegen im Flash der Uhr (LittleFS), nicht im (oeffentlichen) Repo.
-const char* const PHOTOS[] = {"gesicht", "bereit", "kuss", "muetze", "frech"};
-constexpr size_t PHOTO_MAX = 48 * 1024;
-bool fsOk = false;
-File upFile;
-bool upTooBig = false;
-String photoPath(const String& n) { return "/" + n + ".img"; }
-bool photoName(const String& n) {
-  for (auto p : PHOTOS)
-    if (n == p) return true;
-  return false;
+void onWsEvent(AsyncWebSocket*, AsyncWebSocketClient* c, AwsEventType type, void* arg, uint8_t* data, size_t len) {
+  switch (type) {
+    case WS_EVT_CONNECT:
+      c->setCloseClientOnQueueFull(true);  // 32 Nachrichten im Rueckstand -> Handy ist weg
+      pushEv(EV_CONNECT, c->id(), (uint32_t)c->remoteIP(), nullptr, 0);
+      break;
+    case WS_EVT_DISCONNECT:
+      pushEv(EV_DISCONNECT, c->id(), 0, nullptr, 0);
+      break;
+    case WS_EVT_PONG:
+      pushEv(EV_PONG, c->id(), 0, nullptr, 0);
+      break;
+    case WS_EVT_DATA: {
+      const AwsFrameInfo* info = (const AwsFrameInfo*)arg;
+      // Nachrichten sind klein und kommen in einem Stueck; zerstueckelte werden ignoriert
+      if (!info->final || info->index != 0 || info->len != len) break;
+      pushEv(info->opcode == WS_BINARY ? EV_BIN : EV_TEXT, c->id(), 0, data, len);
+      break;
+    }
+    default:
+      break;
+  }
 }
 
-void sendJson(int code, const JsonDocument& doc) {
-  String s;
-  serializeJson(doc, s);
-  http.sendHeader("Cache-Control", "no-store");
-  http.send(code, "application/json", s);
-}
-
-void sendOk() { http.send(200, "application/json", "{\"ok\":true}"); }
-
-// Ohne WWW-Authenticate: die Webseite fragt das Passwort selbst ab.
-bool authOk() {
-  if (http.authenticate("admin", settings.adminPassword.c_str())) return true;
-  http.send(401, "application/json", "{\"error\":\"auth\"}");
-  return false;
+int slotOf(uint32_t id) {
+  for (int i = 0; i < MAXC; i++)
+    if (cl[i].id == id) return i;
+  return -1;
 }
 
 String settingsJson(bool wrapped) {
@@ -150,13 +132,134 @@ String settingsJson(bool wrapped) {
   return s;
 }
 
-void handleIndex() {
-  http.sendHeader("Content-Encoding", "gzip");
-  http.sendHeader("Cache-Control", "no-cache");
-  http.send_P(200, "text/html; charset=utf-8", (const char*)WEB_INDEX_GZ, WEB_INDEX_GZ_LEN);
+void dropSlot(int s, bool closeSocket) {
+  const uint32_t id = cl[s].id;
+  cl[s] = Client();
+  if (closeSocket) ws.close(id);
+  games::onDisconnect(s);
 }
 
-void handleInfo() {
+void handleEv(Ev& e) {
+  const uint32_t now = millis();
+  int s = slotOf(e.id);
+  switch (e.type) {
+    case EV_CONNECT: {
+      if (s >= 0) break;
+      for (int i = 0; i < MAXC && s < 0; i++)
+        if (!cl[i].id) s = i;
+      if (s < 0) {  // voll: Platz der Seite nehmen, die am laengsten still ist (Hintergrund-Tab)
+        int oldest = -1;
+        for (int i = 0; i < MAXC; i++)
+          if (now - cl[i].lastRx > STILL_MS && (oldest < 0 || cl[i].lastRx < cl[oldest].lastRx)) oldest = i;
+        if (oldest < 0) {
+          Serial.println("[web] alle Plaetze belegt -> neue Verbindung abgewiesen");
+          ws.close(e.id, 1013, "voll");
+          break;
+        }
+        dropSlot(oldest, true);
+        s = oldest;
+      }
+      cl[s].id = e.id;
+      cl[s].ip = e.ip;
+      cl[s].connectedAt = cl[s].lastRx = cl[s].lastAlive = now;
+      cl[s].wantFrames = true;
+      ws.text(e.id, settingsJson(true));
+      games::onConnect(s);
+      break;
+    }
+    case EV_DISCONNECT:
+      if (s >= 0) dropSlot(s, false);
+      break;
+    case EV_PONG:
+      if (s >= 0) cl[s].lastAlive = now;
+      break;
+    case EV_BIN:  // Spieltaste: [2, Taste, gedrueckt]
+      if (s < 0) break;
+      cl[s].lastRx = cl[s].lastAlive = now;
+      if (e.len >= 3 && e.data[0] == 2) games::onKey(s, e.data[1], e.data[2]);
+      break;
+    case EV_TEXT: {
+      if (s < 0) break;
+      cl[s].lastRx = cl[s].lastAlive = now;
+      JsonDocument d;
+      if (deserializeJson(d, (const char*)e.data, e.len) || !d.is<JsonObject>()) break;
+      const char* t = d["t"] | "";
+      if (!strcmp(t, "frames")) {
+        cl[s].wantFrames = d["on"] | true;
+      } else if (!strncmp(t, "g.", 2)) {
+        games::onText(s, d.as<JsonObjectConst>());
+      }
+      break;
+    }
+  }
+}
+
+// ---------- REST ----------
+// Laeuft im Webserver-Task. Fasst die Funktion gemeinsame Daten an -> unter der Sperre.
+template <class F>
+void locked(AsyncWebServerRequest* r, F f) {
+  if (xSemaphoreTakeRecursive(mutex(), pdMS_TO_TICKS(LOCK_WAIT_MS)) != pdTRUE) {
+    r->send(503, "application/json", "{\"error\":\"beschaeftigt\"}");
+    return;
+  }
+  f();
+  xSemaphoreGiveRecursive(mutex());
+}
+
+// Rumpf (JSON) einer Anfrage sammeln -> r->_tempObject (wird vom Server freigegeben)
+void collectBody(AsyncWebServerRequest* r, uint8_t* data, size_t len, size_t index, size_t total) {
+  if (total > 4096) return;
+  if (index == 0 && !r->_tempObject) r->_tempObject = calloc(total + 1, 1);
+  if (r->_tempObject && index + len <= total) memcpy((uint8_t*)r->_tempObject + index, data, len);
+}
+const char* body(AsyncWebServerRequest* r) { return r->_tempObject ? (const char*)r->_tempObject : ""; }
+
+void sendJson(AsyncWebServerRequest* r, int code, const String& s) {
+  AsyncWebServerResponse* res = r->beginResponse(code, "application/json", s);
+  res->addHeader("Cache-Control", "no-store");
+  r->send(res);
+}
+void sendJson(AsyncWebServerRequest* r, int code, const JsonDocument& doc) {
+  String s;
+  serializeJson(doc, s);
+  sendJson(r, code, s);
+}
+void sendOk(AsyncWebServerRequest* r) { r->send(200, "application/json", "{\"ok\":true}"); }
+
+bool authValid(AsyncWebServerRequest* r) { return r->authenticate("admin", settings.adminPassword.c_str()); }
+// Ohne WWW-Authenticate: die Webseite fragt das Passwort selbst ab.
+bool authOk(AsyncWebServerRequest* r) {
+  if (authValid(r)) return true;
+  r->send(401, "application/json", "{\"error\":\"auth\"}");
+  return false;
+}
+
+// Fotos fuer die Webseite liegen im Flash der Uhr (LittleFS), nicht im (oeffentlichen) Repo.
+const char* const PHOTOS[] = {"gesicht", "bereit", "kuss", "muetze", "frech"};
+constexpr size_t PHOTO_MAX = 48 * 1024;
+bool fsOk = false;
+File upFile;
+bool upTooBig = false;
+String photoPath(const String& n) { return "/" + n + ".img"; }
+bool photoName(const String& n) {
+  for (auto p : PHOTOS)
+    if (n == p) return true;
+  return false;
+}
+String arg(AsyncWebServerRequest* r, const char* name) {
+  if (r->hasParam(name)) return r->getParam(name)->value();
+  if (r->hasParam(name, true)) return r->getParam(name, true)->value();
+  return "";
+}
+
+void handleIndex(AsyncWebServerRequest* r) {
+  AsyncWebServerResponse* res = r->beginResponse(200, "text/html; charset=utf-8", WEB_INDEX_GZ, WEB_INDEX_GZ_LEN);
+  res->addHeader("Content-Encoding", "gzip");
+  res->addHeader("Cache-Control", "no-cache");
+  r->send(res);
+}
+
+void handleInfo(AsyncWebServerRequest* r) {
   JsonDocument d;
   d["fw"] = FW_VERSION;
   d["repo"] = GITHUB_REPO;
@@ -166,6 +269,7 @@ void handleInfo() {
   d["mac"] = WiFi.macAddress();
   d["uptime"] = millis() / 1000;
   d["heap"] = ESP.getFreeHeap();
+  d["heapMin"] = ESP.getMinFreeHeap();
   d["timeValid"] = display::timeValid();
   time_t now = time(nullptr);
   tm t;
@@ -182,76 +286,77 @@ void handleInfo() {
   d["reset"] = sys::resetReason();
   d["boots"] = sys::boots();
   d["crashes"] = sys::crashes();
+  d["server"] = "async";
   // Offene Live-Verbindungen (zur Fehlersuche: wer belegt die Plaetze?)
-  d["wsMax"] = WEBSOCKETS_SERVER_CLIENT_MAX;
+  d["wsMax"] = MAXC;
   JsonArray wl = d["ws"].to<JsonArray>();
-  for (uint8_t c = 0; c < WEBSOCKETS_SERVER_CLIENT_MAX; c++) {
-    if (!ws.clientIsConnected(c)) continue;
+  const uint32_t ms = millis();
+  for (uint8_t c = 0; c < MAXC; c++) {
+    if (!cl[c].id) continue;
     JsonObject o = wl.add<JsonObject>();
     o["n"] = c;
-    o["ip"] = ws.remoteIP(c).toString();
-    o["s"] = (millis() - connectedAt[c]) / 1000;
-    o["idle"] = (millis() - lastRx[c]) / 1000;
+    o["ip"] = IPAddress(cl[c].ip).toString();
+    o["s"] = (ms - cl[c].connectedAt) / 1000;
+    o["idle"] = (ms - cl[c].lastRx) / 1000;
   }
-  sendJson(200, d);
+  sendJson(r, 200, d);
 }
 
-void handleLayout() {
+void handleLayout(AsyncWebServerRequest* r) {
   JsonDocument d;
   JsonArray rows = d["letters"].to<JsonArray>();
-  for (int r = 0; r < LETTER_ROWS; r++) rows.add(clockface::LETTERS[r]);
+  for (int i = 0; i < LETTER_ROWS; i++) rows.add(clockface::LETTERS[i]);
   JsonArray leds = d["leds"].to<JsonArray>();
-  for (int r = 0; r < LETTER_ROWS; r++)
+  for (int i = 0; i < LETTER_ROWS; i++)
     for (int c = 0; c < LETTER_COLS; c++) {
       JsonArray p = leds.add<JsonArray>();
-      p.add(clockface::letterLed(r, c, 0));
-      p.add(clockface::letterLed(r, c, 1));
+      p.add(clockface::letterLed(i, c, 0));
+      p.add(clockface::letterLed(i, c, 1));
     }
   JsonArray dots = d["dots"].to<JsonArray>();
   for (int k = 0; k < LED_MINUTE_COUNT; k++) dots.add(clockface::dotLed(k));
   d["count"] = LED_COUNT;
-  sendJson(200, d);
+  sendJson(r, 200, d);
 }
 
-void handleSettingsPost() {
+void handleSettingsPost(AsyncWebServerRequest* r) {
   JsonDocument d;
-  if (deserializeJson(d, http.arg("plain")) || !d.is<JsonObject>()) {
-    http.send(400, "application/json", "{\"error\":\"json\"}");
+  if (deserializeJson(d, body(r)) || !d.is<JsonObject>()) {
+    r->send(400, "application/json", "{\"error\":\"json\"}");
     return;
   }
   uint32_t ch = settings.applyJson(d.as<JsonObjectConst>());
   app::settingsChanged(ch, app::SRC_WEB);
-  http.sendHeader("Cache-Control", "no-store");
-  http.send(200, "application/json", settingsJson(false));
+  sendJson(r, 200, settingsJson(false));
 }
 
-void handlePassword() {
-  if (!authOk()) return;
+void handlePassword(AsyncWebServerRequest* r) {
+  if (!authOk(r)) return;
   JsonDocument d;
-  deserializeJson(d, http.arg("plain"));
+  deserializeJson(d, body(r));
   String pw = d["password"] | "";
   pw.trim();
   if (pw.length() < 4 || pw.length() > 32) {
-    http.send(400, "application/json", "{\"error\":\"Passwort: 4 bis 32 Zeichen\"}");
+    r->send(400, "application/json", "{\"error\":\"Passwort: 4 bis 32 Zeichen\"}");
     return;
   }
   settings.adminPassword = pw;
   settings.save();
-  sendOk();
+  sendOk(r);
 }
 
 // LED-Testmodus: {"mode":"chase|rows|letters|rgbw|color|led|dots|off","color":"#RRGGBB","index":0..223,"bri":0..255,"speed":1..100}
 // Ohne Inhalt: einmaliges Lauflicht wie frueher.
-void handleTest() {
-  const String body = http.arg("plain");
-  if (body.isEmpty()) {
+void handleTest(AsyncWebServerRequest* r) {
+  const char* b = body(r);
+  if (!*b) {
     display::testPattern();
-    sendOk();
+    sendOk(r);
     return;
   }
   JsonDocument d;
-  if (deserializeJson(d, body)) {
-    http.send(400, "application/json", "{\"error\":\"json\"}");
+  if (deserializeJson(d, b)) {
+    r->send(400, "application/json", "{\"error\":\"json\"}");
     return;
   }
   static const char* const NAMES[] = {"off", "chase", "rows", "letters", "rgbw", "color", "led", "dots"};
@@ -263,10 +368,10 @@ void handleTest() {
   const uint32_t rgb = c[0] == '#' ? strtoul(c + 1, nullptr, 16) : 0xFFFFFF;
   display::setTest((display::TestMode)mode, CRGB(rgb), d["index"] | 0, constrain(d["bri"] | 60, 0, 255),
                    constrain(d["speed"] | 50, 1, 100));
-  sendOk();
+  sendOk(r);
 }
 
-void handlePhotoList() {
+void handlePhotoList(AsyncWebServerRequest* r) {
   JsonDocument d;
   d.to<JsonObject>();
   for (auto p : PHOTOS) {
@@ -278,198 +383,216 @@ void handlePhotoList() {
     }
   }
   if (fsOk) d["_free"] = LittleFS.totalBytes() - LittleFS.usedBytes();
-  sendJson(200, d);
+  sendJson(r, 200, d);
 }
 
-void servePhoto(const char* name) {
+void servePhoto(AsyncWebServerRequest* r, const char* name) {
   String f = photoPath(name);
   if (!fsOk || !LittleFS.exists(f)) {
-    http.send(404, "text/plain", "kein Foto");
+    r->send(404, "text/plain", "kein Foto");
     return;
   }
-  File h = LittleFS.open(f, "r");
   uint8_t m[4] = {0};
+  File h = LittleFS.open(f, "r");
   h.read(m, 4);
-  h.seek(0);
-  const char* type = m[0] == 0xFF ? "image/jpeg" : m[0] == 0x89 ? "image/png" : "image/webp";
-  http.sendHeader("Cache-Control", "max-age=31536000");  // Webseite haengt ?v=Groesse an
-  http.streamFile(h, type);
   h.close();
+  const char* type = m[0] == 0xFF ? "image/jpeg" : m[0] == 0x89 ? "image/png" : "image/webp";
+  AsyncWebServerResponse* res = r->beginResponse(LittleFS, f, type);
+  res->addHeader("Cache-Control", "max-age=31536000");  // Webseite haengt ?v=Groesse an
+  r->send(res);
 }
 
+// Firmware-Upload: Zustand pro Upload (nur einer gleichzeitig)
+bool fwAuthOk = false;
+bool fwStarted = false;
+
 void setupRoutes() {
+  ws.onEvent(onWsEvent);
+  http.addHandler(&ws);
+
   http.on("/", HTTP_GET, handleIndex);
   http.on("/index.html", HTTP_GET, handleIndex);
-  http.on("/v1/settings", HTTP_GET, [] {
-    http.sendHeader("Cache-Control", "no-store");
-    http.send(200, "application/json", settingsJson(false));
-  });
-  http.on("/v1/settings", HTTP_POST, handleSettingsPost);
-  http.on("/v1/info", HTTP_GET, handleInfo);
+  http.on("/v1/settings", HTTP_GET, [](AsyncWebServerRequest* r) { locked(r, [r] { sendJson(r, 200, settingsJson(false)); }); });
+  http.on("/v1/settings", HTTP_POST, [](AsyncWebServerRequest* r) { locked(r, [r] { handleSettingsPost(r); }); }, nullptr,
+          collectBody);
+  http.on("/v1/info", HTTP_GET, [](AsyncWebServerRequest* r) { locked(r, [r] { handleInfo(r); }); });
   http.on("/v1/layout", HTTP_GET, handleLayout);
-  http.on("/v1/replay", HTTP_POST, [] { display::replayTransition(); sendOk(); });
-  http.on("/v1/test", HTTP_POST, handleTest);
-  http.on("/v1/intro", HTTP_POST, [] { display::playIntro(); sendOk(); });
-  http.on("/v1/auth", HTTP_GET, [] { if (authOk()) sendOk(); });
-  http.on("/v1/check", HTTP_POST, [] { if (!authOk()) return; ota::requestCheck(); sendOk(); });
-  http.on("/v1/wifi", HTTP_POST, [] { if (!authOk()) return; sendOk(); net::requestPortal(); });
-  http.on("/v1/reboot", HTTP_POST, [] {
-    if (!authOk()) return;
-    sendOk();
-    settings.save();
-    delay(300);
-    ESP.restart();
+  http.on("/v1/replay", HTTP_POST, [](AsyncWebServerRequest* r) { locked(r, [r] { display::replayTransition(); sendOk(r); }); });
+  http.on("/v1/test", HTTP_POST, [](AsyncWebServerRequest* r) { locked(r, [r] { handleTest(r); }); }, nullptr, collectBody);
+  http.on("/v1/intro", HTTP_POST, [](AsyncWebServerRequest* r) { locked(r, [r] { display::playIntro(); sendOk(r); }); });
+  http.on("/v1/auth", HTTP_GET, [](AsyncWebServerRequest* r) { if (authOk(r)) sendOk(r); });
+  http.on("/v1/check", HTTP_POST, [](AsyncWebServerRequest* r) { locked(r, [r] { if (authOk(r)) { ota::requestCheck(); sendOk(r); } }); });
+  http.on("/v1/wifi", HTTP_POST, [](AsyncWebServerRequest* r) { locked(r, [r] { if (authOk(r)) { sendOk(r); net::requestPortal(); } }); });
+  http.on("/v1/reboot", HTTP_POST, [](AsyncWebServerRequest* r) {
+    locked(r, [r] {
+      if (!authOk(r)) return;
+      sendOk(r);
+      settings.save();
+      restartAt = millis() + 500;
+    });
   });
-  http.on("/v1/password", HTTP_POST, handlePassword);
-  http.on("/v1/games", HTTP_GET, [] {
-    JsonDocument d;
-    games::recordsJson(d.to<JsonObject>());
-    sendJson(200, d);
+  http.on("/v1/password", HTTP_POST, [](AsyncWebServerRequest* r) { locked(r, [r] { handlePassword(r); }); }, nullptr,
+          collectBody);
+  http.on("/v1/games", HTTP_GET, [](AsyncWebServerRequest* r) {
+    locked(r, [r] {
+      JsonDocument d;
+      games::recordsJson(d.to<JsonObject>());
+      sendJson(r, 200, d);
+    });
   });
   http.on("/v1/photos", HTTP_GET, handlePhotoList);
-  for (auto p : PHOTOS) http.on(String("/photo/") + p, HTTP_GET, [p] { servePhoto(p); });
-  http.on("/v1/photo/del", HTTP_POST, [] {
-    if (!authOk()) return;
-    String n = http.arg("n");
+  for (auto p : PHOTOS)
+    http.on((String("/photo/") + p).c_str(), HTTP_GET, [p](AsyncWebServerRequest* r) { servePhoto(r, p); });
+  http.on("/v1/photo/del", HTTP_POST, [](AsyncWebServerRequest* r) {
+    if (!authOk(r)) return;
+    String n = arg(r, "n");
     if (!photoName(n)) {
-      http.send(400, "application/json", "{\"error\":\"name\"}");
+      r->send(400, "application/json", "{\"error\":\"name\"}");
       return;
     }
     LittleFS.remove(photoPath(n));
-    sendOk();
+    sendOk(r);
   });
   // Foto hochladen: POST /v1/photo?n=gesicht (multipart; die Webseite verkleinert vorher)
   http.on(
       "/v1/photo", HTTP_POST,
-      [] {
-        if (!authOk()) return;
-        const String n = http.arg("n");
+      [](AsyncWebServerRequest* r) {
+        if (!authOk(r)) return;
+        const String n = arg(r, "n");
         if (!fsOk || !photoName(n)) {
-          http.send(400, "application/json", "{\"error\":\"Foto-Speicher\"}");
+          r->send(400, "application/json", "{\"error\":\"Foto-Speicher\"}");
           return;
         }
         if (upTooBig) {
           LittleFS.remove("/up.tmp");
-          http.send(413, "application/json", "{\"error\":\"Foto zu gross oder Speicher voll\"}");
+          r->send(413, "application/json", "{\"error\":\"Foto zu gross oder Speicher voll\"}");
           return;
         }
         LittleFS.remove(photoPath(n));
         LittleFS.rename("/up.tmp", photoPath(n));
-        sendOk();
+        sendOk(r);
       },
-      [] {
-        if (!fsOk || !http.authenticate("admin", settings.adminPassword.c_str())) return;
-        HTTPUpload& up = http.upload();
-        if (up.status == UPLOAD_FILE_START) {
+      [](AsyncWebServerRequest* r, const String&, size_t index, uint8_t* data, size_t len, bool final) {
+        if (!fsOk || !authValid(r)) return;
+        if (index == 0) {
           upTooBig = false;
-          upFile = LittleFS.open("/up.tmp", "w");
-        } else if (up.status == UPLOAD_FILE_WRITE) {
-          if (up.totalSize > PHOTO_MAX) upTooBig = true;
-          if (upFile && !upTooBig && upFile.write(up.buf, up.currentSize) != up.currentSize) upTooBig = true;
-        } else if (up.status == UPLOAD_FILE_END || up.status == UPLOAD_FILE_ABORTED) {
           if (upFile) upFile.close();
+          upFile = LittleFS.open("/up.tmp", "w");
         }
+        if (index + len > PHOTO_MAX) upTooBig = true;
+        if (upFile && !upTooBig && upFile.write(data, len) != len) upTooBig = true;
+        if (final && upFile) upFile.close();
       });
 
-  // Firmware-Datei hochladen (aus GitHub Release oder .pio/build/wordclock/firmware.bin)
+  // Firmware-Datei hochladen (aus GitHub Release oder .pio/build/wordclock/firmware.bin).
+  // Gleiche Schnittstelle wie bisher: multipart, Benutzer "admin" + Admin-Passwort, Antwort {"ok":true}.
   http.on(
       "/update", HTTP_POST,
-      [] {
-        if (!authOk()) return;
-        bool ok = !Update.hasError();
-        http.send(ok ? 200 : 500, "application/json", ok ? "{\"ok\":true}" : "{\"error\":\"update\"}");
-        if (ok) {
-          delay(500);
-          ESP.restart();
-        }
+      [](AsyncWebServerRequest* r) {
+        if (!authOk(r)) return;
+        const bool ok = fwStarted && !Update.isRunning() && !Update.hasError();
+        r->send(ok ? 200 : 500, "application/json", ok ? "{\"ok\":true}" : "{\"error\":\"update\"}");
+        if (ok) restartAt = millis() + 800;  // Antwort erst rausschicken, dann neu starten
+        fwStarted = false;
       },
-      [] {
-        if (!http.authenticate("admin", settings.adminPassword.c_str())) return;
-        HTTPUpload& up = http.upload();
-        if (up.status == UPLOAD_FILE_START) {
-          sys::pauseWatchdog();
-          display::setState(SysState::Updating);
-          Update.begin(UPDATE_SIZE_UNKNOWN);
-        } else if (up.status == UPLOAD_FILE_WRITE) {
-          Update.write(up.buf, up.currentSize);
-          if (up.totalSize) display::setProgress(min<size_t>(99, up.totalSize * 100 / 1400000));
-        } else if (up.status == UPLOAD_FILE_END) {
+      [](AsyncWebServerRequest* r, const String&, size_t index, uint8_t* data, size_t len, bool final) {
+        if (index == 0) {
+          fwAuthOk = authValid(r);
+          fwStarted = false;
+          if (!fwAuthOk) return;
+          if (Update.isRunning()) Update.abort();
+          if (xSemaphoreTakeRecursive(mutex(), pdMS_TO_TICKS(LOCK_WAIT_MS)) == pdTRUE) {
+            sys::pauseWatchdog();
+            display::setState(SysState::Updating);
+            xSemaphoreGiveRecursive(mutex());
+          }
+          fwStarted = Update.begin(UPDATE_SIZE_UNKNOWN);
+          Serial.printf("[web] Update gestartet (%u Bytes erwartet): %s\n", (unsigned)r->contentLength(),
+                        fwStarted ? "ok" : Update.errorString());
+        }
+        if (!fwAuthOk || !fwStarted) return;
+        if (Update.write(data, len) != len) Serial.printf("[web] Update-Schreibfehler: %s\n", Update.errorString());
+        const size_t total = r->contentLength();
+        if (total && xSemaphoreTakeRecursive(mutex(), 0) == pdTRUE) {  // Fortschritt nur, wenn frei
+          display::setProgress(min<size_t>(99, (index + len) * 100 / total));
+          xSemaphoreGiveRecursive(mutex());
+        }
+        if (final) {
           Update.end(true);
-          if (Update.hasError()) {
+          Serial.printf("[web] Update fertig: %s\n", Update.hasError() ? Update.errorString() : "ok");
+          if (Update.hasError() && xSemaphoreTakeRecursive(mutex(), pdMS_TO_TICKS(LOCK_WAIT_MS)) == pdTRUE) {
             display::setState(SysState::Error);
             sys::resumeWatchdog();
+            xSemaphoreGiveRecursive(mutex());
           }
         }
       });
 
-  http.onNotFound([] {
-    if (alexa::handleApi(http.uri(), http.arg(0))) return;  // Hue-API fuer Alexa
-    http.send(404, "text/plain", "nicht gefunden");
+  http.onNotFound([](AsyncWebServerRequest* r) {
+    locked(r, [r] {
+      if (alexa::handleApi(r)) return;  // Hue-API fuer Alexa (/api/...)
+      r->send(404, "text/plain", "nicht gefunden");
+    });
   });
+}
 
-  ws.onEvent([](uint8_t num, WStype_t type, uint8_t* data, size_t len) {
-    switch (type) {
-      case WStype_CONNECTED: {
-        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) {
-          wantFrames[num] = true;
-          slowUntil[num] = 0;
-          lastSentTo[num] = 0;
-          connectedAt[num] = lastRx[num] = millis();
-        }
-        String s = settingsJson(true);
-        ws.sendTXT(num, s);
-        games::onConnect(num);
-        break;
-      }
-      case WStype_DISCONNECTED:
-        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) wantFrames[num] = true;
-        games::onDisconnect(num);
-        break;
-      case WStype_BIN:  // Spieltaste: [2, Taste, gedrueckt]
-        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) lastRx[num] = millis();
-        if (len >= 3 && data[0] == 2) games::onKey(num, data[1], data[2]);
-        break;
-      case WStype_TEXT: {
-        if (num < WEBSOCKETS_SERVER_CLIENT_MAX) lastRx[num] = millis();
-        JsonDocument d;
-        if (deserializeJson(d, data, len) || !d.is<JsonObject>()) break;
-        const char* t = d["t"] | "";
-        if (!strcmp(t, "frames")) {
-          if (num < WEBSOCKETS_SERVER_CLIENT_MAX) wantFrames[num] = d["on"] | true;
-        } else if (!strncmp(t, "g.", 2)) {
-          games::onText(num, d.as<JsonObjectConst>());
-        }
-        break;
-      }
-      default:
-        break;
+void sendFrames(uint32_t now) {
+  if (now - lastFrameSent < 100) return;  // max. 10 Bilder/s
+  lastFrameSent = now;
+  bool any = false;
+  for (auto& c : cl) any |= c.id && c.wantFrames;
+  if (!any) return;
+  frameBuf[0] = 1;
+  frameBuf[1] = display::brightness();
+  memcpy(frameBuf + 2, display::frame(), LED_COUNT * 3);
+  // Nur geaenderte Bilder schicken (die Uhrzeit steht meist still), sonst 1x pro Sekunde.
+  const bool changed = memcmp(frameBuf, lastFrame, sizeof(frameBuf)) != 0;
+  if (changed) {
+    memcpy(lastFrame, frameBuf, sizeof(frameBuf));
+    lastChange = now;
+  }
+  for (auto& c : cl) {
+    if (!c.id || !c.wantFrames) continue;
+    const uint32_t minGap = now < c.slowUntil ? 1000 : (changed ? 0 : 1000);
+    if (now - c.lastSentTo < minGap) continue;
+    if (!changed && c.lastSentTo > lastChange && now - c.lastSentTo < 1000) continue;
+    // Handy kommt nicht hinterher (schwaches WLAN): Bild auslassen statt stauen
+    if (!ws.availableForWrite(c.id)) {
+      c.slowUntil = now + 3000;
+      continue;
     }
-  });
+    c.lastSentTo = now;
+    ws.binary(c.id, frameBuf, sizeof(frameBuf));
+  }
 }
 
 }  // namespace
 
 namespace web {
 
+void lock() { xSemaphoreTakeRecursive(mutex(), portMAX_DELAY); }
+void unlock() { xSemaphoreGiveRecursive(mutex()); }
+
 void begin() {
   if (!routesReady) {
+    mutex();
+    evq = xQueueCreate(48, sizeof(Ev));
     fsOk = LittleFS.begin(true);
     if (!fsOk) Serial.println("[web] LittleFS fehlt - keine Fotos");
     setupRoutes();
-    ws.begin();
-    ws.enableHeartbeat(3000, 2500, 2);  // weggelegte Handys schnell erkennen -> Spiel pausiert
     routesReady = true;
   }
   if (!listening) {
     http.begin();
     listening = true;
-    Serial.println("[web] http://wordclock.local");
+    Serial.println("[web] http://wordclock.local (asynchron, WebSocket /ws)");
   }
 }
 
 void end() {
   if (!listening) return;
-  http.stop();
+  ws.closeAll();
+  http.end();
   listening = false;
 }
 
@@ -477,58 +600,72 @@ bool running() { return listening; }
 
 void loop() {
   if (!routesReady) return;
-  if (listening) http.serve();
-  ws.loop();
-  // Live-Bild fuer die 3D-Ansicht: bis 10 Bilder/s, nur an Seiten, die zuschauen
-  // (Controller im Spiel schalten es ab, damit nichts die Tasten aufhaelt)
-  // Immer einen Platz frei halten: sind (fast) alle belegt, fliegt die Verbindung raus, die am
-  // laengsten nichts gesendet hat (Tab im Hintergrund, Handy gesperrt). Sichtbare Seiten senden
-  // alle 5 s ein Lebenszeichen, Spieler in einer Partie bleiben also drin.
   const uint32_t now = millis();
-  static uint32_t lastEvict = 0;
-  if (ws.connectedClients() >= WEBSOCKETS_SERVER_CLIENT_MAX - 1 && now - lastEvict > 1000) {
-    lastEvict = now;
-    int oldest = -1;
-    for (uint8_t c = 0; c < WEBSOCKETS_SERVER_CLIENT_MAX; c++)
-      if (ws.clientIsConnected(c) && now - lastRx[c] > 15000 && (oldest < 0 || lastRx[c] < lastRx[oldest])) oldest = c;
-    if (oldest >= 0) {
-      Serial.printf("[web] Platz frei machen: Handy %d (still seit %lus)\n", oldest, (now - lastRx[oldest]) / 1000);
-      ws.disconnect(oldest);
+  if (restartAt && (int32_t)(now - restartAt) >= 0) {
+    Serial.println("[web] Neustart");
+    delay(100);
+    ESP.restart();
+  }
+
+  Ev e;
+  for (uint8_t n = 0; n < 32 && xQueueReceive(evq, &e, 0) == pdTRUE; n++) {
+    handleEv(e);
+    free(e.data);
+  }
+
+  // Lebenszeichen: Browser antworten auf Pings selbst (auch ohne Tastendruck). Gesperrte
+  // oder weggelegte Handys antworten nicht mehr -> Platz frei, Spiel pausiert.
+  if (now - lastPing >= PING_MS) {
+    lastPing = now;
+    for (int s = 0; s < MAXC; s++) {
+      if (!cl[s].id) continue;
+      if (now - cl[s].lastAlive > DEAD_MS) {
+        Serial.printf("[web] Handy %d antwortet nicht mehr -> trennen\n", s);
+        dropSlot(s, true);
+        continue;
+      }
+      ws.ping(cl[s].id);
     }
   }
 
-  // Nur geaenderte Bilder schicken (die Uhrzeit steht meist still), sonst 1x pro Sekunde.
-  if (ws.connectedClients() > 0 && now - lastFrameSent >= 100) {  // max. 10 Bilder/s
-    lastFrameSent = now;
-    frameBuf[0] = 1;
-    frameBuf[1] = display::brightness();
-    memcpy(frameBuf + 2, display::frame(), LED_COUNT * 3);
-    const bool changed = memcmp(frameBuf, lastFrame, sizeof(frameBuf)) != 0;
-    if (changed) { memcpy(lastFrame, frameBuf, sizeof(frameBuf)); lastChange = now; }
-    for (uint8_t c = 0; c < WEBSOCKETS_SERVER_CLIENT_MAX; c++) {
-      if (!wantFrames[c] || !ws.clientIsConnected(c)) continue;
-      const uint32_t minGap = now < slowUntil[c] ? 1000 : (changed ? 0 : 1000);
-      if (now - lastSentTo[c] < minGap) continue;
-      if (!changed && lastSentTo[c] > lastChange && now - lastSentTo[c] < 1000) continue;
-      lastSentTo[c] = now;
-      sendChecked(c, true, frameBuf, sizeof(frameBuf));
+  // Immer einen Platz frei halten: sind (fast) alle belegt, fliegt die Seite raus, die am
+  // laengsten nichts gesendet hat (Tab im Hintergrund). Sichtbare Seiten senden alle 5 s "hb".
+  int used = 0;
+  for (auto& c : cl) used += c.id != 0;
+  if (used >= MAXC - 1 && now - lastEvict > 1000) {
+    lastEvict = now;
+    int oldest = -1;
+    for (int s = 0; s < MAXC; s++)
+      if (cl[s].id && now - cl[s].lastRx > STILL_MS && (oldest < 0 || cl[s].lastRx < cl[oldest].lastRx)) oldest = s;
+    if (oldest >= 0) {
+      Serial.printf("[web] Platz frei machen: Handy %d (still seit %lus)\n", oldest, (now - cl[oldest].lastRx) / 1000);
+      dropSlot(oldest, true);
     }
   }
+
+  static uint32_t lastCleanup = 0;
+  if (now - lastCleanup > 2000) {
+    lastCleanup = now;
+    ws.cleanupClients(MAXC + 2);  // geschlossene Verbindungen aufraeumen
+  }
+
+  sendFrames(now);
 }
 
 void notifySettings() {
-  if (!routesReady || ws.connectedClients() == 0) return;
-  String s = settingsJson(true);
-  ws.broadcastTXT(s);
+  if (!routesReady) return;
+  const String s = settingsJson(true);
+  for (auto& c : cl)
+    if (c.id) ws.text(c.id, s);
 }
 
-WebServer* server() { return &http; }
+AsyncWebServer* server() { return &http; }
 
 bool sendTo(uint8_t client, const String& text) {
-  if (!routesReady) return false;
-  return sendChecked(client, false, (uint8_t*)text.c_str(), text.length());
+  if (!routesReady || client >= MAXC || !cl[client].id) return false;
+  return ws.text(cl[client].id, text);
 }
 
-bool clientConnected(uint8_t client) { return routesReady && ws.clientIsConnected(client); }
+bool clientConnected(uint8_t client) { return routesReady && client < MAXC && cl[client].id != 0; }
 
 }  // namespace web

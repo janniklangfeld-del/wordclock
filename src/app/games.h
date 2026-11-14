@@ -6,7 +6,7 @@
 // "MJ Arcade" – Spiele auf der Uhr, Handys sind die Controller.
 //
 // Die Uhr ist der Schiedsrichter: Sie nimmt die Tasten aller Spieler ueber den
-// WebSocket (Port 81) an, rechnet das Spiel und zeigt es auf den 11 x 10
+// WebSocket (/ws) an, rechnet das Spiel und zeigt es auf den 11 x 10
 // Buchstabenfeldern. Die Handys zeigen nur Controller, Punktestand und Statistik.
 //
 // Ablauf: Lobby (Plaetze belegen, "Bereit") -> 3-2-1 -> Spiel -> Ergebnis.

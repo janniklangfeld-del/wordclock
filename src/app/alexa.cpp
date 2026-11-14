@@ -1,4 +1,5 @@
 #include "alexa.h"
+#include <WiFi.h>  // Espalexa (Async-Modus) bindet es nicht selbst ein
 #include <Espalexa.h>
 #include "app.h"
 #include "settings.h"
@@ -40,7 +41,7 @@ void onAlexa(EspalexaDevice* d) {
 
 namespace alexa {
 
-void begin(WebServer* server) {
+void begin(AsyncWebServer* server) {
   if (started || !settings.alexa) return;
   device = new EspalexaDevice(settings.alexaName, onAlexa, EspalexaDeviceType::color, settings.brightness);
   espalexa.addDevice(device);
@@ -62,8 +63,8 @@ void sync() {
 
 bool running() { return started; }
 
-bool handleApi(const String& uri, const String& body) {
-  return started && espalexa.handleAlexaApiCall(uri, body);
+bool handleApi(AsyncWebServerRequest* request) {
+  return started && espalexa.handleAlexaApiCall(request);
 }
 
 }  // namespace alexa

@@ -30,6 +30,7 @@ void settingsChanged(uint32_t flags, Source src) {
 }  // namespace app
 
 void setup() {
+  web::lock();  // gemeinsame Daten gehoeren der Hauptschleife (siehe web.cpp)
   Serial.begin(115200);
   delay(200);
   Serial.printf("\n=== Majas Wordclock %s (Repo: %s) ===\n", FW_VERSION, GITHUB_REPO);
@@ -51,10 +52,12 @@ void setup() {
 
   net::begin();
   ota::begin();
+  web::unlock();
 }
 
 void loop() {
   sys::feed();
+  web::lock();
   net::loop();
   web::loop();
   alexa::loop();
@@ -65,5 +68,6 @@ void loop() {
     settings.loop();
   }
   display::loop();
-  delay(1);
+  web::unlock();
+  delay(1);  // hier kommen Web-Anfragen an die Reihe
 }
