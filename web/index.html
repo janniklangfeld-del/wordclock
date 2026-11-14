@@ -36,9 +36,6 @@ header{display:flex;align-items:center;gap:12px;padding:6px 0 4px}
 .power svg{width:22px;height:22px}
 .power.on{background:linear-gradient(135deg,var(--accent),#ff4fa0);color:#140a05;border-color:transparent;box-shadow:0 6px 24px rgba(var(--glow),.45)}
 
-// Lebenszeichen: nur sichtbare Seiten -> die Uhr kann vergessene Tabs rauswerfen, wenn es eng wird
-setInterval(() => { if (!document.hidden && ws && ws.readyState === 1) ws.send('{"t":"hb"}'); }, 3000);
-document.addEventListener("visibilitychange", () => { if (!document.hidden && !DEMO && (!ws || ws.readyState > 1)) { wsTries = 0; connectWs(); } });
 
 /* ---------- 3D-Uhr ---------- */
 .stage{position:relative;height:calc(var(--s)*1.18);display:grid;place-items:center;perspective:1300px;
@@ -806,6 +803,9 @@ function live(on, text) { $("#liveDot").classList.toggle("live", on); $("#liveTe
 
 let ws, lastFrameAt = 0, wsRx = 0;
 let wsTries = 0, wsWait = null;
+// Lebenszeichen: nur sichtbare Seiten -> die Uhr kann vergessene Tabs rauswerfen, wenn es eng wird
+setInterval(() => { if (!document.hidden && ws && ws.readyState === 1) ws.send('{"t":"hb"}'); }, 3000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !DEMO && (!ws || ws.readyState > 1)) { wsTries = 0; connectWs(); } });
 // Die Uhr meldet sich alle 3 s. Kommt 10 s nichts, ist die Verbindung tot (iPhone merkt das oft
 // lange nicht) -> sofort neu verbinden statt "rausgeflogen" zu bleiben.
 setInterval(() => {
