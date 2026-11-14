@@ -13,7 +13,7 @@ Stand 10.11.2026: kompiliert fehlerfrei, Webseite im Demo-Modus geprüft. **Auf 
 | Effekte | Regenbogen, Plasma, Funkeln, Matrix, Feuer, Atmen, Herzen, Konfetti (Vollbild oder als Hintergrund) |
 | Übergänge | Sofort, Überblenden, Wischen, Diagonal, Zufall, Matrix, Schreibmaschine – Dauer einstellbar |
 | Eigener Text | Buchstaben in der 3D-Ansicht antippen → eigene Wörter/Botschaften; oder **Laufschrift**: beliebiger Text (bis 60 Zeichen) läuft endlos durch, Farbe/Hintergrund wie die Uhr, Tempo einstellbar |
-| Zeitplan | Nachtmodus (Zeitfenster, gedimmt oder aus) |
+| Zeitplan | Nachtmodus (Zeitfenster, gedimmt oder aus). Während des Nachtmodus stellt der Helligkeitsregler oben die Nachthelligkeit (mit Hinweis „🌙 Nachtmodus bis …“), bei „Ganz ausschalten“ schaltet er die Uhr wieder ein (Zeit vom Handy). |
 | Helligkeit | Regler; automatisch mit BH1750-Lichtsensor (wird beim Start erkannt) |
 | Begrüßung | Beim Einschalten (Strom an, Knopf auf der Webseite, „Alexa, … an“) läuft „HAPPY BIRTHDAY MAJA“ als Laufschrift in 5×7-Pixelschrift über die Buchstabenfelder, dann pulsiert ein Herz, ein Funkenregen folgt, und die Uhrzeit baut sich mit „Zufall“ auf (ca. 13 s). Text und An/Aus unter Effekte → Begrüßung. Hinweis: „MAJA“ lässt sich auf dem Buchstabenraster nicht in Leserichtung schreiben (zwischen M und dem einzigen J steht kein A), deshalb Laufschrift. |
 | Geburtstag | An Majas Geburtstag zu jeder Viertelstunde 20 s Herzchen (Datum in der Webseite eintragen) |
