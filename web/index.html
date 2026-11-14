@@ -111,6 +111,11 @@ select{flex:1.4}
 .swatches{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px}
 .swatches button{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.18);cursor:pointer;padding:0}
 .swatches button.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+.swm{position:relative;width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.18);cursor:pointer;box-sizing:border-box;
+  display:grid;place-items:center;overflow:hidden;background:conic-gradient(#ff3b3b,#ffd23f,#3ddc84,#2ee6d6,#3d7bff,#9b5cff,#ff5fa2,#ff3b3b)}
+.swm span{font:700 22px/1 system-ui,sans-serif;color:#fff;text-shadow:0 0 4px rgba(0,0,0,.75);margin-top:-2px;pointer-events:none}
+.swm input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
+.swm.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
 .btn{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:12px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
 .btn.primary{background:linear-gradient(135deg,var(--accent),#ff4fa0);color:#160b05;border:0}
 .btn.danger{color:var(--danger)}
@@ -873,6 +878,7 @@ $("#grid").addEventListener("click", e => {
 });
 
 /* ---------- Bedienelemente ---------- */
+const SWATCH = ["#FFB46E", "#FFFFFF", "#FF5FA2", "#FF2A2A", "#FF7A1A", "#FFD23F", "#3DDC84", "#2EE6D6", "#3D7BFF", "#9B5CFF"];
 const FMT = { pct255: v => Math.round(v / 255 * 100) + " %", pct100: v => v + " %", sec: v => (v / 1000).toFixed(1).replace(".", ",") + " s", lux: v => v + " lx" };
 function buildControls() {
   $$("[data-opts]").forEach(box => {
@@ -888,8 +894,9 @@ function buildControls() {
     else if (el.type === "color") el.oninput = () => set(key, el.value.toUpperCase());
     else el.onchange = () => set(key, el.value.trim());
   });
-  const SW = ["#FFB46E", "#FFFFFF", "#FF5FA2", "#FF2A2A", "#FF7A1A", "#FFD23F", "#3DDC84", "#2EE6D6", "#3D7BFF", "#9B5CFF"];
-  $("#swatches").innerHTML = SW.map(c => `<button style="background:${c}" data-c="${c}" title="${c}"></button>`).join("");
+  $("#swatches").innerHTML = SWATCH.map(c => `<button style="background:${c}" data-c="${c}" title="${c}"></button>`).join("") +
+    `<label class="swm" id="swMore" title="Weitere Farbe"><input type="color" aria-label="Weitere Farbe"><span>+</span></label>`;
+  $("#swMore input").oninput = e => set({ color: e.target.value.toUpperCase(), colorMode: "solid", mode: S.mode === "effect" ? "clock" : S.mode });
   $("#swatches").onclick = e => { const c = e.target.dataset.c; if (!c) return; set({ color: c, colorMode: "solid", mode: S.mode === "effect" ? "clock" : S.mode }); };
   $("#bri").oninput = e => { const v = +e.target.value;  // nachts stellt der Regler die Nachthelligkeit
     if (nightNow()) set(S.nightOff ? { nightBri: v, nightOff: false } : { nightBri: v }); else set("brightness", v); briUi(); };
@@ -923,6 +930,9 @@ function refreshControls() {
   briUi();
   $$("[data-text]").forEach(el => el.textContent = S[el.dataset.text] || "");
   $$("#swatches button").forEach(b => b.classList.toggle("on", S.colorMode === "solid" && S.mode !== "effect" && b.dataset.c === S.color));
+  { const m = $("#swMore"), own = S.colorMode === "solid" && S.mode !== "effect" && !SWATCH.includes(S.color) && /^#[0-9A-F]{6}$/i.test(S.color || "");
+    m.classList.toggle("on", own); m.style.background = own ? S.color : "";
+    const i = m.querySelector("input"); if (i !== document.activeElement && /^#[0-9A-F]{6}$/i.test(S.color || "")) i.value = S.color.toLowerCase(); }
   $("#power").classList.toggle("on", !!S.power);
   $("#title").textContent = S.name || "Majas Wordclock"; document.title = S.name || "Majas Wordclock";
   $("#clock").classList.toggle("custom", S.mode === "custom" && S.customStyle !== "scroll");

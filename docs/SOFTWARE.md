@@ -8,7 +8,7 @@ Stand 10.11.2026: kompiliert fehlerfrei, Webseite im Demo-Modus geprüft. **Auf 
 |---|---|
 | Uhrzeit | Deutsche Wortuhr in 5-Minuten-Schritten + 4 Minutenpunkte, NTP-Zeit, Zeitzone wählbar |
 | Sprache | „Es ist“ immer / nur volle & halbe / nie · „Viertel nach drei“ oder „Viertel vier“ · „Viertel vor vier“ oder „Dreiviertel vier“ · „zwanzig nach“ oder „zehn vor halb“ |
-| Farben | Einfarbig, Regenbogen, Verlauf (2 Farben, 3 Richtungen), Farbwechsel, Wortfarben; eigene Farbe für Minutenpunkte |
+| Farben | Einfarbig, Regenbogen, Verlauf (2 Farben, 3 Richtungen), Farbwechsel, Wortfarben; eigene Farbe für Minutenpunkte. Oben 10 Farbkreise zum schnellen Wählen, am Ende ein Regenbogen-Kreis mit „+“ für jede beliebige Farbe (Farbwähler des Handys; ist eine eigene Farbe aktiv, zeigt der Kreis sie). |
 | Hintergrund | Unbenutzte Buchstaben aus / leise in einer Farbe / leise mit Effekt |
 | Effekte | Regenbogen, Plasma, Funkeln, Matrix, Feuer, Atmen, Herzen, Konfetti (Vollbild oder als Hintergrund) |
 | Übergänge | Sofort, Überblenden, Wischen, Diagonal, Zufall, Matrix, Schreibmaschine – Dauer einstellbar |
