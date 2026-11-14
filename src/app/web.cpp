@@ -19,7 +19,66 @@
 #include "web_index.h"
 
 namespace {
-WebServer http(80);
+// Der eingebaute WebServer nimmt eine Verbindung an und wartet dann bis zu 5 s, ob darauf eine
+// Anfrage kommt – erst danach ist die naechste dran. Safari (iPhone) oeffnet vorsorglich mehrere
+// leere Verbindungen; jede blockierte den Server 5 s, die Seite lud am Handy endlos.
+// Hier werden alle Verbindungen sofort angenommen und die bedient, auf der wirklich eine Anfrage
+// liegt. Leere fliegen nach 5 s raus (bzw. die aelteste, wenn alle Plaetze belegt sind).
+class PoolServer : public WebServer {
+  static constexpr uint8_t N = 4;
+  static constexpr uint32_t IDLE_MS = 5000;
+  WiFiClient pool[N];
+  uint32_t since[N] = {};
+
+  void add(WiFiClient c, uint32_t t) {
+    int slot = -1, oldest = 0;
+    for (int i = 0; i < N; i++) {
+      if (!pool[i]) { slot = i; break; }
+      if (since[i] < since[oldest]) oldest = i;
+    }
+    if (slot < 0) { pool[oldest].stop(); slot = oldest; }  // voll: aelteste leere Verbindung weg
+    pool[slot] = c;
+    since[slot] = t;
+  }
+
+ public:
+  using WebServer::WebServer;
+  // Ersetzt WebServer::handleClient (nicht virtuell). Espalexa ruft ueber WebServer* weiterhin
+  // die Basisversion auf; nimmt die eine Verbindung an, wird sie hier gleich uebernommen.
+  void serve() {
+    if (_currentStatus != HC_NONE) {
+      if (_currentClient.connected() || _currentClient.available()) add(_currentClient, _statusChange);
+      _currentClient = WiFiClient();
+      _currentStatus = HC_NONE;
+    }
+    for (uint8_t k = 0; k < 8; k++) {
+      WiFiClient c = _server.available();
+      if (!c) break;
+      add(c, millis());
+    }
+    const uint32_t now = millis();
+    for (int i = 0; i < N; i++) {
+      if (!pool[i] && !pool[i].available()) { pool[i] = WiFiClient(); continue; }  // Socket freigeben
+      if (pool[i].available()) {
+        _currentClient = pool[i];
+        pool[i] = WiFiClient();
+        _currentStatus = HC_WAIT_READ;
+        _statusChange = now;
+        WebServer::handleClient();  // liest, beantwortet und schliesst die Anfrage
+        if (_currentStatus != HC_NONE) {  // sollte nicht vorkommen: nicht haengen lassen
+          _currentClient.stop();
+          _currentClient = WiFiClient();
+          _currentStatus = HC_NONE;
+        }
+      } else if (!pool[i].connected() || now - since[i] > IDLE_MS) {
+        pool[i].stop();
+        pool[i] = WiFiClient();
+      }
+    }
+  }
+};
+
+PoolServer http(80);
 WebSocketsServer ws(81);
 bool routesReady = false;
 bool listening = false;
@@ -418,7 +477,7 @@ bool running() { return listening; }
 
 void loop() {
   if (!routesReady) return;
-  if (listening) http.handleClient();
+  if (listening) http.serve();
   ws.loop();
   // Live-Bild fuer die 3D-Ansicht: bis 10 Bilder/s, nur an Seiten, die zuschauen
   // (Controller im Spiel schalten es ab, damit nichts die Tasten aufhaelt)

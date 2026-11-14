@@ -35,6 +35,7 @@ Von unterwegs: über das WireGuard-VPN der FRITZ!Box, siehe [FERNZUGRIFF.md](FER
 | `clockface.*` | Buchstabenmatrix, Uhrzeit → Wörter, Buchstabe → LED-Index (Schlange, Start oben links) |
 | `display.*` | Renderer mit 50 Bildern/s: Uhrzeit, Farben, Effekte, Übergänge, Nachtmodus, Helligkeit, Statusanzeige |
 | `web.*` | HTTP-Server (Port 80, REST unter `/v1/…`), WebSocket (Port 81) für das Live-Bild |
+| `web.cpp` → `PoolServer` | Ersetzt `WebServer::handleClient`: nimmt alle Verbindungen sofort an (4 Plätze) und bedient die, auf der eine Anfrage liegt; leere fliegen nach 5 s raus. Grund: der Standard-Server wartete pro Verbindung bis 5 s auf die Anfrage – Safari öffnet leere Vorrats-Verbindungen → Seite lud am iPhone endlos (gemessen: 4 leere Verbindungen = 20 s, jetzt 0,2 s). Espalexa ruft weiter die Basisversion auf; was die annimmt, wird übernommen. |
 | `alexa.*` | Espalexa-Gerät, synchron mit den Einstellungen |
 | `intro.*` | Pixelschrift 5×7 für die Begrüßung (A–Z, ÄÖÜ, 0–9, ! - ., Herz mit `<3`) |
 | `games.*` | MJ Arcade: Plätze, Lobby, Countdown, Pause, Ergebnis, Rekorde (NVS „games“) |
