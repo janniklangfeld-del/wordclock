@@ -74,3 +74,4 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - Pong: stehen sich die Schläger schräg gegenüber, prallt der Ball endlos hin und her und wird immer schneller, ohne dass sich jemand bewegen muss → Abprallwinkel variieren / Endlos-Schleife aufbrechen.
 - Neues „Verloren“-Foto (vom Nutzer über die Webseite hochgeladen, liegt auf der Uhr) hat schwarzen Hintergrund → freistellen/transparent machen. Foto privat: nur private/fotos bzw. Uhr, NIE ins Repo.
 - Eigener Text als Laufschrift: Tempo-Regler (scrollSpeed) wirkt nicht.
+- 16.11.: VPN aus Karlsruhe tot: Endpunkt im WireGuard-Zugang ist feste IPv6 (2003:…, Telekom) statt myfritz-Name, außerdem 0.0.0.0/0 in AllowedIPs (ohne Tunnel kein Internet). Reparatur beim nächsten Besuch. **Checkliste für den nächsten Besuch: docs/BESUCH_MAJA.md** (VPN neu, Verbindungsproblem vor Ort untersuchen, 2-Spieler bestätigen, Admin-Passwort, Geburtstag, Backlog).

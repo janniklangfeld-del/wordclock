@@ -27,6 +27,10 @@ FRITZ!Box → **Internet → Online-Monitor**:
 4. Bestätigen – je nach Box am **Gerät per Taste** oder per DECT-Telefon.
 5. Es erscheint ein **QR-Code** (und eine Datei zum Herunterladen – gut aufheben, wie ein Schlüssel).
 
+**Prüfen, bevor du scannst** (in der WireGuard-App unter Bearbeiten):
+- **Endpunkt** muss `….myfritz.net:<Port>` sein, **keine** IP-Adresse wie `[2003:…]`. Eine feste Adresse ändert sich (Telekom vergibt IPv6 neu) → Tunnel tot, „Letzter Handshake“ fehlt. Passiert, wenn MyFRITZ! beim Anlegen noch nicht aktiv war → MyFRITZ! einrichten, Zugang neu anlegen (oder Endpunkt von Hand ersetzen, Port behalten).
+- **Zulässige IPs** nur `192.168.178.0/24` (+ fdc4-Eintrag). Steht `0.0.0.0/0` dabei, läuft alles durch den Tunnel – fällt er aus, hat das Handy gar kein Internet.
+
 ## 5. Handy einrichten
 
 1. App **„WireGuard“** installieren (iOS/Android, kostenlos).
