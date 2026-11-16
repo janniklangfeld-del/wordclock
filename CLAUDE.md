@@ -67,7 +67,8 @@ Geburtstagsgeschenk-Wordclock. Sprache im Projekt: Deutsch. Bei fehlendem Kontex
 - 14.11.: iPhones kamen im WLAN nicht auf die Uhr (über VPN schon, Laptop auch): am iPhone „Private WLAN-Adresse“ für MiCasaEsSuCasa auf Aus → ging sofort (vermutlich veralteter ARP-Eintrag in der Uhr). Versuch, den ARP-Cache der Uhr jede Minute zu leeren (1.4.3), verworfen: danach jedes Mal ~8 s Hänger. Maja muss die Einstellung an ihrem iPhone auch ändern. Nächster GitHub-Tag ≥ v1.4.6.
 - 14.11.: Uhr hat in Majas FRITZ!Box feste IP 192.168.178.43.
 - Erledigt (14.11.): Fernzugriff per WireGuard (Majas FRITZ!Box), vom iPhone über LTE getestet.
-- Offen: Admin-Passwort ändern. Majas Geburtstag eintragen (Default aus, 01.01.).
+- Erledigt (16.11.): Admin-Passwort der Uhr vom Nutzer geändert.
+- Offen: Majas Geburtstag eintragen (Default aus, 01.01.).
 - 14.11.: Nutzer: Verbindung jetzt zuverlässiger. Wenn die Seite mal nicht lädt: am iPhone WLAN aus/an, kurz warten, nochmal – dann geht es (Ursache offen, vermutlich WLAN/ARP-Seite).
 
 ## Backlog (vom Nutzer, noch nicht umsetzen ohne Auftrag)
